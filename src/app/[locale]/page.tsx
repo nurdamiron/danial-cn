@@ -30,7 +30,7 @@ export default async function HomePage({
     {
       key: "cabin",
       href: "/catalog?category=cabin",
-      image: "/products/alu-cabin-55/01-front.jpg",
+      image: "/products/alu-cabin-55/silver-front.jpg",
     },
     {
       key: "checkin",
