@@ -38,16 +38,18 @@ export async function SiteFooter() {
         </div>
         <div className="space-y-4 text-sm text-muted md:col-span-4">
           <p className="text-[10px] tracking-[0.2em] text-muted uppercase">
-            Notice
+            Order
           </p>
-          <p className="leading-relaxed">{t("replica.disclaimer")}</p>
           <p className="leading-relaxed">{t("payment.kaspiNote")}</p>
+          <p className="leading-relaxed">
+            {t("delivery.cargo")} · {t("delivery.avia")} · {t("delivery.express")}
+          </p>
         </div>
       </Container>
       <div className="border-t border-line">
         <Container className="flex flex-wrap items-center justify-between gap-3 py-5 text-[10px] tracking-[0.16em] text-muted uppercase">
           <span>© {new Date().getFullYear()} Danial CN</span>
-          <span>Kazakhstan · 1:1 replicas</span>
+          <span>Kazakhstan · Premium luggage</span>
         </Container>
       </div>
     </footer>

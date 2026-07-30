@@ -4,7 +4,7 @@ import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
 const baseLabels = {
   title: "DANIAL CN — новый заказ",
   delivery: { cargo: "Карго", avia: "Авиа", express: "Экспресс" },
-  replicaLine: "Тип: копия 1:1 (реплика)",
+  replicaLine: "Danial CN · премиум-багаж",
   paymentNote: "Оплата: Kaspi (уточним в чате)",
   fields: {
     name: "Имя",
@@ -16,7 +16,7 @@ const baseLabels = {
 };
 
 describe("buildOrderMessage", () => {
-  it("includes replica line, delivery, and total", () => {
+  it("includes delivery, brand line, and total", () => {
     const msg = buildOrderMessage({
       locale: "ru",
       meta: { name: "Али", city: "Алматы", delivery: "express" },
@@ -24,7 +24,7 @@ describe("buildOrderMessage", () => {
         {
           productId: "p1",
           variantId: "v1",
-          slug: "alu-cabin-55",
+          slug: "alu-cabin",
           brand: "Alu",
           name: "Cabin 55",
           colorLabel: "Black",
@@ -33,7 +33,7 @@ describe("buildOrderMessage", () => {
           unitPriceKzt: 89000,
           qty: 1,
           imageUrl: "/x.jpg",
-          productUrl: "http://localhost:3000/ru/catalog/alu-cabin-55",
+          productUrl: "http://localhost:3000/ru/catalog/alu-cabin",
         },
       ],
       labels: baseLabels,
@@ -41,7 +41,7 @@ describe("buildOrderMessage", () => {
     expect(msg).toContain("Али");
     expect(msg).toContain("Алматы");
     expect(msg).toContain("Экспресс");
-    expect(msg).toContain("копия 1:1");
+    expect(msg).toContain("премиум");
     expect(msg).toContain("89 000 ₸");
     expect(msg).toContain("Kaspi");
   });

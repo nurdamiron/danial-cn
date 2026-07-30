@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { ReplicaStrip } from "@/components/layout/ReplicaStrip";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -27,7 +26,6 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages}>
       <div className="flex min-h-screen flex-col">
         <SiteHeader />
-        <ReplicaStrip />
         <main className="flex-1">{children}</main>
         <SiteFooter />
       </div>

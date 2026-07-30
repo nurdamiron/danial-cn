@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { ProductConfigurator } from "@/components/product/ProductConfigurator";
-import { ReplicaBadge } from "@/components/product/ReplicaBadge";
 import {
   getProductBySlug,
   localizedDescription,
@@ -30,7 +29,6 @@ export default async function ProductPage({
     "http://localhost:3000";
   const wa = process.env.NEXT_PUBLIC_WHATSAPP_E164 ?? "77001234567";
 
-  // support colorKey on static images (extra field)
   const images = product.images.map((i) => ({
     id: i.id,
     url: i.url,
@@ -65,15 +63,9 @@ export default async function ProductPage({
           <p className="text-[10px] tracking-[0.28em] text-muted uppercase">
             {product.brand}
           </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-light tracking-tight sm:text-4xl">
-              {localizedName(product, locale)}
-            </h1>
-            <ReplicaBadge label={t("replica.badge")} />
-          </div>
-          <p className="max-w-2xl text-sm text-muted">
-            {t("replica.disclaimer")}
-          </p>
+          <h1 className="text-3xl font-light tracking-tight sm:text-4xl">
+            {localizedName(product, locale)}
+          </h1>
         </div>
 
         <ProductConfigurator
@@ -135,9 +127,7 @@ export default async function ProductPage({
                 <dt className="text-[11px] text-muted">
                   {locale === "kk" ? "Өлшемдер" : "Размеры"}
                 </dt>
-                <dd className="mt-0.5 font-light">
-                  55 · 65 · 75 см
-                </dd>
+                <dd className="mt-0.5 font-light">55 · 65 · 75 см</dd>
               </div>
             </dl>
             <p className="mt-6 text-xs text-muted">

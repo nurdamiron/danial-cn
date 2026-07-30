@@ -14,7 +14,7 @@ import {
   removeItem,
   updateQty,
 } from "@/store/cart";
-import { ReplicaBadge } from "@/components/product/ReplicaBadge";
+
 
 export function CartView({ waE164 }: { waE164: string }) {
   const t = useTranslations();
@@ -67,9 +67,7 @@ export function CartView({ waE164 }: { waE164: string }) {
           express: t("delivery.express"),
         },
         replicaLine:
-          locale === "kk"
-            ? "Түрі: 1:1 көшірме (реплика)"
-            : "Тип: копия 1:1 (реплика)",
+          locale === "kk" ? "Danial CN · премиум багаж" : "Danial CN · премиум-багаж",
         paymentNote: t("payment.kaspiNote"),
         fields: {
           name: t("cart.name"),
@@ -111,7 +109,6 @@ export function CartView({ waE164 }: { waE164: string }) {
                     {item.colorLabel} · {item.sizeLabel} · {item.material}
                   </p>
                 </div>
-                <ReplicaBadge label={t("replica.badge")} />
               </div>
               <p className="text-sm">
                 {formatKzt(item.unitPriceKzt * item.qty)}
@@ -146,7 +143,6 @@ export function CartView({ waE164 }: { waE164: string }) {
       </div>
 
       <div className="space-y-4 border border-line bg-white p-6">
-        <p className="text-sm text-muted">{t("replica.disclaimer")}</p>
         <label className="block text-xs tracking-wide">
           {t("cart.name")} *
           <input

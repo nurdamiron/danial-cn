@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { ReplicaBadge } from "@/components/product/ReplicaBadge";
 
 type Props = {
   href: string;
@@ -9,7 +8,6 @@ type Props = {
   priceLabel: string;
   coverUrl: string;
   hoverUrl?: string | null;
-  replicaBadge: string;
 };
 
 export function ProductCard({
@@ -19,7 +17,6 @@ export function ProductCard({
   priceLabel,
   coverUrl,
   hoverUrl,
-  replicaBadge,
 }: Props) {
   return (
     <Link href={href} className="group block card-lift">
@@ -40,9 +37,6 @@ export function ProductCard({
             sizes="(max-width:768px) 50vw, 25vw"
           />
         ) : null}
-        <div className="absolute left-3 top-3 z-10">
-          <ReplicaBadge label={replicaBadge} />
-        </div>
       </div>
       <div className="mt-4 space-y-1.5 px-0.5">
         <p className="text-[10px] tracking-[0.22em] text-muted uppercase">

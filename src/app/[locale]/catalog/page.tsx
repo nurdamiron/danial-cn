@@ -91,7 +91,6 @@ export default async function CatalogPage({
                   priceLabel={formatKzt(p.basePriceKzt)}
                   coverUrl={cover}
                   hoverUrl={hover}
-                  replicaBadge={t("replica.badge")}
                 />
               );
             })}

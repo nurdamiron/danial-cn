@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "Danial CN | %s",
   },
   description:
-    "Danial CN — премиум-реплики чемоданов 1:1. Доставка по Казахстану. Заказ в WhatsApp. Оплата Kaspi.",
+    "Danial CN — премиум-багаж. Доставка по Казахстану. Заказ в WhatsApp. Оплата Kaspi.",
 };
 
 export default function RootLayout({

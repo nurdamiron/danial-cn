@@ -149,7 +149,6 @@ export default async function HomePage({
                     priceLabel={formatKzt(p.basePriceKzt)}
                     coverUrl={cover}
                     hoverUrl={hover}
-                    replicaBadge={t("replica.badge")}
                   />
                 );
               })}

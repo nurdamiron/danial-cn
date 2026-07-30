@@ -97,9 +97,7 @@ export function ProductActions({
         express: t("delivery.express"),
       },
       replicaLine:
-        locale === "kk"
-          ? "Түрі: 1:1 көшірме (реплика)"
-          : "Тип: копия 1:1 (реплика)",
+        locale === "kk" ? "Danial CN · премиум багаж" : "Danial CN · премиум-багаж",
       paymentNote: t("payment.kaspiNote"),
       fields: {
         name: t("cart.name"),
