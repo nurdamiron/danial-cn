@@ -38,9 +38,10 @@ yarn-error.log*
 prisma/dev.db
 prisma/dev.db-journal
 
-# uploaded product photos (keep folder)
-public/uploads/products/**
-!public/uploads/products/.gitkeep
+# uploaded product photos — seed demo images ARE committed for Vercel static catalog
+# Uncomment to ignore new uploads locally if needed:
+# public/uploads/products/**
+# !public/uploads/products/.gitkeep
 
 # vercel
 .vercel

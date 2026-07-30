@@ -1,14 +1,31 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { prisma } from "@/lib/prisma";
 import { formatKzt } from "@/lib/money";
+import { useStaticCatalog } from "@/lib/static-catalog";
 
 export default async function AdminHomePage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 
+  if (useStaticCatalog()) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-xl font-light">Admin</h1>
+        <p className="text-sm text-[#666]">
+          На Vercel сейчас включён static-каталог (без записи в БД). Управление
+          товарами и загрузка фото — локально: <code>npm run dev</code>, затем
+          пересборка и деплой. Публичный магазин работает.
+        </p>
+        <Link href="/ru" className="text-sm underline">
+          Открыть сайт
+        </Link>
+      </div>
+    );
+  }
+
+  const { prisma } = await import("@/lib/prisma");
   const products = await prisma.product.findMany({
     include: {
       images: { orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }] },

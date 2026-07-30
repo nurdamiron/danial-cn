@@ -1,8 +1,8 @@
 import { redirect, notFound } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductImagesAdmin } from "@/components/admin/ProductImagesAdmin";
+import { useStaticCatalog } from "@/lib/static-catalog";
 
 export default async function EditProductPage({
   params,
@@ -12,7 +12,11 @@ export default async function EditProductPage({
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
+  if (useStaticCatalog()) {
+    redirect("/admin");
+  }
   const { id } = await params;
+  const { prisma } = await import("@/lib/prisma");
   const product = await prisma.product.findUnique({
     where: { id },
     include: {

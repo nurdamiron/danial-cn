@@ -1,0 +1,164 @@
+[
+  {
+    "id": "cms7zad5w00000ktbqmtm498z",
+    "slug": "alu-cabin-55",
+    "brand": "Alu Line",
+    "nameRu": "Cabin 55",
+    "nameKk": "Cabin 55",
+    "descriptionRu": "Реплика 1:1 cabin-чемодана. Алюминиевый вид, 4 колеса, TSA-замок. Не оригинальный бренд.",
+    "descriptionKk": "1:1 cabin чемодан көшірмесі. Алюминий көрініс, 4 дөңгелек, TSA құлып. Түпнұсқа бренд емес.",
+    "materialRu": "Алюминий-look / PC",
+    "materialKk": "Алюминий-look / PC",
+    "category": "cabin",
+    "basePriceKzt": 89000,
+    "heightCm": 55,
+    "widthCm": 40,
+    "depthCm": 23,
+    "volumeL": 38,
+    "weightKg": 3.8,
+    "wheels": "4 spinner",
+    "lockType": "TSA",
+    "isReplica": true,
+    "status": "active",
+    "featured": true,
+    "sortOrder": 0,
+    "createdAt": "2026-07-30T20:40:48.932Z",
+    "updatedAt": "2026-07-30T20:40:49.858Z",
+    "images": [
+      {
+        "id": "cms7zadvh00020ktbwbm1va6g",
+        "productId": "cms7zad5w00000ktbqmtm498z",
+        "variantId": null,
+        "url": "/uploads/products/cms7zad5w00000ktbqmtm498z/cover.webp",
+        "sortOrder": 0,
+        "isCover": true,
+        "width": 1200,
+        "height": 1600,
+        "createdAt": "2026-07-30T20:40:49.853Z"
+      }
+    ],
+    "variants": [
+      {
+        "id": "cms7zad5y00010ktbqtwecs50",
+        "productId": "cms7zad5w00000ktbqmtm498z",
+        "sku": "alu-cabin-55-silver",
+        "colorKey": "silver",
+        "colorLabelRu": "Серебро",
+        "colorLabelKk": "Күміс",
+        "sizeKey": "55",
+        "sizeLabelRu": "55 см",
+        "sizeLabelKk": "55 см",
+        "priceKzt": null,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "id": "cms7zadvq00030ktbo4vx52yt",
+    "slug": "pc-checkin-75",
+    "brand": "Travel Pro",
+    "nameRu": "Check-in 75",
+    "nameKk": "Check-in 75",
+    "descriptionRu": "Реплика 1:1 большого чемодана 75 см. Поликарбонат, расширяемый. Не оригинал.",
+    "descriptionKk": "75 см үлкен чемоданның 1:1 көшірмесі. Поликарбонат, кеңейтілетін. Түпнұсқа емес.",
+    "materialRu": "Поликарбонат",
+    "materialKk": "Поликарбонат",
+    "category": "checkin",
+    "basePriceKzt": 129000,
+    "heightCm": 75,
+    "widthCm": 50,
+    "depthCm": 30,
+    "volumeL": 95,
+    "weightKg": 4.5,
+    "wheels": "4 spinner",
+    "lockType": "TSA",
+    "isReplica": true,
+    "status": "active",
+    "featured": true,
+    "sortOrder": 0,
+    "createdAt": "2026-07-30T20:40:49.862Z",
+    "updatedAt": "2026-07-30T20:40:49.966Z",
+    "images": [
+      {
+        "id": "cms7zadyj00050ktb57dsjwdt",
+        "productId": "cms7zadvq00030ktbo4vx52yt",
+        "variantId": null,
+        "url": "/uploads/products/cms7zadvq00030ktbo4vx52yt/cover.webp",
+        "sortOrder": 0,
+        "isCover": true,
+        "width": 1200,
+        "height": 1600,
+        "createdAt": "2026-07-30T20:40:49.963Z"
+      }
+    ],
+    "variants": [
+      {
+        "id": "cms7zadvr00040ktbvz8vk7gx",
+        "productId": "cms7zadvq00030ktbo4vx52yt",
+        "sku": "pc-checkin-75-black",
+        "colorKey": "black",
+        "colorLabelRu": "Чёрный",
+        "colorLabelKk": "Қара",
+        "sizeKey": "75",
+        "sizeLabelRu": "75 см",
+        "sizeLabelKk": "75 см",
+        "priceKzt": null,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "id": "cms7zadyq00060ktbhn98sipp",
+    "slug": "soft-cabin-set",
+    "brand": "Soft Move",
+    "nameRu": "Cabin Soft 55",
+    "nameKk": "Cabin Soft 55",
+    "descriptionRu": "Мягкий cabin-чемодан, копия 1:1. Лёгкий, с наружным карманом.",
+    "descriptionKk": "Жұмсақ cabin чемодан, 1:1 көшірме. Жеңіл, сыртқы қалтамен.",
+    "materialRu": "Полиэстер",
+    "materialKk": "Полиэстер",
+    "category": "cabin",
+    "basePriceKzt": 69000,
+    "heightCm": 55,
+    "widthCm": 36,
+    "depthCm": 22,
+    "volumeL": 42,
+    "weightKg": 2.6,
+    "wheels": "4 spinner",
+    "lockType": "TSA",
+    "isReplica": true,
+    "status": "active",
+    "featured": true,
+    "sortOrder": 0,
+    "createdAt": "2026-07-30T20:40:49.970Z",
+    "updatedAt": "2026-07-30T20:40:50.074Z",
+    "images": [
+      {
+        "id": "cms7zae1j00080ktbkh1ewl0c",
+        "productId": "cms7zadyq00060ktbhn98sipp",
+        "variantId": null,
+        "url": "/uploads/products/cms7zadyq00060ktbhn98sipp/cover.webp",
+        "sortOrder": 0,
+        "isCover": true,
+        "width": 1200,
+        "height": 1600,
+        "createdAt": "2026-07-30T20:40:50.071Z"
+      }
+    ],
+    "variants": [
+      {
+        "id": "cms7zadyr00070ktbfcvle30f",
+        "productId": "cms7zadyq00060ktbhn98sipp",
+        "sku": "soft-cabin-set-navy",
+        "colorKey": "navy",
+        "colorLabelRu": "Тёмно-синий",
+        "colorLabelKk": "Қара-көк",
+        "sizeKey": "55",
+        "sizeLabelRu": "55 см",
+        "sizeLabelKk": "55 см",
+        "priceKzt": null,
+        "stock": 10
+      }
+    ]
+  }
+]

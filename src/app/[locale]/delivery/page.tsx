@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
-import { prisma } from "@/lib/prisma";
+import { useStaticCatalog } from "@/lib/static-catalog";
 
 export default async function DeliveryPage({
   params,
@@ -10,8 +10,26 @@ export default async function DeliveryPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const settings =
-    (await prisma.siteSettings.findUnique({ where: { id: 1 } })) ?? null;
+
+  let settings: {
+    deliveryCargoRu: string;
+    deliveryCargoKk: string;
+    deliveryAviaRu: string;
+    deliveryAviaKk: string;
+    deliveryExpressRu: string;
+    deliveryExpressKk: string;
+    kaspiNoteRu: string;
+    kaspiNoteKk: string;
+  } | null = null;
+
+  if (!useStaticCatalog()) {
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
+    } catch {
+      settings = null;
+    }
+  }
 
   const blocks = [
     {

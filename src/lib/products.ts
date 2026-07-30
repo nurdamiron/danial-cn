@@ -1,15 +1,12 @@
-import { prisma } from "@/lib/prisma";
 import { canPublishProduct } from "@/lib/publish";
+import {
+  getStaticFeatured,
+  getStaticProductBySlug,
+  getStaticProducts,
+  useStaticCatalog,
+} from "@/lib/static-catalog";
 
 export { canPublishProduct } from "@/lib/publish";
-
-export async function assertPublishable(productId: string): Promise<void> {
-  const imageCount = await prisma.productImage.count({ where: { productId } });
-  const result = canPublishProduct({ imageCount });
-  if (!result.ok) {
-    throw new Error(result.reason);
-  }
-}
 
 export type ProductListFilters = {
   brand?: string;
@@ -22,8 +19,53 @@ export type ProductListFilters = {
   sort?: "new" | "price_asc" | "price_desc";
 };
 
+async function getPrisma() {
+  const { prisma } = await import("@/lib/prisma");
+  return prisma;
+}
+
+export async function assertPublishable(productId: string): Promise<void> {
+  if (useStaticCatalog()) {
+    throw new Error("Admin writes disabled in static/Vercel catalog mode");
+  }
+  const prisma = await getPrisma();
+  const imageCount = await prisma.productImage.count({ where: { productId } });
+  const result = canPublishProduct({ imageCount });
+  if (!result.ok) {
+    throw new Error(result.reason);
+  }
+}
+
 export async function listActiveProducts(filters: ProductListFilters = {}) {
-  const products = await prisma.product.findMany({
+  if (useStaticCatalog()) {
+    let products = getStaticProducts();
+    if (filters.category) {
+      products = products.filter((p) => p.category === filters.category);
+    }
+    if (filters.brand) {
+      products = products.filter((p) => p.brand === filters.brand);
+    }
+    if (filters.minPrice != null) {
+      products = products.filter((p) => p.basePriceKzt >= filters.minPrice!);
+    }
+    if (filters.maxPrice != null) {
+      products = products.filter((p) => p.basePriceKzt <= filters.maxPrice!);
+    }
+    if (filters.sort === "price_asc") {
+      products = [...products].sort((a, b) => a.basePriceKzt - b.basePriceKzt);
+    } else if (filters.sort === "price_desc") {
+      products = [...products].sort((a, b) => b.basePriceKzt - a.basePriceKzt);
+    }
+    return products as unknown as Awaited<
+      ReturnType<typeof listActiveProductsFromDb>
+    >;
+  }
+  return listActiveProductsFromDb(filters);
+}
+
+async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
+  const prisma = await getPrisma();
+  return prisma.product.findMany({
     where: {
       status: "active",
       images: { some: {} },
@@ -60,11 +102,19 @@ export async function listActiveProducts(filters: ProductListFilters = {}) {
           ? { basePriceKzt: "desc" }
           : [{ sortOrder: "asc" }, { createdAt: "desc" }],
   });
-
-  return products;
 }
 
 export async function getProductBySlug(slug: string) {
+  if (useStaticCatalog()) {
+    return getStaticProductBySlug(slug) as unknown as Awaited<
+      ReturnType<typeof getProductBySlugFromDb>
+    > | null;
+  }
+  return getProductBySlugFromDb(slug);
+}
+
+async function getProductBySlugFromDb(slug: string) {
+  const prisma = await getPrisma();
   return prisma.product.findFirst({
     where: {
       slug,
@@ -79,6 +129,16 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function listFeaturedProducts(limit = 8) {
+  if (useStaticCatalog()) {
+    return getStaticFeatured(limit) as unknown as Awaited<
+      ReturnType<typeof listFeaturedProductsFromDb>
+    >;
+  }
+  return listFeaturedProductsFromDb(limit);
+}
+
+async function listFeaturedProductsFromDb(limit = 8) {
+  const prisma = await getPrisma();
   return prisma.product.findMany({
     where: {
       status: "active",
