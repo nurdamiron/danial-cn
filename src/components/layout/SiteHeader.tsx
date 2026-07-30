@@ -9,11 +9,11 @@ export async function SiteHeader() {
   const wa = process.env.NEXT_PUBLIC_WHATSAPP_E164 ?? "77001234567";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/80 bg-[#f7f6f4]/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-line/80 bg-sand/90 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between gap-4 sm:h-[4.25rem]">
         <Link
           href="/"
-          className="text-[11px] font-medium tracking-[0.35em] uppercase sm:text-xs"
+          className="text-[11px] font-medium tracking-[0.35em] text-ink uppercase sm:text-xs"
         >
           {t("brand.name")}
         </Link>

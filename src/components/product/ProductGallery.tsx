@@ -18,6 +18,7 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
           alt={alt}
           fill
           priority
+          quality={95}
           className="object-contain p-6 sm:p-8"
           sizes="(max-width:768px) 100vw, 50vw"
         />

@@ -25,16 +25,18 @@ export function ProductCard({
           src={coverUrl}
           alt={name}
           fill
+          quality={95}
           className="object-contain p-4 transition duration-700 ease-out group-hover:scale-[1.02] group-hover:opacity-0"
-          sizes="(max-width:768px) 50vw, 25vw"
+          sizes="(max-width:768px) 50vw, 33vw"
         />
         {hoverUrl ? (
           <Image
             src={hoverUrl}
             alt=""
             fill
+            quality={95}
             className="object-contain p-4 opacity-0 transition duration-700 ease-out group-hover:opacity-100 group-hover:scale-[1.02]"
-            sizes="(max-width:768px) 50vw, 25vw"
+            sizes="(max-width:768px) 50vw, 33vw"
           />
         ) : null}
       </div>
