@@ -22,13 +22,13 @@ export function ProductCard({
   replicaBadge,
 }: Props) {
   return (
-    <Link href={href} className="group block">
-      <div className="relative aspect-[3/4] overflow-hidden bg-white">
+    <Link href={href} className="group block card-lift">
+      <div className="relative aspect-[3/4] overflow-hidden product-media">
         <Image
           src={coverUrl}
           alt={name}
           fill
-          className="object-contain p-4 transition duration-500 group-hover:opacity-0"
+          className="object-contain p-5 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-0"
           sizes="(max-width:768px) 50vw, 25vw"
         />
         {hoverUrl ? (
@@ -36,18 +36,20 @@ export function ProductCard({
             src={hoverUrl}
             alt=""
             fill
-            className="object-contain p-4 opacity-0 transition duration-500 group-hover:opacity-100"
+            className="object-contain p-5 opacity-0 transition duration-700 ease-out group-hover:opacity-100 group-hover:scale-[1.03]"
             sizes="(max-width:768px) 50vw, 25vw"
           />
         ) : null}
-        <div className="absolute left-3 top-3">
+        <div className="absolute left-3 top-3 z-10">
           <ReplicaBadge label={replicaBadge} />
         </div>
       </div>
-      <div className="mt-3 space-y-1">
-        <p className="text-[11px] tracking-widest text-muted uppercase">{brand}</p>
-        <p className="text-sm">{name}</p>
-        <p className="text-sm">{priceLabel}</p>
+      <div className="mt-4 space-y-1.5 px-0.5">
+        <p className="text-[10px] tracking-[0.22em] text-muted uppercase">
+          {brand}
+        </p>
+        <p className="text-[15px] font-light tracking-tight">{name}</p>
+        <p className="text-sm text-muted">{priceLabel}</p>
       </div>
     </Link>
   );

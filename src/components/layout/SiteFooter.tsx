@@ -7,23 +7,49 @@ export async function SiteFooter() {
 
   return (
     <footer className="mt-auto border-t border-line bg-white">
-      <Container className="grid gap-8 py-12 md:grid-cols-3">
-        <div>
-          <p className="text-xs tracking-[0.28em] uppercase">{t("brand.name")}</p>
-          <p className="mt-3 text-sm text-muted">{t("footer.rights")}</p>
+      <Container className="grid gap-12 py-16 md:grid-cols-12">
+        <div className="md:col-span-5">
+          <p className="text-xs tracking-[0.35em] uppercase">
+            {t("brand.name")}
+          </p>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
+            {t("footer.rights")}
+          </p>
         </div>
-        <div className="flex flex-col gap-2 text-sm">
-          <Link href="/catalog">{t("nav.catalog")}</Link>
-          <Link href="/delivery">{t("nav.delivery")}</Link>
-          <Link href="/about">{t("nav.about")}</Link>
-          <Link href="/faq">{t("nav.faq")}</Link>
-          <Link href="/contacts">{t("nav.contacts")}</Link>
+        <div className="flex flex-col gap-3 text-sm md:col-span-3">
+          <p className="mb-1 text-[10px] tracking-[0.2em] text-muted uppercase">
+            Menu
+          </p>
+          <Link href="/catalog" className="hover:opacity-60">
+            {t("nav.catalog")}
+          </Link>
+          <Link href="/delivery" className="hover:opacity-60">
+            {t("nav.delivery")}
+          </Link>
+          <Link href="/about" className="hover:opacity-60">
+            {t("nav.about")}
+          </Link>
+          <Link href="/faq" className="hover:opacity-60">
+            {t("nav.faq")}
+          </Link>
+          <Link href="/contacts" className="hover:opacity-60">
+            {t("nav.contacts")}
+          </Link>
         </div>
-        <div className="text-sm text-muted">
-          <p>{t("replica.disclaimer")}</p>
-          <p className="mt-3">{t("payment.kaspiNote")}</p>
+        <div className="space-y-4 text-sm text-muted md:col-span-4">
+          <p className="text-[10px] tracking-[0.2em] text-muted uppercase">
+            Notice
+          </p>
+          <p className="leading-relaxed">{t("replica.disclaimer")}</p>
+          <p className="leading-relaxed">{t("payment.kaspiNote")}</p>
         </div>
       </Container>
+      <div className="border-t border-line">
+        <Container className="flex flex-wrap items-center justify-between gap-3 py-5 text-[10px] tracking-[0.16em] text-muted uppercase">
+          <span>© {new Date().getFullYear()} Danial CN</span>
+          <span>Kazakhstan · 1:1 replicas</span>
+        </Container>
+      </div>
     </footer>
   );
 }

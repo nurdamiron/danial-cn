@@ -9,36 +9,39 @@ export async function SiteHeader() {
   const wa = process.env.NEXT_PUBLIC_WHATSAPP_E164 ?? "77001234567";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-[#fafafa]/95 backdrop-blur">
-      <Container className="flex h-14 items-center justify-between gap-4 sm:h-16">
+    <header className="sticky top-0 z-50 border-b border-line/80 bg-[#f7f6f4]/85 backdrop-blur-md">
+      <Container className="flex h-16 items-center justify-between gap-4 sm:h-[4.25rem]">
         <Link
           href="/"
-          className="text-xs font-medium tracking-[0.28em] uppercase sm:text-sm"
+          className="text-[11px] font-medium tracking-[0.35em] uppercase sm:text-xs"
         >
           {t("brand.name")}
         </Link>
 
-        <nav className="hidden items-center gap-6 text-xs tracking-wide md:flex">
-          <Link href="/catalog" className="hover:opacity-60">
+        <nav className="hidden items-center gap-8 text-[11px] tracking-[0.14em] uppercase md:flex">
+          <Link href="/catalog" className="transition hover:opacity-50">
             {t("nav.catalog")}
           </Link>
-          <Link href="/delivery" className="hover:opacity-60">
+          <Link href="/delivery" className="transition hover:opacity-50">
             {t("nav.delivery")}
           </Link>
-          <Link href="/about" className="hover:opacity-60">
+          <Link href="/about" className="transition hover:opacity-50">
             {t("nav.about")}
           </Link>
-          <Link href="/faq" className="hover:opacity-60">
+          <Link href="/faq" className="transition hover:opacity-50">
             {t("nav.faq")}
           </Link>
-          <Link href="/contacts" className="hover:opacity-60">
+          <Link href="/contacts" className="transition hover:opacity-50">
             {t("nav.contacts")}
           </Link>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           <LocaleSwitcher />
-          <Link href="/cart" className="text-xs tracking-wide">
+          <Link
+            href="/cart"
+            className="text-[11px] tracking-[0.14em] uppercase transition hover:opacity-50"
+          >
             {t("nav.cart")}
             <CartCount />
           </Link>
@@ -46,9 +49,9 @@ export async function SiteHeader() {
             href={`https://wa.me/${wa.replace(/\D/g, "")}`}
             target="_blank"
             rel="noreferrer"
-            className="text-xs tracking-wide hover:opacity-60"
+            className="hidden text-[11px] tracking-[0.14em] uppercase transition hover:opacity-50 sm:inline"
           >
-            WA
+            WhatsApp
           </a>
         </div>
       </Container>

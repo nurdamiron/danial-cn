@@ -12,33 +12,35 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[3/4] bg-white">
+      <div className="relative aspect-[3/4] product-media">
         <Image
           src={current.url}
           alt={alt}
           fill
           priority
-          className="object-contain p-6"
+          className="object-contain p-8 sm:p-10"
           sizes="(max-width:768px) 100vw, 50vw"
         />
       </div>
       {images.length > 1 ? (
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {images.map((img, i) => (
             <button
               key={img.id}
               type="button"
               onClick={() => setActive(i)}
-              className={`relative h-16 w-14 shrink-0 border bg-white ${
-                i === active ? "border-[#111]" : "border-line"
+              className={`relative h-20 w-16 shrink-0 overflow-hidden product-media transition ${
+                i === active
+                  ? "ring-1 ring-[#0a0a0a] ring-offset-2"
+                  : "opacity-70 hover:opacity-100"
               }`}
             >
               <Image
                 src={img.url}
                 alt=""
                 fill
-                className="object-contain p-1"
-                sizes="56px"
+                className="object-contain p-1.5"
+                sizes="64px"
               />
             </button>
           ))}
