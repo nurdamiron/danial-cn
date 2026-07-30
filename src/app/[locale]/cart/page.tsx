@@ -10,14 +10,14 @@ export default async function CartPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_E164 ?? "77001234567";
+  const { SITE } = await import("@/lib/site");
 
   return (
     <Container className="py-12">
       <h1 className="mb-8 text-2xl font-light tracking-tight">
         {t("cart.title")}
       </h1>
-      <CartView waE164={wa} />
+      <CartView waE164={SITE.whatsappE164} />
     </Container>
   );
 }

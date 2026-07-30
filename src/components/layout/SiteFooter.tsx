@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
+import { SITE } from "@/lib/site";
 
 export async function SiteFooter() {
   const t = await getTranslations();
@@ -15,6 +16,24 @@ export async function SiteFooter() {
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
             {t("footer.rights")}
           </p>
+          <div className="mt-6 space-y-2 text-sm">
+            <a
+              href={SITE.whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block text-ink hover:opacity-60"
+            >
+              {t("contacts.phoneLabel")}: {SITE.whatsappDisplay}
+            </a>
+            <a
+              href={SITE.instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block text-ink hover:opacity-60"
+            >
+              {t("contacts.instagramLabel")}: @{SITE.instagram}
+            </a>
+          </div>
         </div>
         <div className="flex flex-col gap-3 text-sm md:col-span-3">
           <p className="mb-1 text-[10px] tracking-[0.16em] text-muted">

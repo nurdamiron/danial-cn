@@ -3,10 +3,10 @@ import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { CartCount } from "@/components/layout/CartCount";
+import { SITE } from "@/lib/site";
 
 export async function SiteHeader() {
   const t = await getTranslations();
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_E164 ?? "77001234567";
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/80 bg-sand/90 backdrop-blur-md">
@@ -36,7 +36,7 @@ export async function SiteHeader() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-4 sm:gap-5">
           <LocaleSwitcher />
           <Link
             href="/cart"
@@ -46,7 +46,15 @@ export async function SiteHeader() {
             <CartCount />
           </Link>
           <a
-            href={`https://wa.me/${wa.replace(/\D/g, "")}`}
+            href={SITE.instagramUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden text-[13px] transition hover:opacity-50 md:inline"
+          >
+            {t("nav.instagram")}
+          </a>
+          <a
+            href={SITE.whatsappUrl}
             target="_blank"
             rel="noreferrer"
             className="hidden text-[13px] transition hover:opacity-50 sm:inline"

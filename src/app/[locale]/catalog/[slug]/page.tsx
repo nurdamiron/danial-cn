@@ -28,7 +28,8 @@ export default async function ProductPage({
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
     "http://localhost:3000";
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_E164 ?? "77001234567";
+  const { SITE } = await import("@/lib/site");
+  const wa = SITE.whatsappE164;
 
   const images = product.images.map((i) => ({
     id: i.id,
