@@ -20,12 +20,12 @@ export function ProductCard({
 }: Props) {
   return (
     <Link href={href} className="group block card-lift">
-      <div className="relative aspect-[3/4] overflow-hidden product-media">
+      <div className="relative aspect-[3/4] overflow-hidden bg-white">
         <Image
           src={coverUrl}
           alt={name}
           fill
-          className="object-contain p-5 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-0"
+          className="object-contain p-4 transition duration-700 ease-out group-hover:scale-[1.02] group-hover:opacity-0"
           sizes="(max-width:768px) 50vw, 25vw"
         />
         {hoverUrl ? (
@@ -33,7 +33,7 @@ export function ProductCard({
             src={hoverUrl}
             alt=""
             fill
-            className="object-contain p-5 opacity-0 transition duration-700 ease-out group-hover:opacity-100 group-hover:scale-[1.03]"
+            className="object-contain p-4 opacity-0 transition duration-700 ease-out group-hover:opacity-100 group-hover:scale-[1.02]"
             sizes="(max-width:768px) 50vw, 25vw"
           />
         ) : null}

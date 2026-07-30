@@ -12,13 +12,13 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[3/4] product-media">
+      <div className="relative aspect-[3/4] bg-white">
         <Image
           src={current.url}
           alt={alt}
           fill
           priority
-          className="object-contain p-8 sm:p-10"
+          className="object-contain p-6 sm:p-8"
           sizes="(max-width:768px) 100vw, 50vw"
         />
       </div>
@@ -29,7 +29,7 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
               key={img.id}
               type="button"
               onClick={() => setActive(i)}
-              className={`relative h-20 w-16 shrink-0 overflow-hidden product-media transition ${
+              className={`relative h-20 w-16 shrink-0 overflow-hidden bg-white transition ${
                 i === active
                   ? "ring-1 ring-[#0a0a0a] ring-offset-2"
                   : "opacity-70 hover:opacity-100"
