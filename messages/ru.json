@@ -14,10 +14,6 @@
     "viewCatalog": "Смотреть каталог",
     "continueShopping": "Продолжить покупки"
   },
-  "replica": {
-    "badge": "",
-    "disclaimer": ""
-  },
   "delivery": {
     "cargo": "Карго",
     "avia": "Авиа",

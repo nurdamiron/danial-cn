@@ -8,8 +8,6 @@ const required = [
   "nav.delivery",
   "cta.addToCart",
   "cta.sendWhatsApp",
-  "replica.badge",
-  "replica.disclaimer",
   "delivery.cargo",
   "delivery.avia",
   "delivery.express",
