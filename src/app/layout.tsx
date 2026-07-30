@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Noto_Sans } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
-  subsets: ["latin", "cyrillic"],
+// Noto Sans: full Kazakh Cyrillic (ә ғ қ ң ө ұ ү һ і) via cyrillic-ext
+const notoSans = Noto_Sans({
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-sans-family",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -22,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${manrope.variable} h-full antialiased`}>
-      <body className="min-h-full font-sans">{children}</body>
+    <html lang="ru" className={`${notoSans.variable} h-full antialiased`}>
+      <body className={`${notoSans.className} min-h-full`}>{children}</body>
     </html>
   );
 }

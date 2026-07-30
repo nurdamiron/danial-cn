@@ -84,8 +84,11 @@
 body {
   background: var(--sand);
   color: var(--ink);
-  font-family: var(--font-sans), system-ui, sans-serif;
-  letter-spacing: 0.01em;
+  font-family: var(--font-sans-family), "Noto Sans", system-ui, sans-serif;
+  /* lighter tracking — better for Kazakh multi-glyph words */
+  letter-spacing: 0;
+  line-height: 1.55;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 ::selection {

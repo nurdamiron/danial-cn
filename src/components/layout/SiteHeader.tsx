@@ -18,7 +18,7 @@ export async function SiteHeader() {
           {t("brand.name")}
         </Link>
 
-        <nav className="hidden items-center gap-8 text-[11px] tracking-[0.14em] uppercase md:flex">
+        <nav className="hidden items-center gap-7 text-[13px] md:flex">
           <Link href="/catalog" className="transition hover:opacity-50">
             {t("nav.catalog")}
           </Link>
@@ -40,7 +40,7 @@ export async function SiteHeader() {
           <LocaleSwitcher />
           <Link
             href="/cart"
-            className="text-[11px] tracking-[0.14em] uppercase transition hover:opacity-50"
+            className="text-[13px] transition hover:opacity-50"
           >
             {t("nav.cart")}
             <CartCount />
@@ -49,7 +49,7 @@ export async function SiteHeader() {
             href={`https://wa.me/${wa.replace(/\D/g, "")}`}
             target="_blank"
             rel="noreferrer"
-            className="hidden text-[11px] tracking-[0.08em] transition hover:opacity-50 sm:inline"
+            className="hidden text-[13px] transition hover:opacity-50 sm:inline"
           >
             {t("nav.chat")}
           </a>
