@@ -322,9 +322,7 @@ export default async function HomePage({
           </p>
           <div className="mt-9">
             <Link href="/catalog">
-              <Button className="bg-paper text-ink hover:bg-paper/90">
-                {t("cta.viewCatalog")}
-              </Button>
+              <Button variant="secondary">{t("cta.viewCatalog")}</Button>
             </Link>
           </div>
         </Container>

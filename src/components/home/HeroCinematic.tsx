@@ -99,17 +99,10 @@ export function HeroCinematic({
           </h1>
           <div className="flex flex-wrap gap-3 pt-1">
             <Link href="/catalog">
-              <Button className="bg-paper text-ink hover:bg-paper/90">
-                {catalogLabel}
-              </Button>
+              <Button variant="secondary">{catalogLabel}</Button>
             </Link>
             <Link href="/about">
-              <Button
-                variant="outline"
-                className="border-paper/70 text-paper hover:bg-paper hover:text-ink"
-              >
-                {aboutLabel}
-              </Button>
+              <Button variant="outlineInverse">{aboutLabel}</Button>
             </Link>
           </div>
         </div>

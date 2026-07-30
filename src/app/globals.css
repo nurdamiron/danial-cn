@@ -38,6 +38,44 @@
   --font-sans: var(--font-sans-family);
 }
 
+/* Explicit utilities so dark/light surfaces never lose contrast */
+.bg-ink {
+  background-color: var(--ink) !important;
+}
+.bg-paper {
+  background-color: var(--paper) !important;
+}
+.bg-sand {
+  background-color: var(--sand) !important;
+}
+.bg-stone {
+  background-color: var(--stone) !important;
+}
+.text-ink {
+  color: var(--ink) !important;
+}
+.text-paper {
+  color: var(--paper) !important;
+}
+.text-muted {
+  color: var(--muted) !important;
+}
+.border-line {
+  border-color: var(--line) !important;
+}
+.text-paper\/65 {
+  color: color-mix(in srgb, var(--paper) 65%, transparent) !important;
+}
+.text-paper\/55 {
+  color: color-mix(in srgb, var(--paper) 55%, transparent) !important;
+}
+.text-paper\/45 {
+  color: color-mix(in srgb, var(--paper) 45%, transparent) !important;
+}
+.bg-paper\/35 {
+  background-color: color-mix(in srgb, var(--paper) 35%, transparent) !important;
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
