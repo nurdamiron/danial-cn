@@ -63,6 +63,12 @@
 .border-line {
   border-color: var(--line) !important;
 }
+.border-ink {
+  border-color: var(--ink) !important;
+}
+.accent-ink {
+  accent-color: var(--ink);
+}
 .text-paper\/65 {
   color: color-mix(in srgb, var(--paper) 65%, transparent) !important;
 }

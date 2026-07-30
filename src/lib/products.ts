@@ -43,13 +43,45 @@ export async function listActiveProducts(filters: ProductListFilters = {}) {
       products = products.filter((p) => p.category === filters.category);
     }
     if (filters.brand) {
-      products = products.filter((p) => p.brand === filters.brand);
+      products = products.filter(
+        (p) =>
+          p.brand === filters.brand ||
+          (p as { brandRu?: string }).brandRu === filters.brand ||
+          (p as { brandKk?: string }).brandKk === filters.brand,
+      );
+    }
+    if (filters.colorKey) {
+      products = products.filter((p) =>
+        p.variants.some((v) => v.colorKey === filters.colorKey && v.stock > 0),
+      );
+    }
+    if (filters.sizeKey) {
+      products = products.filter((p) =>
+        p.variants.some((v) => v.sizeKey === filters.sizeKey && v.stock > 0),
+      );
+    }
+    if (filters.inStock) {
+      products = products.filter((p) =>
+        p.variants.some((v) => v.stock > 0),
+      );
     }
     if (filters.minPrice != null) {
-      products = products.filter((p) => p.basePriceKzt >= filters.minPrice!);
+      products = products.filter((p) => {
+        const prices = p.variants
+          .map((v) => v.priceKzt ?? p.basePriceKzt)
+          .filter((n): n is number => n != null);
+        const min = Math.min(...prices, p.basePriceKzt);
+        return min >= filters.minPrice!;
+      });
     }
     if (filters.maxPrice != null) {
-      products = products.filter((p) => p.basePriceKzt <= filters.maxPrice!);
+      products = products.filter((p) => {
+        const prices = p.variants
+          .map((v) => v.priceKzt ?? p.basePriceKzt)
+          .filter((n): n is number => n != null);
+        const min = Math.min(...prices, p.basePriceKzt);
+        return min <= filters.maxPrice!;
+      });
     }
     if (filters.sort === "price_asc") {
       products = [...products].sort((a, b) => a.basePriceKzt - b.basePriceKzt);
@@ -61,6 +93,57 @@ export async function listActiveProducts(filters: ProductListFilters = {}) {
     >;
   }
   return listActiveProductsFromDb(filters);
+}
+
+export function getCatalogFilterOptions(locale: string) {
+  const products = getStaticProducts();
+  const brands = new Map<string, string>();
+  const colors = new Map<
+    string,
+    { key: string; label: string; hex: string }
+  >();
+  const sizes = new Map<string, { key: string; label: string }>();
+  let minPrice = Infinity;
+  let maxPrice = 0;
+
+  for (const p of products) {
+    const brandLabel =
+      locale === "kk" && (p as { brandKk?: string }).brandKk
+        ? (p as { brandKk?: string }).brandKk!
+        : (p as { brandRu?: string }).brandRu || p.brand;
+    brands.set(p.brand, brandLabel);
+
+    for (const v of p.variants) {
+      const price = v.priceKzt ?? p.basePriceKzt;
+      minPrice = Math.min(minPrice, price);
+      maxPrice = Math.max(maxPrice, price);
+
+      if (!colors.has(v.colorKey)) {
+        colors.set(v.colorKey, {
+          key: v.colorKey,
+          label: locale === "kk" ? v.colorLabelKk : v.colorLabelRu,
+          hex: (v as { colorHex?: string }).colorHex || "#ccc",
+        });
+      }
+      if (!sizes.has(v.sizeKey)) {
+        sizes.set(v.sizeKey, {
+          key: v.sizeKey,
+          label: locale === "kk" ? v.sizeLabelKk : v.sizeLabelRu,
+        });
+      }
+    }
+  }
+
+  const sizeOrder = ["55", "65", "75"];
+  return {
+    brands: [...brands.entries()].map(([key, label]) => ({ key, label })),
+    colors: [...colors.values()],
+    sizes: [...sizes.values()].sort(
+      (a, b) => sizeOrder.indexOf(a.key) - sizeOrder.indexOf(b.key),
+    ),
+    minPrice: Number.isFinite(minPrice) ? minPrice : 0,
+    maxPrice: maxPrice || 0,
+  };
 }
 
 async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
