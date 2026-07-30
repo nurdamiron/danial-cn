@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { ProductCard } from "@/components/product/ProductCard";
 import {
   listActiveProducts,
+  localizedBrand,
   localizedName,
   pickCoverUrl,
 } from "@/lib/products";
@@ -42,8 +43,8 @@ export default async function CatalogPage({
     <div>
       <div className="border-b border-line bg-white">
         <Container className="py-12 sm:py-16">
-          <p className="text-[10px] tracking-[0.28em] text-muted uppercase">
-            Danial CN
+          <p className="text-[10px] tracking-[0.2em] text-muted">
+            {t("brand.name")}
           </p>
           <h1 className="mt-3 text-3xl font-light tracking-tight sm:text-4xl">
             {t("catalog.title")}
@@ -86,7 +87,10 @@ export default async function CatalogPage({
                 <ProductCard
                   key={p.id}
                   href={`/catalog/${p.slug}`}
-                  brand={p.brand}
+                  brand={localizedBrand(
+                    p as { brand: string; brandRu?: string; brandKk?: string },
+                    locale,
+                  )}
                   name={localizedName(p, locale)}
                   priceLabel={formatKzt(p.basePriceKzt)}
                   coverUrl={cover}

@@ -60,7 +60,8 @@ export function CartView({ waE164 }: { waE164: string }) {
       },
       items,
       labels: {
-        title: "DANIAL CN — новый заказ",
+        title:
+          locale === "kk" ? "Danial CN — жаңа тапсырыс" : "Danial CN — новый заказ",
         delivery: {
           cargo: t("delivery.cargo"),
           avia: t("delivery.avia"),

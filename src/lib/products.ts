@@ -169,6 +169,15 @@ export function localizedName(
   return locale === "kk" ? product.nameKk : product.nameRu;
 }
 
+export function localizedBrand(
+  product: { brand: string; brandRu?: string; brandKk?: string },
+  locale: string,
+) {
+  if (locale === "kk" && product.brandKk) return product.brandKk;
+  if (product.brandRu) return product.brandRu;
+  return product.brand;
+}
+
 export function localizedDescription(
   product: { descriptionRu: string; descriptionKk: string },
   locale: string,

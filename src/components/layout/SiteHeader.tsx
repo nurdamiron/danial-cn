@@ -49,9 +49,9 @@ export async function SiteHeader() {
             href={`https://wa.me/${wa.replace(/\D/g, "")}`}
             target="_blank"
             rel="noreferrer"
-            className="hidden text-[11px] tracking-[0.14em] uppercase transition hover:opacity-50 sm:inline"
+            className="hidden text-[11px] tracking-[0.08em] transition hover:opacity-50 sm:inline"
           >
-            WhatsApp
+            {t("nav.chat")}
           </a>
         </div>
       </Container>

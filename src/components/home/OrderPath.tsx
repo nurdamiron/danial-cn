@@ -1,34 +1,31 @@
+import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 
-type Step = { n: string; title: string; text: string };
+export async function OrderPath() {
+  const t = await getTranslations();
+  const steps = [
+    { n: "01", title: t("home.step1Title"), text: t("home.step1Text") },
+    { n: "02", title: t("home.step2Title"), text: t("home.step2Text") },
+    { n: "03", title: t("home.step3Title"), text: t("home.step3Text") },
+    { n: "04", title: t("home.step4Title"), text: t("home.step4Text") },
+  ];
 
-export function OrderPath({
-  title,
-  steps,
-  cta,
-  locale,
-}: {
-  title: string;
-  steps: Step[];
-  cta: string;
-  locale: string;
-}) {
   return (
     <section className="border-t border-line bg-sand py-20 sm:py-24">
       <Container>
         <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] tracking-[0.28em] text-muted uppercase">
-              {locale === "kk" ? "Тапсырыс жолы" : "Путь заказа"}
+            <p className="text-[10px] tracking-[0.2em] text-muted">
+              {t("home.orderPath")}
             </p>
             <h2 className="mt-3 text-2xl font-light tracking-tight sm:text-3xl">
-              {title}
+              {t("home.howTitle")}
             </h2>
           </div>
           <Link href="/catalog">
-            <Button variant="outline">{cta}</Button>
+            <Button variant="outline">{t("cta.viewCatalog")}</Button>
           </Link>
         </div>
 
@@ -38,7 +35,7 @@ export function OrderPath({
               key={s.n}
               className="relative border border-line bg-paper p-6 sm:p-7"
             >
-              <span className="text-[11px] tracking-[0.28em] text-muted">
+              <span className="text-[11px] tracking-[0.2em] text-muted">
                 {s.n}
               </span>
               <h3 className="mt-4 text-base font-light tracking-tight">

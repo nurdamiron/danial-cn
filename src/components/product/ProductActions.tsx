@@ -90,7 +90,7 @@ export function ProductActions({
 
   function labels() {
     return {
-      title: "DANIAL CN — заказ",
+      title: locale === "kk" ? "Danial CN — тапсырыс" : "Danial CN — заказ",
       delivery: {
         cargo: t("delivery.cargo"),
         avia: t("delivery.avia"),

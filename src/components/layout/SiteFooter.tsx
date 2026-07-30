@@ -9,7 +9,7 @@ export async function SiteFooter() {
     <footer className="mt-auto border-t border-line bg-white">
       <Container className="grid gap-12 py-16 md:grid-cols-12">
         <div className="md:col-span-5">
-          <p className="text-xs tracking-[0.35em] uppercase">
+          <p className="text-xs tracking-[0.28em] uppercase">
             {t("brand.name")}
           </p>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
@@ -17,8 +17,8 @@ export async function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-col gap-3 text-sm md:col-span-3">
-          <p className="mb-1 text-[10px] tracking-[0.2em] text-muted uppercase">
-            Menu
+          <p className="mb-1 text-[10px] tracking-[0.16em] text-muted">
+            {t("footer.menu")}
           </p>
           <Link href="/catalog" className="hover:opacity-60">
             {t("nav.catalog")}
@@ -37,8 +37,8 @@ export async function SiteFooter() {
           </Link>
         </div>
         <div className="space-y-4 text-sm text-muted md:col-span-4">
-          <p className="text-[10px] tracking-[0.2em] text-muted uppercase">
-            Order
+          <p className="text-[10px] tracking-[0.16em] text-muted">
+            {t("footer.order")}
           </p>
           <p className="leading-relaxed">{t("payment.kaspiNote")}</p>
           <p className="leading-relaxed">
@@ -47,9 +47,11 @@ export async function SiteFooter() {
         </div>
       </Container>
       <div className="border-t border-line">
-        <Container className="flex flex-wrap items-center justify-between gap-3 py-5 text-[10px] tracking-[0.16em] text-muted uppercase">
-          <span>© {new Date().getFullYear()} Danial CN</span>
-          <span>Kazakhstan · Premium luggage</span>
+        <Container className="flex flex-wrap items-center justify-between gap-3 py-5 text-[10px] tracking-[0.12em] text-muted">
+          <span>
+            © {new Date().getFullYear()} {t("brand.name")}
+          </span>
+          <span>{t("footer.tagline")}</span>
         </Container>
       </div>
     </footer>

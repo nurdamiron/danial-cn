@@ -17,6 +17,15 @@ import {
 } from "@/lib/products";
 import { formatKzt } from "@/lib/money";
 
+function brandForLocale(
+  p: { brand: string; brandRu?: string; brandKk?: string },
+  locale: string,
+) {
+  if (locale === "kk" && p.brandKk) return p.brandKk;
+  if (p.brandRu) return p.brandRu;
+  return p.brand;
+}
+
 export default async function HomePage({
   params,
 }: {
@@ -33,131 +42,26 @@ export default async function HomePage({
 
   const categories = [
     {
-      key: "cabin",
+      key: "cabin" as const,
       href: "/catalog?category=cabin",
       image: "/products/alu-cabin-55/silver-front.jpg",
     },
     {
-      key: "checkin",
+      key: "checkin" as const,
       href: "/catalog?category=checkin",
       image: "/products/pc-checkin-75/01-front.jpg",
     },
     {
-      key: "set",
+      key: "set" as const,
       href: "/catalog?category=set",
       image: "/products/soft-cabin-55/01-front.jpg",
     },
     {
-      key: "bag",
+      key: "bag" as const,
       href: "/catalog?category=bag",
       image: "/products/soft-cabin-55/02-interior.jpg",
     },
-  ] as const;
-
-  const orderSteps =
-    locale === "kk"
-      ? [
-          {
-            n: "01",
-            title: "Үлгіні таңдау",
-            text: "Каталогтан чемоданды ашып, түс пен өлшемді (55 / 65 / 75) таңдаңыз.",
-          },
-          {
-            n: "02",
-            title: "Себетке қосу",
-            text: "Бірнеше позицияны жинаңыз — cabin + check-in жиынтығын да жасауға болады.",
-          },
-          {
-            n: "03",
-            title: "WhatsApp-қа жіберу",
-            text: "Аты, қала, жеткізу түрі (карго / әуе / экспресс) — бір хабарламада.",
-          },
-          {
-            n: "04",
-            title: "Kaspi + жеткізу",
-            text: "Менеджер растайды, Kaspi төлемі, содан кейін Қазақстан бойынша жібереміз.",
-          },
-        ]
-      : [
-          {
-            n: "01",
-            title: "Выбор модели",
-            text: "Откройте каталог, выберите цвет и размер (Cabin 55 / M 65 / Check-in 75).",
-          },
-          {
-            n: "02",
-            title: "Корзина",
-            text: "Соберите 1–N позиций. Удобно заказать cabin + check-in комплектом.",
-          },
-          {
-            n: "03",
-            title: "WhatsApp",
-            text: "Имя, город, способ доставки (карго / авиа / экспресс) — одним сообщением.",
-          },
-          {
-            n: "04",
-            title: "Kaspi + отправка",
-            text: "Менеджер подтверждает заказ, вы оплачиваете Kaspi — отправляем по KZ.",
-          },
-        ];
-
-  const features =
-    locale === "kk"
-      ? [
-          {
-            title: "Aluminium",
-            text: "Қатты қабық, тік қырлар, TSA — ұзақ сапарға.",
-            image: "/products/alu-cabin-55/silver-front.jpg",
-          },
-          {
-            title: "Hardside",
-            text: "Матовый поликарбонат, жеңіл және берік.",
-            image: "/products/pc-checkin-75/01-front.jpg",
-          },
-          {
-            title: "Softside",
-            text: "Жұмсақ корпус, алдыңғы қалта, ыңғайлы ішкі ұйымдастыру.",
-            image: "/products/soft-cabin-55/01-front.jpg",
-          },
-        ]
-      : [
-          {
-            title: "Aluminium",
-            text: "Жёсткий корпус, вертикальные рёбра, TSA — для дальних маршрутов.",
-            image: "/products/alu-cabin-55/silver-front.jpg",
-          },
-          {
-            title: "Hardside",
-            text: "Матовый поликарбонат: лёгкий, устойчивый к ударам.",
-            image: "/products/pc-checkin-75/01-front.jpg",
-          },
-          {
-            title: "Softside",
-            text: "Мягкий корпус, передний карман, продуманный интерьер.",
-            image: "/products/soft-cabin-55/01-front.jpg",
-          },
-        ];
-
-  const marquee =
-    locale === "kk"
-      ? [
-          "Danial CN",
-          "Premium luggage",
-          "Cabin · Check-in",
-          "Kaspi",
-          "WhatsApp order",
-          "Қазақстан",
-          "Alu · PC · Soft",
-        ]
-      : [
-          "Danial CN",
-          "Premium luggage",
-          "Cabin · Check-in",
-          "Kaspi",
-          "WhatsApp order",
-          "Казахстан",
-          "Alu · PC · Soft",
-        ];
+  ];
 
   return (
     <div>
@@ -168,24 +72,23 @@ export default async function HomePage({
         aboutLabel={t("nav.about")}
       />
 
-      <TrustBar locale={locale} />
-      <MarqueeBar items={marquee} />
+      <TrustBar />
+      <MarqueeBar />
 
-      {/* Categories */}
       <section className="py-20 sm:py-24">
         <Container>
           <div className="mb-10 flex items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] tracking-[0.28em] text-muted uppercase">
-                Shop
+              <p className="text-[10px] tracking-[0.2em] text-muted">
+                {t("home.shop")}
               </p>
-              <h2 className="mt-2 text-[11px] tracking-[0.28em] uppercase sm:text-sm sm:tracking-[0.2em]">
+              <h2 className="mt-2 text-2xl font-light tracking-tight sm:text-3xl">
                 {t("home.categories")}
               </h2>
             </div>
             <Link
               href="/catalog"
-              className="text-[11px] tracking-[0.14em] text-muted uppercase underline-offset-4 hover:underline"
+              className="text-[11px] tracking-[0.08em] text-muted underline-offset-4 hover:underline"
             >
               {t("cta.viewCatalog")}
             </Link>
@@ -206,7 +109,7 @@ export default async function HomePage({
                   sizes="(max-width:768px) 50vw, 25vw"
                 />
                 <div className="absolute inset-x-0 bottom-0 border-t border-line bg-white/95 px-3 py-3 backdrop-blur-sm">
-                  <p className="text-center text-[11px] tracking-[0.2em] uppercase">
+                  <p className="text-center text-[11px] tracking-[0.12em]">
                     {t(`category.${c.key}`)}
                   </p>
                 </div>
@@ -216,14 +119,13 @@ export default async function HomePage({
         </Container>
       </section>
 
-      {/* Collection */}
       {featured.length > 0 ? (
         <section className="border-t border-line bg-stone py-20 sm:py-24">
           <Container>
             <div className="mb-10 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] tracking-[0.28em] text-muted uppercase">
-                  Collection
+                <p className="text-[10px] tracking-[0.2em] text-muted">
+                  {t("home.bestsellers")}
                 </p>
                 <h2 className="mt-2 text-2xl font-light tracking-tight sm:text-3xl">
                   {t("home.bestsellers")}
@@ -231,7 +133,7 @@ export default async function HomePage({
               </div>
               <Link
                 href="/catalog"
-                className="text-[11px] tracking-[0.14em] text-muted uppercase underline-offset-4 hover:underline"
+                className="text-[11px] tracking-[0.08em] text-muted underline-offset-4 hover:underline"
               >
                 {t("cta.viewCatalog")}
               </Link>
@@ -241,11 +143,15 @@ export default async function HomePage({
                 const cover = pickCoverUrl(p.images);
                 if (!cover) return null;
                 const hover = p.images.find((i) => i.url !== cover)?.url;
+                const brand = brandForLocale(
+                  p as { brand: string; brandRu?: string; brandKk?: string },
+                  locale,
+                );
                 return (
                   <ProductCard
                     key={p.id}
                     href={`/catalog/${p.slug}`}
-                    brand={p.brand}
+                    brand={brand}
                     name={localizedName(p, locale)}
                     priceLabel={formatKzt(p.basePriceKzt)}
                     coverUrl={cover}
@@ -258,29 +164,14 @@ export default async function HomePage({
         </section>
       ) : null}
 
-      <FeatureStrip
-        eyebrow={locale === "kk" ? "Материалдар" : "Материалы"}
-        title={
-          locale === "kk"
-            ? "Әр сапарға — өз формасы"
-            : "Свой формат под каждый маршрут"
-        }
-        features={features}
-      />
+      <FeatureStrip />
+      <OrderPath />
 
-      <OrderPath
-        title={t("home.howTitle")}
-        steps={orderSteps}
-        cta={t("cta.viewCatalog")}
-        locale={locale}
-      />
-
-      {/* Why us */}
       <section className="border-t border-line bg-paper py-20 sm:py-24">
         <Container className="grid gap-12 md:grid-cols-2 md:gap-16">
           <div>
-            <p className="text-[10px] tracking-[0.28em] text-muted uppercase">
-              Danial CN
+            <p className="text-[10px] tracking-[0.2em] text-muted">
+              {t("brand.name")}
             </p>
             <h2 className="mt-3 text-2xl font-light tracking-tight sm:text-3xl">
               {t("home.whyTitle")}
@@ -293,7 +184,7 @@ export default async function HomePage({
                   key={item}
                   className="flex gap-5 border-b border-line py-5 first:pt-0"
                 >
-                  <span className="text-[11px] tracking-[0.2em] text-muted">
+                  <span className="text-[11px] tracking-[0.16em] text-muted">
                     0{i + 1}
                   </span>
                   <span className="text-sm font-light tracking-tight">
@@ -306,19 +197,16 @@ export default async function HomePage({
         </Container>
       </section>
 
-      {/* Bottom CTA */}
       <section className="bg-ink py-20 text-paper sm:py-24">
         <Container className="text-center">
-          <p className="text-[11px] tracking-[0.35em] text-paper/45 uppercase">
-            Danial CN
+          <p className="text-[11px] tracking-[0.28em] text-paper/45">
+            {t("brand.name")}
           </p>
           <h2 className="mx-auto mt-5 max-w-xl text-2xl font-light tracking-tight sm:text-4xl">
             {t("home.hero")}
           </h2>
           <p className="mx-auto mt-4 max-w-md text-sm text-paper/55">
-            {locale === "kk"
-              ? "Каталог → себет → WhatsApp → Kaspi → жеткізу"
-              : "Каталог → корзина → WhatsApp → Kaspi → доставка"}
+            {t("home.orderFlow")}
           </p>
           <div className="mt-9">
             <Link href="/catalog">

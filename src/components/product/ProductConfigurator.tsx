@@ -137,7 +137,7 @@ export function ProductConfigurator({
 
   function labels() {
     return {
-      title: "DANIAL CN — заказ",
+      title: locale === "kk" ? "Danial CN — тапсырыс" : "Danial CN — заказ",
       delivery: {
         cargo: t("delivery.cargo"),
         avia: t("delivery.avia"),
@@ -247,11 +247,9 @@ export function ProductConfigurator({
           </p>
           {selected ? (
             <p className="mt-1 text-xs text-muted">
-              SKU {selected.id.toUpperCase()} ·{" "}
+              {t("product.article")} {selected.id.toUpperCase()} ·{" "}
               {selected.stock > 0
-                ? locale === "kk"
-                  ? "Қолда бар"
-                  : "В наличии"
+                ? t("product.inStockLabel")
                 : t("product.outOfStock")}
             </p>
           ) : null}
