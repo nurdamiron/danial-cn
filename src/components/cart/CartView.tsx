@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
+import { WhatsAppIcon } from "@/components/ui/icons";
 import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
@@ -200,10 +201,11 @@ export function CartView({ waE164 }: { waE164: string }) {
         </div>
         <Button
           type="button"
-          className="w-full"
+          className="w-full gap-2"
           disabled={!meta.name.trim() || !meta.city.trim()}
           onClick={send}
         >
+          <WhatsAppIcon />
           {t("cta.sendWhatsApp")}
         </Button>
       </div>

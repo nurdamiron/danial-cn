@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
+import { WhatsAppIcon } from "@/components/ui/icons";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { addItem } from "@/store/cart";
 import type { CartItem } from "@/lib/cart-types";
@@ -275,6 +276,7 @@ export function ProductConfigurator({
           <Button
             type="button"
             variant="outline"
+            className="gap-2"
             onClick={() => {
               const item = toCartItem(1);
               if (!item) return;
@@ -286,6 +288,7 @@ export function ProductConfigurator({
               window.open(buildWaUrl(waE164, msg), "_blank");
             }}
           >
+            <WhatsAppIcon />
             {t("cta.buyWhatsApp")}
           </Button>
         </div>

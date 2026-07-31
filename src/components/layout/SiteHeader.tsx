@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { CartCount } from "@/components/layout/CartCount";
 import { NavLinks } from "@/components/layout/NavLinks";
+import { CartIcon, InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { SITE } from "@/lib/site";
 
 export async function SiteHeader() {
@@ -29,30 +30,36 @@ export async function SiteHeader() {
 
         <NavLinks items={navItems} />
 
-        <div className="flex items-center gap-4 sm:gap-5">
+        <div className="flex items-center gap-3.5 sm:gap-4">
           <LocaleSwitcher />
           <Link
             href="/cart"
-            className="text-[13px] transition hover:opacity-50"
+            aria-label={t("nav.cart")}
+            title={t("nav.cart")}
+            className="relative -m-1.5 flex items-center justify-center p-1.5 text-ink transition hover:opacity-50"
           >
-            {t("nav.cart")}
+            <CartIcon />
             <CartCount />
           </Link>
           <a
             href={SITE.instagramUrl}
             target="_blank"
             rel="noreferrer"
-            className="hidden text-[13px] transition hover:opacity-50 md:inline"
+            aria-label={t("nav.instagram")}
+            title={t("nav.instagram")}
+            className="-m-1.5 flex items-center justify-center p-1.5 text-ink transition hover:opacity-50"
           >
-            {t("nav.instagram")}
+            <InstagramIcon />
           </a>
           <a
             href={SITE.whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="hidden text-[13px] transition hover:opacity-50 sm:inline"
+            aria-label={t("nav.chat")}
+            title={t("nav.chat")}
+            className="-m-1.5 flex items-center justify-center p-1.5 text-ink transition hover:opacity-50"
           >
-            {t("nav.chat")}
+            <WhatsAppIcon />
           </a>
         </div>
       </Container>

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
+import { InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { SITE } from "@/lib/site";
 
 export async function SiteFooter() {
@@ -21,16 +22,18 @@ export async function SiteFooter() {
               href={SITE.whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="block text-ink hover:opacity-60"
+              className="flex items-center gap-2 text-ink hover:opacity-60"
             >
+              <WhatsAppIcon className="h-4 w-4 shrink-0" />
               {t("contacts.phoneLabel")}: {SITE.whatsappDisplay}
             </a>
             <a
               href={SITE.instagramUrl}
               target="_blank"
               rel="noreferrer"
-              className="block text-ink hover:opacity-60"
+              className="flex items-center gap-2 text-ink hover:opacity-60"
             >
+              <InstagramIcon className="h-4 w-4 shrink-0" />
               {t("contacts.instagramLabel")}: @{SITE.instagram}
             </a>
           </div>
