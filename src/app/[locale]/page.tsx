@@ -15,6 +15,7 @@ import {
   listActiveProducts,
   localizedName,
   pickCoverUrl,
+  uniqueColorDots,
 } from "@/lib/products";
 import { formatKzt } from "@/lib/money";
 
@@ -170,6 +171,7 @@ export default async function HomePage({
                     priceLabel={formatKzt(p.basePriceKzt)}
                     coverUrl={cover}
                     hoverUrl={hover}
+                    colors={uniqueColorDots(p.variants, locale)}
                   />
                 );
               })}

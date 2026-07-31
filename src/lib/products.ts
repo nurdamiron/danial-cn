@@ -274,3 +274,36 @@ export function localizedMaterial(
 ) {
   return locale === "kk" ? product.materialKk : product.materialRu;
 }
+
+export function uniqueSizes(
+  variants: { sizeKey: string; sizeLabelRu: string; sizeLabelKk: string }[],
+  locale: string,
+): { key: string; label: string }[] {
+  const seen = new Map<string, string>();
+  for (const v of variants) {
+    if (!seen.has(v.sizeKey)) {
+      seen.set(v.sizeKey, locale === "kk" ? v.sizeLabelKk : v.sizeLabelRu);
+    }
+  }
+  return [...seen.entries()].map(([key, label]) => ({ key, label }));
+}
+
+export function uniqueColorDots(
+  variants: {
+    colorKey: string;
+    colorLabelRu: string;
+    colorLabelKk: string;
+    colorHex?: string | null;
+  }[],
+  locale: string,
+): { hex: string; label: string }[] {
+  const seen = new Map<string, { hex: string; label: string }>();
+  for (const v of variants) {
+    if (!v.colorHex || seen.has(v.colorKey)) continue;
+    seen.set(v.colorKey, {
+      hex: v.colorHex,
+      label: locale === "kk" ? v.colorLabelKk : v.colorLabelRu,
+    });
+  }
+  return [...seen.values()];
+}

@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { ProductConfigurator } from "@/components/product/ProductConfigurator";
 import { ProductCard } from "@/components/product/ProductCard";
+import { SizeCompare } from "@/components/product/SizeCompare";
 import { formatKzt } from "@/lib/money";
 import { SITE } from "@/lib/site";
 import { isStaticCatalog } from "@/lib/static-catalog";
@@ -16,6 +17,8 @@ import {
   localizedMaterial,
   localizedName,
   pickCoverUrl,
+  uniqueColorDots,
+  uniqueSizes,
 } from "@/lib/products";
 
 export async function generateMetadata({
@@ -146,14 +149,14 @@ export default async function ProductPage({
           <Link href="/catalog" className="hover:text-ink hover:underline">
             {t("catalog.title")}
           </Link>
-          <span aria-hidden="true">/</span>
+          <span aria-hidden="true">·</span>
           <Link
             href={`/catalog?category=${product.category}`}
             className="hover:text-ink hover:underline"
           >
             {t(`category.${product.category}`)}
           </Link>
-          <span aria-hidden="true">/</span>
+          <span aria-hidden="true">·</span>
           <span className="text-ink">{localizedName(product, locale)}</span>
         </nav>
 
@@ -227,15 +230,15 @@ export default async function ProductPage({
                   <dd className="mt-0.5 font-light">{product.lockType}</dd>
                 </div>
               ) : null}
-              <div>
-                <dt className="text-[11px] text-muted">{t("product.sizes")}</dt>
-                <dd className="mt-0.5 font-light">
-                  {locale === "kk"
-                    ? "Қол жүгі 55 · орташа 65 · үлкен 75 см"
-                    : "Ручная кладь 55 · средний 65 · большой 75 см"}
-                </dd>
-              </div>
             </dl>
+
+            <div className="mt-6 border-t border-line pt-6">
+              <p className="mb-4 text-[11px] text-muted">
+                {t("product.sizes")}
+              </p>
+              <SizeCompare sizes={uniqueSizes(product.variants, locale)} />
+            </div>
+
             <p className="mt-6 text-xs text-muted">
               {t("delivery.cargo")} · {t("delivery.avia")} ·{" "}
               {t("delivery.express")} — {t("payment.kaspiNote")}
@@ -269,6 +272,7 @@ export default async function ProductPage({
                     priceLabel={formatKzt(p.basePriceKzt)}
                     coverUrl={relCover}
                     hoverUrl={relHover}
+                    colors={uniqueColorDots(p.variants, locale)}
                   />
                 );
               })}
