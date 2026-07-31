@@ -87,6 +87,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Consistent keyboard focus ring across the whole site (ink, not browser blue) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* For controls that sit on dark (ink) surfaces — e.g. hero slide dots */
+.focus-ring-inverse:focus-visible {
+  outline-color: var(--paper);
+}
+
 body {
   background: var(--sand);
   color: var(--ink);
@@ -159,10 +175,26 @@ body {
   }
 }
 
+.dropdown-in {
+  animation: dropdownIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-kenburns,
   .marquee,
-  .fade-in {
+  .fade-in,
+  .dropdown-in {
     animation: none !important;
   }
 }

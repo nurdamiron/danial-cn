@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { ProductGallery } from "@/components/product/ProductGallery";
@@ -82,11 +82,16 @@ export function ProductConfigurator({
   );
   const [sizeKey, setSizeKey] = useState(sizesForColor[0]?.sizeKey ?? "");
 
-  // keep size valid when color changes
-  useEffect(() => {
-    const still = sizesForColor.find((s) => s.sizeKey === sizeKey);
-    if (!still) setSizeKey(sizesForColor[0]?.sizeKey ?? "");
-  }, [colorKey, sizesForColor, sizeKey]);
+  // Reset size when it becomes invalid for the newly selected color.
+  // Adjusting state during render (React's recommended pattern) instead of
+  // an effect avoids an extra render pass on every color change.
+  const [sizeKeyForColor, setSizeKeyForColor] = useState(colorKey);
+  if (colorKey !== sizeKeyForColor) {
+    setSizeKeyForColor(colorKey);
+    if (!sizesForColor.some((s) => s.sizeKey === sizeKey)) {
+      setSizeKey(sizesForColor[0]?.sizeKey ?? "");
+    }
+  }
 
   const selected =
     variants.find((v) => v.colorKey === colorKey && v.sizeKey === sizeKey) ??
@@ -188,7 +193,7 @@ export function ProductConfigurator({
                   onClick={() => setColorKey(c.colorKey)}
                   className={`group relative h-10 w-10 rounded-full border-2 transition ${
                     active
-                      ? "border-[#0a0a0a] scale-110"
+                      ? "border-[var(--ink)] scale-110"
                       : "border-transparent hover:border-black/20"
                   }`}
                   aria-label={locale === "kk" ? c.labelKk : c.labelRu}
@@ -221,8 +226,8 @@ export function ProductConfigurator({
                   disabled={s.stock <= 0}
                   className={`min-w-[7.5rem] border px-4 py-3 text-left transition ${
                     active
-                      ? "border-[#0a0a0a] bg-[#0a0a0a] text-white"
-                      : "border-line hover:border-[#0a0a0a]"
+                      ? "border-[var(--ink)] bg-[var(--ink)] text-white"
+                      : "border-line hover:border-[var(--ink)]"
                   } ${s.stock <= 0 ? "opacity-40" : ""}`}
                 >
                   <span className="block text-[11px] tracking-wide">

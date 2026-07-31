@@ -37,11 +37,11 @@ export function CartView({ waE164 }: { waE164: string }) {
 
   if (items.length === 0) {
     return (
-      <div className="py-20 text-center">
+      <div className="border border-line bg-paper py-20 text-center">
         <p className="text-sm text-muted">{t("cart.empty")}</p>
         <Link
           href="/catalog"
-          className="mt-6 inline-block text-sm tracking-wide underline"
+          className="mt-4 inline-block text-sm tracking-wide underline underline-offset-4 hover:opacity-60"
         >
           {t("cta.continueShopping")}
         </Link>
@@ -147,7 +147,7 @@ export function CartView({ waE164 }: { waE164: string }) {
         <label className="block text-xs tracking-wide">
           {t("cart.name")} *
           <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[#111]"
+            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
             value={meta.name}
             onChange={(e) => setMeta({ ...meta, name: e.target.value })}
           />
@@ -155,7 +155,7 @@ export function CartView({ waE164 }: { waE164: string }) {
         <label className="block text-xs tracking-wide">
           {t("cart.city")} *
           <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[#111]"
+            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
             value={meta.city}
             onChange={(e) => setMeta({ ...meta, city: e.target.value })}
           />
@@ -163,7 +163,7 @@ export function CartView({ waE164 }: { waE164: string }) {
         <label className="block text-xs tracking-wide">
           {t("cart.phone")}
           <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[#111]"
+            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
             value={meta.phone ?? ""}
             onChange={(e) => setMeta({ ...meta, phone: e.target.value })}
           />
@@ -187,7 +187,7 @@ export function CartView({ waE164 }: { waE164: string }) {
         <label className="block text-xs tracking-wide">
           {t("cart.comment")}
           <textarea
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[#111]"
+            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
             rows={3}
             value={meta.comment ?? ""}
             onChange={(e) => setMeta({ ...meta, comment: e.target.value })}

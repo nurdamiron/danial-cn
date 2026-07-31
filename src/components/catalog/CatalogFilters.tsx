@@ -215,7 +215,7 @@ export function CatalogFilters({
                 className={`group flex flex-col items-center gap-1.5 ${on ? "" : "opacity-80 hover:opacity-100"}`}
               >
                 <span
-                  className={`relative h-9 w-9 rounded-full border-2 transition ${
+                  className={`relative h-10 w-10 rounded-full border-2 transition ${
                     on ? "border-ink scale-110" : "border-transparent"
                   }`}
                 >

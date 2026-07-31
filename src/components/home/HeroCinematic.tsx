@@ -115,7 +115,7 @@ export function HeroCinematic({
                 type="button"
                 aria-label={`Slide ${i + 1}`}
                 onClick={() => setIndex(i)}
-                className={`h-1 rounded-full transition-all ${
+                className={`focus-ring-inverse h-1 rounded-full transition-all ${
                   i === index ? "w-8 bg-paper" : "w-3 bg-paper/35"
                 }`}
               />

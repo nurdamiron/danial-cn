@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
@@ -24,6 +25,19 @@ function brandForLocale(
   if (locale === "kk" && p.brandKk) return p.brandKk;
   if (p.brandRu) return p.brandRu;
   return p.brand;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+  return {
+    description: t("home.hero"),
+    alternates: { canonical: `/${locale}` },
+  };
 }
 
 export default async function HomePage({
@@ -138,7 +152,7 @@ export default async function HomePage({
                 {t("cta.viewCatalog")}
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-5">
               {featured.map((p) => {
                 const cover = pickCoverUrl(p.images);
                 if (!cover) return null;

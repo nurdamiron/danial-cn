@@ -3,7 +3,7 @@ import {
   getStaticFeatured,
   getStaticProductBySlug,
   getStaticProducts,
-  useStaticCatalog,
+  isStaticCatalog,
 } from "@/lib/static-catalog";
 
 export { canPublishProduct } from "@/lib/publish";
@@ -25,7 +25,7 @@ async function getPrisma() {
 }
 
 export async function assertPublishable(productId: string): Promise<void> {
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     throw new Error("Admin writes disabled in static/Vercel catalog mode");
   }
   const prisma = await getPrisma();
@@ -37,7 +37,7 @@ export async function assertPublishable(productId: string): Promise<void> {
 }
 
 export async function listActiveProducts(filters: ProductListFilters = {}) {
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     let products = getStaticProducts();
     if (filters.category) {
       products = products.filter((p) => p.category === filters.category);
@@ -188,7 +188,7 @@ async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
 }
 
 export async function getProductBySlug(slug: string) {
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     return getStaticProductBySlug(slug) as unknown as Awaited<
       ReturnType<typeof getProductBySlugFromDb>
     > | null;
@@ -212,7 +212,7 @@ async function getProductBySlugFromDb(slug: string) {
 }
 
 export async function listFeaturedProducts(limit = 8) {
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     return getStaticFeatured(limit) as unknown as Awaited<
       ReturnType<typeof listFeaturedProductsFromDb>
     >;

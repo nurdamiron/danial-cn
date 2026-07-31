@@ -2,13 +2,13 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { useStaticCatalog } from "@/lib/static-catalog";
+import { isStaticCatalog } from "@/lib/static-catalog";
 
 export default async function NewProductPage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     redirect("/admin");
   }
   return (

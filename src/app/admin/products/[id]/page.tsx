@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductImagesAdmin } from "@/components/admin/ProductImagesAdmin";
-import { useStaticCatalog } from "@/lib/static-catalog";
+import { isStaticCatalog } from "@/lib/static-catalog";
 
 export default async function EditProductPage({
   params,
@@ -12,7 +12,7 @@ export default async function EditProductPage({
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     redirect("/admin");
   }
   const { id } = await params;

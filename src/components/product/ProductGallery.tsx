@@ -32,7 +32,7 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
               onClick={() => setActive(i)}
               className={`relative h-20 w-16 shrink-0 overflow-hidden bg-white transition ${
                 i === active
-                  ? "ring-1 ring-[#0a0a0a] ring-offset-2"
+                  ? "ring-1 ring-[var(--ink)] ring-offset-2"
                   : "opacity-70 hover:opacity-100"
               }`}
             >

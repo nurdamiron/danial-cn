@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -14,6 +15,20 @@ import {
   pickCoverUrl,
 } from "@/lib/products";
 import { formatKzt } from "@/lib/money";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+  return {
+    title: t("catalog.title"),
+    description: t("home.hero"),
+    alternates: { canonical: `/${locale}/catalog` },
+  };
+}
 
 export default async function CatalogPage({
   params,

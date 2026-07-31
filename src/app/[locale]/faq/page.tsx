@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/ui/PageHeader";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+  return {
+    title: t("faq.title"),
+    alternates: { canonical: `/${locale}/faq` },
+  };
+}
 
 export default async function FaqPage({
   params,
@@ -8,7 +23,7 @@ export default async function FaqPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("faq");
+  const t = await getTranslations();
   const items = [
     ["q1", "a1"],
     ["q2", "a2"],
@@ -17,16 +32,20 @@ export default async function FaqPage({
   ] as const;
 
   return (
-    <Container className="max-w-2xl py-12">
-      <h1 className="mb-8 text-2xl font-light tracking-tight">{t("title")}</h1>
-      <div className="space-y-6">
-        {items.map(([q, a]) => (
-          <div key={q} className="border-b border-line pb-6">
-            <h2 className="text-sm">{t(q)}</h2>
-            <p className="mt-2 text-sm text-muted">{t(a)}</p>
-          </div>
-        ))}
-      </div>
-    </Container>
+    <div>
+      <PageHeader eyebrow={t("brand.name")} title={t("faq.title")} />
+      <Container className="max-w-2xl py-14 sm:py-20">
+        <div>
+          {items.map(([q, a]) => (
+            <div key={q} className="border-b border-line py-6 first:pt-0">
+              <h2 className="text-sm">{t(`faq.${q}`)}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {t(`faq.${a}`)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Container>
+    </div>
   );
 }

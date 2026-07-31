@@ -2,7 +2,7 @@ import staticProducts from "@/data/static-products.json";
 
 export type StaticProduct = (typeof staticProducts)[number];
 
-export function useStaticCatalog(): boolean {
+export function isStaticCatalog(): boolean {
   return (
     process.env.USE_STATIC_CATALOG === "1" ||
     process.env.VERCEL === "1" ||

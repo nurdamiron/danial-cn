@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans } from "next/font/google";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 // Noto Sans: full Kazakh Cyrillic (ә ғ қ ң ө ұ ү һ і) via cyrillic-ext
@@ -11,6 +12,7 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: {
     default: "Danial CN",
     template: "Danial CN | %s",

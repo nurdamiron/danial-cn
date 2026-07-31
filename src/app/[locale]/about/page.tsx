@@ -1,5 +1,21 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/ui/PageHeader";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+  return {
+    title: t("about.title"),
+    description: t("about.body"),
+    alternates: { canonical: `/${locale}/about` },
+  };
+}
 
 export default async function AboutPage({
   params,
@@ -8,12 +24,14 @@ export default async function AboutPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("about");
+  const t = await getTranslations();
 
   return (
-    <Container className="max-w-2xl py-12">
-      <h1 className="text-2xl font-light tracking-tight">{t("title")}</h1>
-      <p className="mt-6 text-sm leading-relaxed text-muted">{t("body")}</p>
-    </Container>
+    <div>
+      <PageHeader eyebrow={t("brand.name")} title={t("about.title")} />
+      <Container className="max-w-2xl py-14 sm:py-20">
+        <p className="text-sm leading-relaxed text-muted">{t("about.body")}</p>
+      </Container>
+    </div>
   );
 }

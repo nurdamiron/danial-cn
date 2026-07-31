@@ -1,6 +1,22 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
-import { useStaticCatalog } from "@/lib/static-catalog";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { isStaticCatalog } from "@/lib/static-catalog";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+  return {
+    title: t("delivery.title"),
+    description: t("delivery.subtitle"),
+    alternates: { canonical: `/${locale}/delivery` },
+  };
+}
 
 export default async function DeliveryPage({
   params,
@@ -22,7 +38,7 @@ export default async function DeliveryPage({
     kaspiNoteKk: string;
   } | null = null;
 
-  if (!useStaticCatalog()) {
+  if (!isStaticCatalog()) {
     try {
       const { prisma } = await import("@/lib/prisma");
       settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
@@ -61,21 +77,28 @@ export default async function DeliveryPage({
       : (settings?.kaspiNoteRu ?? t("payment.kaspiNote"));
 
   return (
-    <Container className="max-w-3xl py-12">
-      <h1 className="text-2xl font-light tracking-tight">{t("delivery.title")}</h1>
-      <p className="mt-3 text-sm text-muted">{t("delivery.subtitle")}</p>
-      <div className="mt-10 grid gap-4">
-        {blocks.map((b) => (
-          <div key={b.title} className="border border-line bg-white p-6">
-            <h2 className="text-sm tracking-widest uppercase">{b.title}</h2>
-            <p className="mt-3 text-sm text-muted">{b.body}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 border border-line bg-white p-6">
-        <h2 className="text-sm tracking-widest uppercase">Kaspi</h2>
-        <p className="mt-3 text-sm text-muted">{kaspi}</p>
-      </div>
-    </Container>
+    <div>
+      <PageHeader
+        eyebrow={t("brand.name")}
+        title={t("delivery.title")}
+        subtitle={t("delivery.subtitle")}
+      />
+      <Container className="max-w-3xl py-14 sm:py-20">
+        <div className="grid gap-4">
+          {blocks.map((b) => (
+            <div key={b.title} className="border border-line bg-white p-6">
+              <h2 className="text-sm tracking-widest uppercase">{b.title}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                {b.body}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 border border-line bg-white p-6">
+          <h2 className="text-sm tracking-widest uppercase">Kaspi</h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">{kaspi}</p>
+        </div>
+      </Container>
+    </div>
   );
 }

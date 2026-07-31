@@ -3,10 +3,19 @@ import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { CartCount } from "@/components/layout/CartCount";
+import { NavLinks } from "@/components/layout/NavLinks";
 import { SITE } from "@/lib/site";
 
 export async function SiteHeader() {
   const t = await getTranslations();
+
+  const navItems = [
+    { href: "/catalog", label: t("nav.catalog") },
+    { href: "/delivery", label: t("nav.delivery") },
+    { href: "/about", label: t("nav.about") },
+    { href: "/faq", label: t("nav.faq") },
+    { href: "/contacts", label: t("nav.contacts") },
+  ] as const;
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/80 bg-sand/90 backdrop-blur-md">
@@ -18,23 +27,7 @@ export async function SiteHeader() {
           {t("brand.name")}
         </Link>
 
-        <nav className="hidden items-center gap-7 text-[13px] md:flex">
-          <Link href="/catalog" className="transition hover:opacity-50">
-            {t("nav.catalog")}
-          </Link>
-          <Link href="/delivery" className="transition hover:opacity-50">
-            {t("nav.delivery")}
-          </Link>
-          <Link href="/about" className="transition hover:opacity-50">
-            {t("nav.about")}
-          </Link>
-          <Link href="/faq" className="transition hover:opacity-50">
-            {t("nav.faq")}
-          </Link>
-          <Link href="/contacts" className="transition hover:opacity-50">
-            {t("nav.contacts")}
-          </Link>
-        </nav>
+        <NavLinks items={navItems} />
 
         <div className="flex items-center gap-4 sm:gap-5">
           <LocaleSwitcher />

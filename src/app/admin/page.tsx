@@ -2,14 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatKzt } from "@/lib/money";
-import { useStaticCatalog } from "@/lib/static-catalog";
+import { isStaticCatalog } from "@/lib/static-catalog";
 
 export default async function AdminHomePage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 
-  if (useStaticCatalog()) {
+  if (isStaticCatalog()) {
     return (
       <div className="space-y-4">
         <h1 className="text-xl font-light">Admin</h1>
