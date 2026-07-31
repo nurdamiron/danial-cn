@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { WhatsAppIcon } from "@/components/ui/icons";
+import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
@@ -194,7 +195,10 @@ export function CartView({ waE164 }: { waE164: string }) {
             onChange={(e) => setMeta({ ...meta, comment: e.target.value })}
           />
         </label>
-        <p className="text-sm text-muted">{t("payment.kaspiNote")}</p>
+        <p className="flex flex-wrap items-center gap-1.5 text-sm text-muted">
+          <KaspiBadge />
+          {t("payment.kaspiNote")}
+        </p>
         <div className="flex items-center justify-between border-t border-line pt-4">
           <span className="text-sm">{t("cart.subtotal")}</span>
           <span className="text-lg">{formatKzt(cartSubtotal(items))}</span>

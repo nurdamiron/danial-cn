@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { isStaticCatalog } from "@/lib/static-catalog";
 
 export async function generateMetadata({
@@ -95,7 +96,7 @@ export default async function DeliveryPage({
           ))}
         </div>
         <div className="mt-6 border border-line bg-white p-6">
-          <h2 className="text-sm tracking-widest uppercase">Kaspi</h2>
+          <KaspiBadge className="text-sm" />
           <p className="mt-3 text-sm leading-relaxed text-muted">{kaspi}</p>
         </div>
       </Container>

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "@/components/product/ProductCard";
 import { HeroCinematic } from "@/components/home/HeroCinematic";
 import { TrustBar } from "@/components/home/TrustBar";
@@ -91,51 +92,54 @@ export default async function HomePage({
       <MarqueeBar />
 
       <section className="py-20 sm:py-24">
-        <Container>
-          <div className="mb-10 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] tracking-[0.2em] text-muted">
-                {t("home.shop")}
-              </p>
-              <h2 className="mt-2 text-2xl font-light tracking-tight sm:text-3xl">
-                {t("home.categories")}
-              </h2>
-            </div>
-            <Link
-              href="/catalog"
-              className="text-[11px] tracking-[0.08em] text-muted underline-offset-4 hover:underline"
-            >
-              {t("cta.viewCatalog")}
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-            {categories.map((c) => (
+        <Reveal>
+          <Container>
+            <div className="mb-10 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] tracking-[0.2em] text-muted">
+                  {t("home.shop")}
+                </p>
+                <h2 className="mt-2 text-2xl font-light tracking-tight sm:text-3xl">
+                  {t("home.categories")}
+                </h2>
+              </div>
               <Link
-                key={c.key}
-                href={c.href}
-                className="group relative aspect-[3/4] overflow-hidden border border-line bg-white"
+                href="/catalog"
+                className="text-[11px] tracking-[0.08em] text-muted underline-offset-4 hover:underline"
               >
-                <Image
-                  src={c.image}
-                  alt=""
-                  fill
-                  quality={95}
-                  className="object-contain p-6 transition duration-700 group-hover:scale-105"
-                  sizes="(max-width:768px) 50vw, 25vw"
-                />
-                <div className="absolute inset-x-0 bottom-0 border-t border-line bg-white/95 px-3 py-3 backdrop-blur-sm">
-                  <p className="text-center text-[11px] tracking-[0.12em]">
-                    {t(`category.${c.key}`)}
-                  </p>
-                </div>
+                {t("cta.viewCatalog")}
               </Link>
-            ))}
-          </div>
-        </Container>
+            </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+              {categories.map((c) => (
+                <Link
+                  key={c.key}
+                  href={c.href}
+                  className="group relative aspect-[3/4] overflow-hidden border border-line bg-white"
+                >
+                  <Image
+                    src={c.image}
+                    alt=""
+                    fill
+                    quality={95}
+                    className="object-contain p-6 transition duration-700 group-hover:scale-105"
+                    sizes="(max-width:768px) 50vw, 25vw"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 border-t border-line bg-white/95 px-3 py-3 backdrop-blur-sm">
+                    <p className="text-center text-[11px] tracking-[0.12em]">
+                      {t(`category.${c.key}`)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Container>
+        </Reveal>
       </section>
 
       {featured.length > 0 ? (
         <section className="border-t border-line bg-stone py-20 sm:py-24">
+          <Reveal>
           <Container>
             <div className="mb-10 flex items-end justify-between gap-4">
               <div>
@@ -177,6 +181,7 @@ export default async function HomePage({
               })}
             </div>
           </Container>
+          </Reveal>
         </section>
       ) : null}
 
@@ -184,6 +189,7 @@ export default async function HomePage({
       <OrderPath />
 
       <section className="border-t border-line bg-paper py-20 sm:py-24">
+        <Reveal>
         <Container className="grid gap-12 md:grid-cols-2 md:gap-16">
           <div>
             <p className="text-[10px] tracking-[0.2em] text-muted">
@@ -211,9 +217,11 @@ export default async function HomePage({
             )}
           </ul>
         </Container>
+        </Reveal>
       </section>
 
       <section className="bg-ink py-20 text-paper sm:py-24">
+        <Reveal>
         <Container className="text-center">
           <p className="text-[11px] tracking-[0.28em] text-paper/45">
             {t("brand.name")}
@@ -230,6 +238,7 @@ export default async function HomePage({
             </Link>
           </div>
         </Container>
+        </Reveal>
       </section>
     </div>
   );

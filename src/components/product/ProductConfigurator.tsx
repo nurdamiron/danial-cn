@@ -5,8 +5,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { ProductGallery } from "@/components/product/ProductGallery";
+import { QuickOrderModal } from "@/components/product/QuickOrderModal";
 import { addItem } from "@/store/cart";
-import type { CartItem } from "@/lib/cart-types";
+import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { buildSingleItemMessage, buildWaUrl } from "@/lib/whatsapp";
 import { formatKzt } from "@/lib/money";
 
@@ -76,6 +77,7 @@ export function ProductConfigurator({
     return [...map.values()];
   }, [variants]);
 
+  const [orderOpen, setOrderOpen] = useState(false);
   const [colorKey, setColorKey] = useState(colors[0]?.colorKey ?? "");
   const sizesForColor = useMemo(
     () => variants.filter((v) => v.colorKey === colorKey),
@@ -277,22 +279,32 @@ export function ProductConfigurator({
             type="button"
             variant="outline"
             className="gap-2"
-            onClick={() => {
-              const item = toCartItem(1);
-              if (!item) return;
-              const msg = buildSingleItemMessage({
-                locale,
-                item,
-                labels: labels(),
-              });
-              window.open(buildWaUrl(waE164, msg), "_blank");
-            }}
+            disabled={!selected || selected.stock <= 0}
+            onClick={() => setOrderOpen(true)}
           >
             <WhatsAppIcon />
             {t("cta.buyWhatsApp")}
           </Button>
         </div>
       </div>
+
+      <QuickOrderModal
+        open={orderOpen}
+        onClose={() => setOrderOpen(false)}
+        itemSummary={`${name} — ${colorLabel ?? ""} · ${sizeLabel ?? ""} · ${formatKzt(price)}`}
+        onConfirm={(meta: CartMeta) => {
+          const item = toCartItem(1);
+          if (!item) return;
+          const msg = buildSingleItemMessage({
+            locale,
+            item,
+            labels: labels(),
+            meta,
+          });
+          window.open(buildWaUrl(waE164, msg), "_blank");
+          setOrderOpen(false);
+        }}
+      />
     </div>
   );
 }

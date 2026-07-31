@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
+import { Reveal } from "@/components/ui/Reveal";
 
 export async function FeatureStrip() {
   const t = await getTranslations("home");
@@ -24,6 +25,7 @@ export async function FeatureStrip() {
 
   return (
     <section className="border-t border-line bg-paper py-20 sm:py-24">
+      <Reveal>
       <Container>
         <p className="text-[10px] tracking-[0.2em] text-muted">{t("materials")}</p>
         <h2 className="mt-3 max-w-xl text-2xl font-light tracking-tight sm:text-3xl">
@@ -48,6 +50,7 @@ export async function FeatureStrip() {
           ))}
         </div>
       </Container>
+      </Reveal>
     </section>
   );
 }

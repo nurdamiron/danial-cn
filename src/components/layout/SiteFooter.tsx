@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { SITE } from "@/lib/site";
 
 export async function SiteFooter() {
@@ -62,7 +63,10 @@ export async function SiteFooter() {
           <p className="text-[10px] tracking-[0.16em] text-muted">
             {t("footer.order")}
           </p>
-          <p className="leading-relaxed">{t("payment.kaspiNote")}</p>
+          <p className="flex flex-wrap items-center gap-1.5 leading-relaxed">
+            <KaspiBadge />
+            {t("payment.kaspiNote")}
+          </p>
           <p className="leading-relaxed">
             {t("delivery.cargo")} · {t("delivery.avia")} · {t("delivery.express")}
           </p>

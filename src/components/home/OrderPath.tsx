@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
+import { Reveal } from "@/components/ui/Reveal";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 
@@ -14,6 +15,7 @@ export async function OrderPath() {
 
   return (
     <section className="border-t border-line bg-sand py-20 sm:py-24">
+      <Reveal>
       <Container>
         <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -49,6 +51,7 @@ export async function OrderPath() {
           ))}
         </ol>
       </Container>
+      </Reveal>
     </section>
   );
 }
