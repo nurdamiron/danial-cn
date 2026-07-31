@@ -7,6 +7,6 @@ export const config = {
   matcher: [
     "/",
     "/(ru|kk)/:path*",
-    "/((?!api|admin|_next|_vercel|uploads|.*\\..*).*)",
+    "/((?!api|admin|_next|_vercel|uploads|icon|apple-icon|.*\\..*).*)",
   ],
 };

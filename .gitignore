@@ -46,6 +46,9 @@ prisma/dev.db-journal
 # vercel
 .vercel
 
+# local Playwright MCP debug output
+.playwright-mcp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
