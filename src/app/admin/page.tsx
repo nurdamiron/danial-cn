@@ -1,22 +1,22 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { formatKzt } from "@/lib/money";
+import { ExportCatalogButton } from "@/components/admin/ExportCatalogButton";
+import { getCurrentUser } from "@/lib/auth";
 import { isStaticCatalog } from "@/lib/static-catalog";
 
 export default async function AdminHomePage() {
-  if (!(await isAdminAuthenticated())) {
-    redirect("/admin/login");
-  }
+  const user = await getCurrentUser();
+  if (!user) redirect("/admin/login");
+  if (user.role !== "ADMIN") redirect("/admin/account");
 
   if (isStaticCatalog()) {
     return (
       <div className="space-y-4">
-        <h1 className="text-xl font-light">Admin</h1>
-        <p className="text-sm text-[#666]">
-          На Vercel сейчас включён static-каталог (без записи в БД). Управление
-          товарами и загрузка фото — локально: <code>npm run dev</code>, затем
-          пересборка и деплой. Публичный магазин работает.
+        <h1 className="text-xl font-light">Админ</h1>
+        <p className="text-sm text-muted">
+          На Vercel сейчас static-каталог (без записи в БД). Управление
+          товарами, пользователями и регистрация — локально:{" "}
+          <code className="text-ink">npm run dev</code>, затем деплой.
         </p>
         <Link href="/ru" className="text-sm underline">
           Открыть сайт
@@ -26,74 +26,105 @@ export default async function AdminHomePage() {
   }
 
   const { prisma } = await import("@/lib/prisma");
-  const products = await prisma.product.findMany({
-    include: {
-      images: { orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }] },
-      _count: { select: { images: true } },
+  const [productCount, activeCount, userCount, draftCount] = await Promise.all([
+    prisma.product.count(),
+    prisma.product.count({ where: { status: "active" } }),
+    prisma.user.count(),
+    prisma.product.count({ where: { status: "draft" } }),
+  ]);
+
+  const cards = [
+    { label: "Товары", value: productCount, href: "/admin/products" },
+    { label: "Активные", value: activeCount, href: "/admin/products" },
+    { label: "Черновики", value: draftCount, href: "/admin/products" },
+    { label: "Пользователи", value: userCount, href: "/admin/users" },
+  ];
+
+  const crudLinks = [
+    {
+      title: "Products",
+      desc: "C create · R list/filter · U status/fields · D delete + variants + photos",
+      href: "/admin/products",
     },
-    orderBy: { updatedAt: "desc" },
-  });
+    {
+      title: "Users",
+      desc: "C create · R list · U name/phone/role/password · D delete",
+      href: "/admin/users",
+    },
+    {
+      title: "Settings",
+      desc: "R read · U update WhatsApp, delivery, Kaspi texts",
+      href: "/admin/settings",
+    },
+  ];
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-light">Products</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-xl font-light sm:text-2xl">Обзор</h1>
+        <p className="mt-1 text-sm text-muted">
+          Здравствуйте, {user.name}. Вы администратор.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {cards.map((c) => (
+          <Link
+            key={c.label}
+            href={c.href}
+            className="border border-line bg-paper p-4 transition hover:border-ink"
+          >
+            <div className="text-2xl font-light">{c.value}</div>
+            <div className="mt-1 text-xs tracking-wide text-muted uppercase">
+              {c.label}
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {crudLinks.map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            className="border border-line bg-paper p-4 transition hover:border-ink"
+          >
+            <div className="text-sm font-medium">{l.title}</div>
+            <p className="mt-2 text-xs leading-relaxed text-muted">{l.desc}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link
           href="/admin/products/new"
-          className="bg-[#111] px-4 py-2 text-xs text-white"
+          className="inline-flex h-11 items-center justify-center bg-ink px-6 text-sm text-paper"
         >
-          + New product
+          + Create product
+        </Link>
+        <Link
+          href="/admin/users"
+          className="inline-flex h-11 items-center justify-center border border-ink px-6 text-sm"
+        >
+          Users CRUD
+        </Link>
+        <Link
+          href="/admin/settings"
+          className="inline-flex h-11 items-center justify-center border border-line px-6 text-sm"
+        >
+          Settings
         </Link>
       </div>
-      <div className="overflow-x-auto border border-[#e5e5e5] bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-[#e5e5e5] text-xs tracking-wide text-[#666]">
-            <tr>
-              <th className="p-3">Photo</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Images</th>
-              <th className="p-3">Price</th>
-              <th className="p-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.id} className="border-b border-[#e5e5e5]">
-                <td className="p-3">
-                  {p.images[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.images[0].url}
-                      alt=""
-                      className="h-12 w-10 object-contain"
-                    />
-                  ) : (
-                    <span className="text-xs text-[#666]">no photo</span>
-                  )}
-                </td>
-                <td className="p-3">
-                  <div className="text-xs text-[#666]">{p.brand}</div>
-                  {p.nameRu}
-                </td>
-                <td className="p-3 text-xs uppercase">{p.status}</td>
-                <td className="p-3">{p._count.images}</td>
-                <td className="p-3">{formatKzt(p.basePriceKzt)}</td>
-                <td className="p-3 text-right">
-                  <Link
-                    href={`/admin/products/${p.id}`}
-                    className="text-xs underline"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {products.length === 0 ? (
-          <p className="p-8 text-center text-sm text-[#666]">No products yet</p>
-        ) : null}
+
+      <div className="border border-line bg-paper p-4 sm:p-6">
+        <h2 className="text-sm font-medium">Публикация на Vercel</h2>
+        <p className="mt-1 text-xs text-muted">
+          Локально правите БД → Export static JSON → commit + deploy. На Vercel
+          витрина читает static JSON.
+        </p>
+        <div className="mt-4">
+          <ExportCatalogButton />
+        </div>
       </div>
     </div>
   );

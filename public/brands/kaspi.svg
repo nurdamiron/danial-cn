@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 48" role="img" aria-label="Kaspi">
+  <!-- Payment method badge styled after Kaspi.kz brand red -->
+  <rect width="168" height="48" rx="8" fill="#F14635"/>
+  <text
+    x="84"
+    y="32"
+    text-anchor="middle"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-size="24"
+    font-weight="800"
+    fill="#FFFFFF"
+    letter-spacing="-0.6"
+  >Kaspi</text>
+</svg>

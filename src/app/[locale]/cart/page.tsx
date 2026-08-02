@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CartView } from "@/components/cart/CartView";
+import { getSiteConfig } from "@/lib/settings";
 
 export async function generateMetadata({
   params,
@@ -25,13 +26,13 @@ export default async function CartPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const { SITE } = await import("@/lib/site");
+  const config = await getSiteConfig();
 
   return (
     <div>
       <PageHeader eyebrow={t("brand.name")} title={t("cart.title")} />
       <Container className="py-14 sm:py-20">
-        <CartView waE164={SITE.whatsappE164} />
+        <CartView waE164={config.whatsappE164} />
       </Container>
     </div>
   );

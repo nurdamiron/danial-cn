@@ -1,4 +1,7 @@
-/** Public contact defaults — override via env in production */
+/**
+ * Sync env defaults. Prefer `getSiteConfig()` from `@/lib/settings`
+ * in server components so admin SiteSettings apply.
+ */
 export const SITE = {
   whatsappE164:
     process.env.NEXT_PUBLIC_WHATSAPP_E164?.replace(/\D/g, "") || "77066316449",

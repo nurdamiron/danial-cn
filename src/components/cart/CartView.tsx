@@ -16,6 +16,8 @@ import {
   removeItem,
   updateQty,
 } from "@/store/cart";
+import { saveOrder } from "@/store/orders";
+import { loadProfile, saveProfile } from "@/store/profile";
 
 
 export function CartView({ waE164 }: { waE164: string }) {
@@ -33,6 +35,13 @@ export function CartView({ waE164 }: { waE164: string }) {
   useEffect(() => {
     const sync = () => setItems(loadCart());
     sync();
+    const p = loadProfile();
+    setMeta((m) => ({
+      ...m,
+      name: m.name || p.name,
+      phone: m.phone || p.phone,
+      city: m.city || p.city,
+    }));
     window.addEventListener("danial-cart-updated", sync);
     return () => window.removeEventListener("danial-cart-updated", sync);
   }, []);
@@ -80,6 +89,22 @@ export function CartView({ waE164 }: { waE164: string }) {
           total: t("cart.subtotal"),
         },
       },
+    });
+    const cleanMeta = {
+      ...meta,
+      name: meta.name.trim(),
+      city: meta.city.trim(),
+    };
+    saveProfile({
+      name: cleanMeta.name,
+      phone: cleanMeta.phone ?? "",
+      city: cleanMeta.city,
+    });
+    saveOrder({
+      status: "sent_whatsapp",
+      meta: cleanMeta,
+      items: [...items],
+      totalKzt: cartSubtotal(items),
     });
     window.open(buildWaUrl(waE164, msg), "_blank");
   }

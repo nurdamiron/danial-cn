@@ -1,6 +1,8 @@
 import staticProducts from "@/data/static-products.json";
+import staticSettings from "@/data/static-settings.json";
 
 export type StaticProduct = (typeof staticProducts)[number];
+export type StaticSettings = typeof staticSettings;
 
 export function isStaticCatalog(): boolean {
   return (
@@ -10,8 +12,13 @@ export function isStaticCatalog(): boolean {
   );
 }
 
+/** @deprecated use isStaticCatalog */
+export const useStaticCatalog = isStaticCatalog;
+
 export function getStaticProducts(): StaticProduct[] {
-  return staticProducts.filter((p) => p.status === "active" && p.images.length > 0);
+  return staticProducts.filter(
+    (p) => p.status === "active" && p.images.length > 0,
+  );
 }
 
 export function getStaticProductBySlug(slug: string): StaticProduct | null {
@@ -21,4 +28,8 @@ export function getStaticProductBySlug(slug: string): StaticProduct | null {
 export function getStaticFeatured(limit = 8): StaticProduct[] {
   const featured = getStaticProducts().filter((p) => p.featured);
   return (featured.length ? featured : getStaticProducts()).slice(0, limit);
+}
+
+export function getStaticSettings(): StaticSettings {
+  return staticSettings;
 }

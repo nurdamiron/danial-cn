@@ -44,12 +44,55 @@ async function ensurePlaceholder(
   return `/uploads/products/${productId}/${filename}`;
 }
 
+async function ensureAdmin() {
+  const { hashPassword } = await import("../src/lib/password");
+  const email = (
+    process.env.ADMIN_EMAIL || "admin@danial.cn"
+  ).trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "danial-admin";
+  const name = process.env.ADMIN_NAME || "Admin";
+
+  const existingAdmin = await prisma.user.findFirst({
+    where: { role: "ADMIN" },
+  });
+  if (existingAdmin) {
+    console.log("admin exists:", existingAdmin.email);
+    return;
+  }
+
+  const byEmail = await prisma.user.findUnique({ where: { email } });
+  if (byEmail) {
+    await prisma.user.update({
+      where: { id: byEmail.id },
+      data: { role: "ADMIN" },
+    });
+    console.log("promoted to admin:", email);
+    return;
+  }
+
+  const passwordHash = await hashPassword(password);
+  await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      name,
+      phone: "",
+      role: "ADMIN",
+    },
+  });
+  console.log("seeded admin:", email);
+}
+
 async function main() {
+  const wa =
+    process.env.NEXT_PUBLIC_WHATSAPP_E164?.replace(/\D/g, "") || "77066316449";
   await prisma.siteSettings.upsert({
     where: { id: 1 },
-    update: {},
-    create: { id: 1 },
+    update: { whatsappE164: wa },
+    create: { id: 1, whatsappE164: wa },
   });
+
+  await ensureAdmin();
 
   const samples = [
     {

@@ -1,23 +1,24 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { redirect } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { getCurrentUser } from "@/lib/auth";
 import { isStaticCatalog } from "@/lib/static-catalog";
 
 export default async function NewProductPage() {
-  if (!(await isAdminAuthenticated())) {
-    redirect("/admin/login");
-  }
-  if (isStaticCatalog()) {
-    redirect("/admin");
-  }
+  const user = await getCurrentUser();
+  if (!user) redirect("/admin/login");
+  if (user.role !== "ADMIN") redirect("/admin/account");
+  if (isStaticCatalog()) redirect("/admin");
+
   return (
     <div>
-      <h1 className="mb-6 text-xl font-light">New product</h1>
+      <div className="mb-6 flex items-center gap-4">
+        <Link href="/admin/products" className="text-xs text-muted underline">
+          ← К списку
+        </Link>
+        <h1 className="text-xl font-light">Новый товар</h1>
+      </div>
       <ProductForm />
-      <p className="mt-4 text-xs text-[#666]">
-        <Link href="/admin">← Back</Link>
-      </p>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { getSiteConfig } from "@/lib/settings";
 
 export async function generateMetadata({
   params,
@@ -27,55 +27,32 @@ export default async function DeliveryPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-
-  let settings: {
-    deliveryCargoRu: string;
-    deliveryCargoKk: string;
-    deliveryAviaRu: string;
-    deliveryAviaKk: string;
-    deliveryExpressRu: string;
-    deliveryExpressKk: string;
-    kaspiNoteRu: string;
-    kaspiNoteKk: string;
-  } | null = null;
-
-  if (!isStaticCatalog()) {
-    try {
-      const { prisma } = await import("@/lib/prisma");
-      settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
-    } catch {
-      settings = null;
-    }
-  }
+  const settings = await getSiteConfig();
 
   const blocks = [
     {
       title: t("delivery.cargo"),
       body:
         locale === "kk"
-          ? (settings?.deliveryCargoKk ?? t("delivery.subtitle"))
-          : (settings?.deliveryCargoRu ?? t("delivery.subtitle")),
+          ? settings.deliveryCargoKk
+          : settings.deliveryCargoRu,
     },
     {
       title: t("delivery.avia"),
       body:
-        locale === "kk"
-          ? (settings?.deliveryAviaKk ?? "")
-          : (settings?.deliveryAviaRu ?? ""),
+        locale === "kk" ? settings.deliveryAviaKk : settings.deliveryAviaRu,
     },
     {
       title: t("delivery.express"),
       body:
         locale === "kk"
-          ? (settings?.deliveryExpressKk ?? "")
-          : (settings?.deliveryExpressRu ?? ""),
+          ? settings.deliveryExpressKk
+          : settings.deliveryExpressRu,
     },
   ];
 
   const kaspi =
-    locale === "kk"
-      ? (settings?.kaspiNoteKk ?? t("payment.kaspiNote"))
-      : (settings?.kaspiNoteRu ?? t("payment.kaspiNote"));
+    locale === "kk" ? settings.kaspiNoteKk : settings.kaspiNoteRu;
 
   return (
     <div>

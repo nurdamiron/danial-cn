@@ -61,23 +61,12 @@ export default async function ProductPage({
   const cover = pickCoverUrl(product.images);
   if (!cover) notFound();
 
-  const wa = SITE.whatsappE164;
-
-  let disclaimer: string | null = null;
-  if (!isStaticCatalog()) {
-    try {
-      const { prisma } = await import("@/lib/prisma");
-      const settings = await prisma.siteSettings.findUnique({
-        where: { id: 1 },
-      });
-      disclaimer =
-        (locale === "kk" ? settings?.disclaimerKk : settings?.disclaimerRu) ??
-        null;
-    } catch {
-      disclaimer = null;
-    }
-  }
-  const disclaimerText = disclaimer ?? t("product.replicaNotice");
+  const { getSiteConfig } = await import("@/lib/settings");
+  const config = await getSiteConfig();
+  const wa = config.whatsappE164;
+  const disclaimerText =
+    (locale === "kk" ? config.disclaimerKk : config.disclaimerRu) ||
+    t("product.replicaNotice");
 
   const related = (
     await listActiveProducts({ category: product.category })

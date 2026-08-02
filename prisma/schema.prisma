@@ -44,6 +44,7 @@ model ProductVariant {
   colorKey     String
   colorLabelRu String
   colorLabelKk String
+  colorHex     String         @default("#888888")
   sizeKey      String
   sizeLabelRu  String
   sizeLabelKk  String
@@ -58,6 +59,8 @@ model ProductImage {
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantId String?
   variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  /// Links gallery photo to a color swatch (e.g. black, silver)
+  colorKey  String?
   url       String
   sortOrder Int             @default(0)
   isCover   Boolean         @default(false)
@@ -79,4 +82,16 @@ model SiteSettings {
   kaspiNoteKk       String @default("Тапсырыс WhatsApp-та расталғаннан кейін Kaspi арқылы төлем")
   disclaimerRu      String @default("Все товары — копии 1:1 (реплики), не оригинальные бренды.")
   disclaimerKk      String @default("Барлық тауарлар — 1:1 көшірмелер (реплика), түпнұсқа бренд емес.")
+}
+
+/// role: USER (default) | ADMIN (exactly one in the system)
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String   @default("")
+  role         String   @default("USER")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

@@ -1,12 +1,101 @@
 import createMiddleware from "next-intl/middleware";
+import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
+import {
+  getAdminOrigin,
+  getStoreOrigin,
+  isAdminHost,
+  isAdminPath,
+} from "./lib/hosts";
 
-export default createMiddleware(routing);
+const intlMiddleware = createMiddleware(routing);
+
+function isAssetPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/_vercel") ||
+    pathname.startsWith("/uploads") ||
+    pathname.startsWith("/products") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/icon" ||
+    pathname === "/apple-icon" ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    /\.[a-zA-Z0-9]+$/.test(pathname)
+  );
+}
+
+export default function middleware(req: NextRequest) {
+  const host = req.headers.get("host");
+  const { pathname } = req.nextUrl;
+  const adminMode = isAdminHost(host);
+
+  // ——— Admin host (admin-danial-cn.vercel.app / admin.localhost) ———
+  if (adminMode) {
+    if (isAssetPath(pathname)) {
+      return NextResponse.next();
+    }
+
+    // / → /admin
+    if (pathname === "/" || pathname === "") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    // Allow admin + auth APIs only
+    if (isAdminPath(pathname)) {
+      return NextResponse.next();
+    }
+
+    // Storefront locale routes on admin host → bounce to admin home
+    return NextResponse.redirect(new URL("/admin", req.url));
+  }
+
+  // ——— Store host (danial-cn.vercel.app / localhost) ———
+  // In production, send /admin* to the admin origin when configured.
+  const adminOrigin = getAdminOrigin();
+  const storeOrigin = getStoreOrigin();
+  const splitEnabled =
+    process.env.ADMIN_HOST_SPLIT === "1" ||
+    process.env.NEXT_PUBLIC_ADMIN_HOST_SPLIT === "1" ||
+    // auto-enable when admin URL host differs from store
+    (() => {
+      try {
+        return new URL(adminOrigin).host !== new URL(storeOrigin).host;
+      } catch {
+        return false;
+      }
+    })();
+
+  // Only admin UI/API — keep /api/auth on the store for personal cabinet login
+  if (
+    splitEnabled &&
+    process.env.NODE_ENV === "production" &&
+    (pathname === "/admin" ||
+      pathname.startsWith("/admin/") ||
+      pathname.startsWith("/api/admin"))
+  ) {
+    // Keep local same-origin if admin origin points at store (misconfig)
+    try {
+      const target = new URL(pathname + req.nextUrl.search, adminOrigin);
+      if (target.host !== host) {
+        return NextResponse.redirect(target);
+      }
+    } catch {
+      // fall through
+    }
+  }
+
+  // next-intl for locale-prefixed storefront
+  return intlMiddleware(req);
+}
 
 export const config = {
   matcher: [
-    "/",
-    "/(ru|kk)/:path*",
-    "/((?!api|admin|_next|_vercel|uploads|icon|apple-icon|.*\\..*).*)",
+    /*
+     * Match all pathnames except static files already excluded loosely.
+     * Admin host needs to catch `/` and `/admin` as well.
+     */
+    "/((?!_next|_vercel|.*\\..*).*)",
   ],
 };

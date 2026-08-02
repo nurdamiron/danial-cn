@@ -3,10 +3,13 @@ import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
-import { SITE } from "@/lib/site";
+import { getSiteConfig, siteUrls } from "@/lib/settings";
 
 export async function SiteFooter() {
   const t = await getTranslations();
+  const config = await getSiteConfig();
+  const urls = siteUrls(config);
+  const kaspi = config.kaspiNoteRu;
 
   return (
     <footer className="mt-auto border-t border-line bg-white">
@@ -20,22 +23,22 @@ export async function SiteFooter() {
           </p>
           <div className="mt-6 space-y-2 text-sm">
             <a
-              href={SITE.whatsappUrl}
+              href={urls.whatsappUrl}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 text-ink hover:opacity-60"
             >
               <WhatsAppIcon className="h-4 w-4 shrink-0" />
-              {t("contacts.phoneLabel")}: {SITE.whatsappDisplay}
+              {t("contacts.phoneLabel")}: {config.whatsappDisplay}
             </a>
             <a
-              href={SITE.instagramUrl}
+              href={urls.instagramUrl}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 text-ink hover:opacity-60"
             >
               <InstagramIcon className="h-4 w-4 shrink-0" />
-              {t("contacts.instagramLabel")}: @{SITE.instagram}
+              {t("contacts.instagramLabel")}: @{config.instagram}
             </a>
           </div>
         </div>
@@ -46,14 +49,20 @@ export async function SiteFooter() {
           <Link href="/catalog" className="hover:opacity-60">
             {t("nav.catalog")}
           </Link>
+          <Link href="/cart" className="hover:opacity-60">
+            {t("nav.cart")}
+          </Link>
+          <Link href="/profile" className="hover:opacity-60">
+            {t("nav.profile")}
+          </Link>
+          <Link href="/orders" className="hover:opacity-60">
+            {t("nav.orders")}
+          </Link>
+          <Link href="/favorites" className="hover:opacity-60">
+            {t("nav.favorites")}
+          </Link>
           <Link href="/delivery" className="hover:opacity-60">
             {t("nav.delivery")}
-          </Link>
-          <Link href="/about" className="hover:opacity-60">
-            {t("nav.about")}
-          </Link>
-          <Link href="/faq" className="hover:opacity-60">
-            {t("nav.faq")}
           </Link>
           <Link href="/contacts" className="hover:opacity-60">
             {t("nav.contacts")}
@@ -65,10 +74,11 @@ export async function SiteFooter() {
           </p>
           <p className="flex flex-wrap items-center gap-1.5 leading-relaxed">
             <KaspiBadge />
-            {t("payment.kaspiNote")}
+            {kaspi || t("payment.kaspiNote")}
           </p>
           <p className="leading-relaxed">
-            {t("delivery.cargo")} · {t("delivery.avia")} · {t("delivery.express")}
+            {t("delivery.cargo")} · {t("delivery.avia")} ·{" "}
+            {t("delivery.express")}
           </p>
         </div>
       </Container>

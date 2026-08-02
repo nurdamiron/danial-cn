@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { processAndSaveImage, validateImageFile } from "@/lib/images";
 
 export async function POST(
@@ -18,6 +18,12 @@ export async function POST(
   }
 
   const form = await req.formData();
+  const colorKeyRaw = form.get("colorKey");
+  const colorKey =
+    typeof colorKeyRaw === "string" && colorKeyRaw.trim()
+      ? colorKeyRaw.trim().toLowerCase()
+      : null;
+
   const files = form.getAll("files").filter((f): f is File => f instanceof File);
   if (!files.length) {
     return NextResponse.json({ error: "No files" }, { status: 400 });
@@ -52,6 +58,7 @@ export async function POST(
         height: saved.height,
         sortOrder: existingCount + i,
         isCover: existingCount === 0 && i === 0,
+        colorKey,
       },
     });
     created.push(image);
@@ -76,6 +83,8 @@ export async function PATCH(
   const body = (await req.json()) as {
     coverId?: string;
     orderedIds?: string[];
+    imageId?: string;
+    colorKey?: string | null;
   };
 
   if (body.coverId) {
@@ -100,6 +109,17 @@ export async function PATCH(
         }),
       ),
     );
+  }
+
+  if (body.imageId && "colorKey" in body) {
+    const colorKey =
+      body.colorKey && body.colorKey.trim()
+        ? body.colorKey.trim().toLowerCase()
+        : null;
+    await prisma.productImage.update({
+      where: { id: body.imageId },
+      data: { colorKey },
+    });
   }
 
   const images = await prisma.productImage.findMany({

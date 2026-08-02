@@ -10,6 +10,7 @@ import { addItem } from "@/store/cart";
 import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { buildSingleItemMessage, buildWaUrl } from "@/lib/whatsapp";
 import { formatKzt } from "@/lib/money";
+import { FavoriteButton } from "@/components/product/FavoriteButton";
 
 export type ConfigImage = {
   id: string;
@@ -263,7 +264,7 @@ export function ProductConfigurator({
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Button
             type="button"
             className="sm:min-w-[10rem]"
@@ -285,6 +286,16 @@ export function ProductConfigurator({
             <WhatsAppIcon />
             {t("cta.buyWhatsApp")}
           </Button>
+          <FavoriteButton
+            item={{
+              productId: product.id,
+              slug: product.slug,
+              brand: product.brand,
+              name,
+              priceLabel: formatKzt(product.basePriceKzt),
+              coverUrl: activeCover,
+            }}
+          />
         </div>
       </div>
 

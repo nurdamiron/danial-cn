@@ -95,8 +95,24 @@ export async function listActiveProducts(filters: ProductListFilters = {}) {
   return listActiveProductsFromDb(filters);
 }
 
-export function getCatalogFilterOptions(locale: string) {
-  const products = getStaticProducts();
+type FilterProduct = {
+  brand: string;
+  brandRu?: string;
+  brandKk?: string;
+  basePriceKzt: number;
+  variants: {
+    colorKey: string;
+    colorLabelRu: string;
+    colorLabelKk: string;
+    colorHex?: string | null;
+    sizeKey: string;
+    sizeLabelRu: string;
+    sizeLabelKk: string;
+    priceKzt: number | null;
+  }[];
+};
+
+function buildFilterOptions(locale: string, products: FilterProduct[]) {
   const brands = new Map<string, string>();
   const colors = new Map<
     string,
@@ -108,9 +124,9 @@ export function getCatalogFilterOptions(locale: string) {
 
   for (const p of products) {
     const brandLabel =
-      locale === "kk" && (p as { brandKk?: string }).brandKk
-        ? (p as { brandKk?: string }).brandKk!
-        : (p as { brandRu?: string }).brandRu || p.brand;
+      locale === "kk" && p.brandKk
+        ? p.brandKk
+        : p.brandRu || p.brand;
     brands.set(p.brand, brandLabel);
 
     for (const v of p.variants) {
@@ -122,7 +138,7 @@ export function getCatalogFilterOptions(locale: string) {
         colors.set(v.colorKey, {
           key: v.colorKey,
           label: locale === "kk" ? v.colorLabelKk : v.colorLabelRu,
-          hex: (v as { colorHex?: string }).colorHex || "#ccc",
+          hex: v.colorHex || "#ccc",
         });
       }
       if (!sizes.has(v.sizeKey)) {
@@ -144,6 +160,20 @@ export function getCatalogFilterOptions(locale: string) {
     minPrice: Number.isFinite(minPrice) ? minPrice : 0,
     maxPrice: maxPrice || 0,
   };
+}
+
+/** Sync helper for static-only contexts */
+export function getCatalogFilterOptions(locale: string) {
+  return buildFilterOptions(locale, getStaticProducts() as FilterProduct[]);
+}
+
+/** Prefer this: works with DB locally and static on Vercel */
+export async function getCatalogFilterOptionsAsync(locale: string) {
+  if (isStaticCatalog()) {
+    return buildFilterOptions(locale, getStaticProducts() as FilterProduct[]);
+  }
+  const products = await listActiveProductsFromDb({});
+  return buildFilterOptions(locale, products as FilterProduct[]);
 }
 
 async function listActiveProductsFromDb(filters: ProductListFilters = {}) {

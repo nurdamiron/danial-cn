@@ -2,18 +2,26 @@
 
 import { useState } from "react";
 
-type Img = { id: string; url: string; isCover: boolean };
+type Img = {
+  id: string;
+  url: string;
+  isCover: boolean;
+  colorKey?: string | null;
+};
 
 export function ProductImagesAdmin({
   productId,
   initialImages,
+  colorKeys = [],
 }: {
   productId: string;
   initialImages: Img[];
+  colorKeys?: string[];
 }) {
   const [images, setImages] = useState<Img[]>(initialImages);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [uploadColor, setUploadColor] = useState(colorKeys[0] ?? "");
 
   async function onUpload(files: FileList | null) {
     if (!files?.length) return;
@@ -22,13 +30,14 @@ export function ProductImagesAdmin({
     try {
       const form = new FormData();
       Array.from(files).forEach((f) => form.append("files", f));
+      if (uploadColor) form.append("colorKey", uploadColor);
       const res = await fetch(`/api/admin/products/${productId}/images`, {
         method: "POST",
         body: form,
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Upload failed");
+        setError(data.error ?? "Ошибка загрузки");
         return;
       }
       setImages(data.images);
@@ -47,8 +56,21 @@ export function ProductImagesAdmin({
     if (res.ok) setImages(data.images);
   }
 
+  async function setColorKey(imageId: string, colorKey: string) {
+    const res = await fetch(`/api/admin/products/${productId}/images`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        imageId,
+        colorKey: colorKey || null,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) setImages(data.images);
+  }
+
   async function remove(imageId: string) {
-    if (!confirm("Delete photo?")) return;
+    if (!confirm("Удалить фото?")) return;
     const res = await fetch(
       `/api/admin/products/${productId}/images/${imageId}`,
       { method: "DELETE" },
@@ -57,40 +79,114 @@ export function ProductImagesAdmin({
     if (res.ok) setImages(data.images);
   }
 
+  async function move(imageId: string, dir: -1 | 1) {
+    const idx = images.findIndex((i) => i.id === imageId);
+    if (idx < 0) return;
+    const next = idx + dir;
+    if (next < 0 || next >= images.length) return;
+    const ordered = [...images];
+    const [item] = ordered.splice(idx, 1);
+    ordered.splice(next, 0, item);
+    setImages(ordered);
+    const res = await fetch(`/api/admin/products/${productId}/images`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderedIds: ordered.map((i) => i.id) }),
+    });
+    const data = await res.json();
+    if (res.ok) setImages(data.images);
+  }
+
   return (
-    <div className="space-y-4 border border-[#e5e5e5] bg-white p-6">
-      <p className="text-xs text-[#666]">
-        Upload multiple photos (JPEG/PNG/WebP, max 8MB). Cover is required
-        before publishing.
+    <div className="space-y-4 border border-line bg-paper p-4 sm:p-6">
+      <p className="text-xs text-muted">
+        C: загрузка · R: галерея · U: обложка / цвет / порядок · D: удалить.
+        Привязка к colorKey меняет фото при выборе цвета на витрине.
       </p>
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        multiple
-        disabled={busy}
-        onChange={(e) => onUpload(e.target.files)}
-      />
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+        <label className="block flex-1 text-xs">
+          Цвет при загрузке
+          <select
+            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            value={uploadColor}
+            onChange={(e) => setUploadColor(e.target.value)}
+          >
+            <option value="">Без привязки</option>
+            {colorKeys.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </select>
+        </label>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          disabled={busy}
+          className="block w-full text-xs sm:w-auto"
+          onChange={(e) => onUpload(e.target.files)}
+        />
+      </div>
+
+      {busy ? <p className="text-xs text-muted">Загрузка…</p> : null}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {images.map((img) => (
-          <div key={img.id} className="border border-[#e5e5e5] p-2">
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {images.map((img, i) => (
+          <div key={img.id} className="border border-line p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={img.url} alt="" className="h-32 w-full object-contain" />
+            <label className="mt-2 block text-[10px] text-muted">
+              colorKey
+              <select
+                className="mt-0.5 w-full border border-line px-1 py-1 text-xs"
+                value={img.colorKey ?? ""}
+                onChange={(e) => setColorKey(img.id, e.target.value)}
+              >
+                <option value="">—</option>
+                {colorKeys.map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))}
+                {img.colorKey && !colorKeys.includes(img.colorKey) ? (
+                  <option value={img.colorKey}>{img.colorKey}</option>
+                ) : null}
+              </select>
+            </label>
             <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
               {img.isCover ? (
-                <span className="font-medium">COVER</span>
+                <span className="font-medium">ОБЛОЖКА</span>
               ) : (
                 <button
                   type="button"
                   className="underline"
                   onClick={() => setCover(img.id)}
                 >
-                  Set cover
+                  Обложка
                 </button>
               )}
               <button
                 type="button"
-                className="underline text-red-600"
+                className="underline disabled:opacity-30"
+                disabled={i === 0}
+                onClick={() => move(img.id, -1)}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="underline disabled:opacity-30"
+                disabled={i === images.length - 1}
+                onClick={() => move(img.id, 1)}
+              >
+                →
+              </button>
+              <button
+                type="button"
+                className="text-red-600 underline"
                 onClick={() => remove(img.id)}
               >
                 Delete
@@ -100,7 +196,9 @@ export function ProductImagesAdmin({
         ))}
       </div>
       {images.length === 0 ? (
-        <p className="text-sm text-[#666]">No photos yet — product stays draft.</p>
+        <p className="text-sm text-muted">
+          Фото пока нет — товар остаётся черновиком.
+        </p>
       ) : null}
     </div>
   );

@@ -4,9 +4,18 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-const dbPath = path.join(process.cwd(), "prisma", "dev.db");
+function resolveDbPath(url: string) {
+  let dbPath = url.replace(/^file:/, "");
+  if (dbPath.startsWith("./") || dbPath.startsWith(".\\")) {
+    dbPath = path.join(process.cwd(), dbPath.slice(2));
+  }
+  return dbPath;
+}
+
 const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({ url: dbPath }),
+  adapter: new PrismaBetterSqlite3({
+    url: resolveDbPath(process.env.DATABASE_URL ?? "file:./prisma/dev.db"),
+  }),
 });
 
 async function main() {
@@ -15,12 +24,26 @@ async function main() {
       images: { orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }] },
       variants: true,
     },
-    orderBy: { sortOrder: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
   });
-  const out = path.join(process.cwd(), "src", "data", "static-products.json");
-  fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, JSON.stringify(products, null, 2));
-  console.log("wrote", out, "count", products.length);
+
+  const settings = await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1 },
+  });
+
+  const dataDir = path.join(process.cwd(), "src", "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+
+  const productsOut = path.join(dataDir, "static-products.json");
+  const settingsOut = path.join(dataDir, "static-settings.json");
+
+  fs.writeFileSync(productsOut, JSON.stringify(products, null, 2));
+  fs.writeFileSync(settingsOut, JSON.stringify(settings, null, 2));
+
+  console.log("wrote", productsOut, "count", products.length);
+  console.log("wrote", settingsOut);
 }
 
 main()

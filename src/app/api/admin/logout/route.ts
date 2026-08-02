@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE } from "@/lib/admin-auth";
+import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/auth";
 
 export async function POST() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(ADMIN_COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
+  res.cookies.set(SESSION_COOKIE, "", {
+    ...sessionCookieOptions(0),
+    maxAge: 0,
+  });
+  // clear legacy cookie name if present
+  res.cookies.set("danial_admin", "", {
+    httpOnly: true,
+    path: "/",
+    maxAge: 0,
+  });
   return res;
 }

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { assertPublishable } from "@/lib/products";
+import { defaultColorHex } from "@/lib/color-hex";
 
 const productSchema = z.object({
   slug: z.string().min(1),
@@ -126,6 +127,7 @@ export async function POST(req: Request) {
           colorKey: v.colorKey,
           colorLabelRu: v.colorLabelRu,
           colorLabelKk: v.colorLabelKk,
+          colorHex: defaultColorHex(v.colorKey),
           sizeKey: v.sizeKey,
           sizeLabelRu: v.sizeLabelRu,
           sizeLabelKk: v.sizeLabelKk,

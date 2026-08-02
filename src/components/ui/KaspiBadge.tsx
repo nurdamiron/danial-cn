@@ -1,16 +1,31 @@
+import Image from "next/image";
+
 /**
- * Original typographic payment badge — not a reproduction of Kaspi's logo
- * artwork. Signals "we accept Kaspi transfer" the way a site shows
- * Visa/Mastercard marks, using their brand red as the only accent color
- * on an otherwise fully monochrome site.
+ * Official-style Kaspi payment mark (public brand asset).
+ * Used wherever we signal Kaspi payment acceptance.
  */
-export function KaspiBadge({ className = "" }: { className?: string }) {
+export function KaspiBadge({
+  className = "",
+  height = 28,
+}: {
+  className?: string;
+  height?: number;
+}) {
+  const width = Math.round((height * 160) / 48);
   return (
     <span
-      className={`inline-flex items-center rounded-[3px] border border-line bg-white px-1.5 py-0.5 text-[12px] font-bold tracking-tight ${className}`}
-      style={{ color: "#E4292D" }}
+      className={`inline-flex items-center ${className}`}
+      title="Kaspi"
     >
-      Kaspi
+      <Image
+        src="/brands/kaspi.svg"
+        alt="Kaspi"
+        width={width}
+        height={height}
+        className="h-auto w-auto"
+        unoptimized
+        priority={false}
+      />
     </span>
   );
 }

@@ -8,7 +8,7 @@ import {
   CatalogSortBar,
 } from "@/components/catalog/CatalogFilters";
 import {
-  getCatalogFilterOptions,
+  getCatalogFilterOptionsAsync,
   listActiveProducts,
   localizedBrand,
   localizedName,
@@ -73,7 +73,7 @@ export default async function CatalogPage({
     sort,
   });
 
-  const options = getCatalogFilterOptions(locale);
+  const options = await getCatalogFilterOptionsAsync(locale);
 
   return (
     <div>

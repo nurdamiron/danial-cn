@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
-import { SITE } from "@/lib/site";
+import { getSiteConfig, siteUrls } from "@/lib/settings";
 
 export async function generateMetadata({
   params,
@@ -28,6 +28,8 @@ export default async function ContactsPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
+  const config = await getSiteConfig();
+  const urls = siteUrls(config);
 
   return (
     <div>
@@ -42,11 +44,11 @@ export default async function ContactsPage({
             <dt className="text-xs text-muted">{t("contacts.phoneLabel")}</dt>
             <dd className="mt-1">
               <a
-                href={SITE.whatsappUrl}
+                href={urls.whatsappUrl}
                 className="inline-flex items-center gap-2 text-lg font-light tracking-tight hover:opacity-60"
               >
                 <WhatsAppIcon className="h-5 w-5 shrink-0" />
-                {SITE.whatsappDisplay}
+                {config.whatsappDisplay}
               </a>
             </dd>
           </div>
@@ -60,26 +62,26 @@ export default async function ContactsPage({
             </dt>
             <dd className="mt-1">
               <a
-                href={SITE.instagramUrl}
+                href={urls.instagramUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-lg font-light tracking-tight hover:opacity-60"
               >
                 <InstagramIcon className="h-5 w-5 shrink-0" />@
-                {SITE.instagram}
+                {config.instagram}
               </a>
             </dd>
           </div>
         </dl>
 
         <div className="mt-8 flex flex-wrap gap-3">
-          <a href={SITE.whatsappUrl} target="_blank" rel="noreferrer">
+          <a href={urls.whatsappUrl} target="_blank" rel="noreferrer">
             <Button className="gap-2">
               <WhatsAppIcon />
               {t("contacts.wa")}
             </Button>
           </a>
-          <a href={SITE.instagramUrl} target="_blank" rel="noreferrer">
+          <a href={urls.instagramUrl} target="_blank" rel="noreferrer">
             <Button variant="outline" className="gap-2">
               <InstagramIcon />
               {t("contacts.openInstagram")}

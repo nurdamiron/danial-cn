@@ -4,13 +4,14 @@ export function AdminLogout() {
   return (
     <button
       type="button"
-      className="underline"
+      className="text-xs text-muted underline-offset-2 hover:text-ink hover:underline"
       onClick={async () => {
+        await fetch("/api/auth/logout", { method: "POST" });
         await fetch("/api/admin/logout", { method: "POST" });
         window.location.href = "/admin/login";
       }}
     >
-      Logout
+      Выйти
     </button>
   );
 }

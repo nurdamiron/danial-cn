@@ -78,18 +78,83 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         setError(
           typeof data.error === "string"
             ? data.error
-            : "Save failed (need photos to publish)",
+            : "Ошибка сохранения (для публикации нужны фото)",
         );
         return;
       }
       if (!isEdit) {
         router.push(`/admin/products/${data.product.id}`);
       } else {
+        setError("");
+        setForm((f) => ({ ...f, ...data.product }));
         router.refresh();
       }
     } finally {
       setSaving(false);
     }
+  }
+
+  function autoSlug() {
+    if (product?.id) return;
+    const base = form.nameRu || form.brand;
+    if (!base) return;
+    const slug = base
+      .toLowerCase()
+      .replace(/[^a-z0-9а-яёәіңғүұқөһ\s-]/gi, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .slice(0, 60);
+    // translit-lite for common RU letters used in slugs
+    const map: Record<string, string> = {
+      а: "a",
+      б: "b",
+      в: "v",
+      г: "g",
+      д: "d",
+      е: "e",
+      ё: "e",
+      ж: "zh",
+      з: "z",
+      и: "i",
+      й: "y",
+      к: "k",
+      л: "l",
+      м: "m",
+      н: "n",
+      о: "o",
+      п: "p",
+      р: "r",
+      с: "s",
+      т: "t",
+      у: "u",
+      ф: "f",
+      х: "h",
+      ц: "ts",
+      ч: "ch",
+      ш: "sh",
+      щ: "sch",
+      ъ: "",
+      ы: "y",
+      ь: "",
+      э: "e",
+      ю: "yu",
+      я: "ya",
+      ә: "a",
+      і: "i",
+      ң: "n",
+      ғ: "g",
+      ү: "u",
+      ұ: "u",
+      қ: "q",
+      ө: "o",
+      һ: "h",
+    };
+    const latin = slug
+      .split("")
+      .map((c) => map[c] ?? c)
+      .join("")
+      .replace(/[^a-z0-9-]/g, "");
+    if (latin) set("slug", latin);
   }
 
   const field = (
@@ -101,7 +166,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       {label}
       {opts?.textarea ? (
         <textarea
-          className="mt-1 w-full border border-[#e5e5e5] px-3 py-2 text-sm"
+          className="mt-1 w-full border border-line px-3 py-2 text-sm"
           rows={3}
           value={String(form[key] ?? "")}
           onChange={(e) => set(key, e.target.value as never)}
@@ -109,7 +174,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       ) : (
         <input
           type={opts?.type ?? "text"}
-          className="mt-1 w-full border border-[#e5e5e5] px-3 py-2 text-sm"
+          className="mt-1 w-full border border-line px-3 py-2 text-sm"
           value={String(form[key] ?? "")}
           onChange={(e) =>
             set(
@@ -127,46 +192,65 @@ export function ProductForm({ product }: { product?: ProductInput }) {
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-4 border border-[#e5e5e5] bg-white p-6 md:grid-cols-2"
+      className="grid gap-4 border border-line bg-paper p-4 sm:p-6 md:grid-cols-2"
     >
-      {field("Slug", "slug")}
-      {field("Brand / line", "brand")}
-      {field("Name RU", "nameRu")}
-      {field("Name KK", "nameKk")}
-      {field("Description RU", "descriptionRu", { textarea: true })}
-      {field("Description KK", "descriptionKk", { textarea: true })}
-      {field("Material RU", "materialRu")}
-      {field("Material KK", "materialKk")}
       <label className="block text-xs">
-        Category
+        Slug (URL) *
+        <div className="mt-1 flex gap-2">
+          <input
+            className="w-full border border-line px-3 py-2 text-sm"
+            value={form.slug}
+            onChange={(e) => set("slug", e.target.value)}
+            required
+          />
+          {!product?.id ? (
+            <button
+              type="button"
+              className="shrink-0 border border-line px-3 text-xs"
+              onClick={autoSlug}
+            >
+              Auto
+            </button>
+          ) : null}
+        </div>
+      </label>
+      {field("Бренд / линия", "brand")}
+      {field("Название RU", "nameRu")}
+      {field("Название KK", "nameKk")}
+      {field("Описание RU", "descriptionRu", { textarea: true })}
+      {field("Описание KK", "descriptionKk", { textarea: true })}
+      {field("Материал RU", "materialRu")}
+      {field("Материал KK", "materialKk")}
+      <label className="block text-xs">
+        Категория
         <select
-          className="mt-1 w-full border border-[#e5e5e5] px-3 py-2 text-sm"
+          className="mt-1 w-full border border-line px-3 py-2 text-sm"
           value={form.category}
           onChange={(e) => set("category", e.target.value)}
         >
-          <option value="cabin">cabin</option>
-          <option value="checkin">checkin</option>
-          <option value="set">set</option>
-          <option value="bag">bag</option>
+          <option value="cabin">Ручная кладь</option>
+          <option value="checkin">Багаж</option>
+          <option value="set">Комплект</option>
+          <option value="bag">Сумка</option>
         </select>
       </label>
-      {field("Price ₸", "basePriceKzt", { type: "number" })}
-      {field("Height cm", "heightCm", { type: "number" })}
-      {field("Width cm", "widthCm", { type: "number" })}
-      {field("Depth cm", "depthCm", { type: "number" })}
-      {field("Volume L", "volumeL", { type: "number" })}
-      {field("Weight kg", "weightKg", { type: "number" })}
-      {field("Wheels", "wheels")}
-      {field("Lock", "lockType")}
+      {field("Цена ₸", "basePriceKzt", { type: "number" })}
+      {field("Высота см", "heightCm", { type: "number" })}
+      {field("Ширина см", "widthCm", { type: "number" })}
+      {field("Глубина см", "depthCm", { type: "number" })}
+      {field("Объём л", "volumeL", { type: "number" })}
+      {field("Вес кг", "weightKg", { type: "number" })}
+      {field("Колёса", "wheels")}
+      {field("Замок", "lockType")}
       <label className="block text-xs">
-        Status
+        Статус
         <select
-          className="mt-1 w-full border border-[#e5e5e5] px-3 py-2 text-sm"
+          className="mt-1 w-full border border-line px-3 py-2 text-sm"
           value={form.status}
           onChange={(e) => set("status", e.target.value)}
         >
-          <option value="draft">draft</option>
-          <option value="active">active (needs photos)</option>
+          <option value="draft">Черновик</option>
+          <option value="active">Активен (нужны фото)</option>
         </select>
       </label>
       <label className="flex items-center gap-2 text-xs">
@@ -175,7 +259,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           checked={form.featured}
           onChange={(e) => set("featured", e.target.checked)}
         />
-        Featured
+        На главной
       </label>
       {error ? (
         <p className="text-xs text-red-600 md:col-span-2">{error}</p>
@@ -184,9 +268,9 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         <button
           type="submit"
           disabled={saving}
-          className="bg-[#111] px-6 py-2 text-sm text-white disabled:opacity-50"
+          className="h-11 w-full bg-ink px-6 text-sm text-paper disabled:opacity-50 sm:w-auto"
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? "Сохранение…" : "Сохранить"}
         </button>
       </div>
     </form>

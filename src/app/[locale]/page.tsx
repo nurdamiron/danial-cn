@@ -3,14 +3,9 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
-import { Button } from "@/components/ui/Button";
-import { Reveal } from "@/components/ui/Reveal";
 import { ProductCard } from "@/components/product/ProductCard";
-import { HeroCinematic } from "@/components/home/HeroCinematic";
-import { TrustBar } from "@/components/home/TrustBar";
-import { OrderPath } from "@/components/home/OrderPath";
-import { FeatureStrip } from "@/components/home/FeatureStrip";
-import { MarqueeBar } from "@/components/home/MarqueeBar";
+import { HomeShopHero } from "@/components/home/HomeShopHero";
+import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import {
   listFeaturedProducts,
   listActiveProducts,
@@ -42,6 +37,11 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * Shop-first home (app structure like reference):
+ * hero compact → categories → brands → products → trust strip
+ * Bottom nav lives in layout (Home · Catalog · Cart · Profile)
+ */
 export default async function HomePage({
   params,
 }: {
@@ -51,10 +51,15 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  let featured = await listFeaturedProducts(8);
+  const allProducts = await listActiveProducts();
+  let featured = await listFeaturedProducts(12);
   if (featured.length === 0) {
-    featured = (await listActiveProducts()).slice(0, 8);
+    featured = allProducts.slice(0, 12);
   }
+
+  const brands = [
+    ...new Set(allProducts.map((p) => p.brand).filter(Boolean)),
+  ];
 
   const categories = [
     {
@@ -80,84 +85,101 @@ export default async function HomePage({
   ];
 
   return (
-    <div>
-      <HeroCinematic
+    <div className="bg-sand">
+      {/* 1. Compact hero */}
+      <HomeShopHero
         brand={t("brand.name")}
-        hero={t("home.hero")}
+        title={t("home.hero")}
+        subtitle={t("home.orderFlow")}
         catalogLabel={t("cta.viewCatalog")}
-        aboutLabel={t("nav.about")}
+        kaspiNote={t("payment.kaspiNote")}
       />
 
-      <TrustBar />
-      <MarqueeBar />
-
-      <section className="py-20 sm:py-24">
-        <Reveal>
-          <Container>
-            <div className="mb-10 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] tracking-[0.2em] text-muted">
-                  {t("home.shop")}
-                </p>
-                <h2 className="mt-2 text-2xl font-light tracking-tight sm:text-3xl">
-                  {t("home.categories")}
-                </h2>
-              </div>
+      {/* 2. Categories — quick entry like shop chips/tiles */}
+      <section className="border-b border-line bg-paper py-6 sm:py-8">
+        <Container>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[11px] tracking-[0.18em] text-muted uppercase">
+              {t("home.categories")}
+            </h2>
+            <Link
+              href="/catalog"
+              className="text-[11px] text-muted underline-offset-4 hover:underline"
+            >
+              {t("cta.viewCatalog")}
+            </Link>
+          </div>
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            {categories.map((c) => (
               <Link
-                href="/catalog"
-                className="text-[11px] tracking-[0.08em] text-muted underline-offset-4 hover:underline"
+                key={c.key}
+                href={c.href}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white"
               >
-                {t("cta.viewCatalog")}
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-              {categories.map((c) => (
-                <Link
-                  key={c.key}
-                  href={c.href}
-                  className="group relative aspect-[3/4] overflow-hidden border border-line bg-white"
-                >
+                <div className="relative aspect-square">
                   <Image
                     src={c.image}
                     alt=""
                     fill
-                    quality={95}
-                    className="object-contain p-6 transition duration-700 group-hover:scale-105"
-                    sizes="(max-width:768px) 50vw, 25vw"
+                    quality={90}
+                    className="object-contain p-2 transition group-hover:scale-105 sm:p-3"
+                    sizes="25vw"
                   />
-                  <div className="absolute inset-x-0 bottom-0 border-t border-line bg-white/95 px-3 py-3 backdrop-blur-sm">
-                    <p className="text-center text-[11px] tracking-[0.12em]">
-                      {t(`category.${c.key}`)}
-                    </p>
-                  </div>
+                </div>
+                <p className="truncate border-t border-line px-1 py-2 text-center text-[10px] tracking-wide sm:text-[11px]">
+                  {t(`category.${c.key}`)}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* 3. Brands row */}
+      {brands.length > 0 ? (
+        <section className="border-b border-line bg-sand py-4">
+          <Container>
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {brands.map((b) => (
+                <Link
+                  key={b}
+                  href={`/catalog?brand=${encodeURIComponent(b)}`}
+                  className="shrink-0 rounded-full border border-line bg-paper px-4 py-2 text-xs tracking-wide text-ink transition hover:border-ink"
+                >
+                  {b}
                 </Link>
               ))}
             </div>
           </Container>
-        </Reveal>
-      </section>
+        </section>
+      ) : null}
 
-      {featured.length > 0 ? (
-        <section className="border-t border-line bg-stone py-20 sm:py-24">
-          <Reveal>
-          <Container>
-            <div className="mb-10 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] tracking-[0.2em] text-muted">
-                  {t("home.bestsellers")}
-                </p>
-                <h2 className="mt-2 text-2xl font-light tracking-tight sm:text-3xl">
-                  {t("home.bestsellers")}
-                </h2>
-              </div>
-              <Link
-                href="/catalog"
-                className="text-[11px] tracking-[0.08em] text-muted underline-offset-4 hover:underline"
-              >
-                {t("cta.viewCatalog")}
-              </Link>
+      {/* 4. Product feed — main shop content */}
+      <section className="py-6 sm:py-10">
+        <Container>
+          <div className="mb-5 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] tracking-[0.18em] text-muted uppercase">
+                {t("home.shop")}
+              </p>
+              <h2 className="mt-1 text-xl font-light tracking-tight sm:text-2xl">
+                {t("home.bestsellers")}
+              </h2>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-5">
+            <Link
+              href="/catalog"
+              className="text-[11px] text-muted underline-offset-4 hover:underline"
+            >
+              {t("cta.viewCatalog")}
+            </Link>
+          </div>
+
+          {featured.length === 0 ? (
+            <p className="border border-line bg-paper py-12 text-center text-sm text-muted">
+              {t("catalog.empty")}
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-4">
               {featured.map((p) => {
                 const cover = pickCoverUrl(p.images);
                 if (!cover) return null;
@@ -180,65 +202,38 @@ export default async function HomePage({
                 );
               })}
             </div>
-          </Container>
-          </Reveal>
-        </section>
-      ) : null}
-
-      <FeatureStrip />
-      <OrderPath />
-
-      <section className="border-t border-line bg-paper py-20 sm:py-24">
-        <Reveal>
-        <Container className="grid gap-12 md:grid-cols-2 md:gap-16">
-          <div>
-            <p className="text-[10px] tracking-[0.2em] text-muted">
-              {t("brand.name")}
-            </p>
-            <h2 className="mt-3 text-2xl font-light tracking-tight sm:text-3xl">
-              {t("home.whyTitle")}
-            </h2>
-          </div>
-          <ul className="space-y-0">
-            {[t("home.why1"), t("home.why2"), t("home.why3"), t("home.why4")].map(
-              (item, i) => (
-                <li
-                  key={item}
-                  className="flex gap-5 border-b border-line py-5 first:pt-0"
-                >
-                  <span className="text-[11px] tracking-[0.16em] text-muted">
-                    0{i + 1}
-                  </span>
-                  <span className="text-sm font-light tracking-tight">
-                    {item}
-                  </span>
-                </li>
-              ),
-            )}
-          </ul>
+          )}
         </Container>
-        </Reveal>
       </section>
 
-      <section className="bg-ink py-20 text-paper sm:py-24">
-        <Reveal>
-        <Container className="text-center">
-          <p className="text-[11px] tracking-[0.28em] text-paper/45">
-            {t("brand.name")}
-          </p>
-          <h2 className="mx-auto mt-5 max-w-xl text-2xl font-light tracking-tight sm:text-4xl">
-            {t("home.hero")}
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-sm text-paper/55">
-            {t("home.orderFlow")}
-          </p>
-          <div className="mt-9">
-            <Link href="/catalog">
-              <Button variant="secondary">{t("cta.viewCatalog")}</Button>
-            </Link>
+      {/* 5. Compact trust — Kaspi + delivery + chat */}
+      <section className="border-t border-line bg-paper py-5">
+        <Container>
+          <div className="grid grid-cols-3 gap-2 text-center sm:gap-4">
+            <div className="rounded-2xl border border-line px-2 py-3">
+              <KaspiBadge height={20} className="mx-auto justify-center" />
+              <p className="mt-2 text-[10px] leading-snug text-muted sm:text-xs">
+                {t("home.trustKaspiDesc")}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line px-2 py-3">
+              <p className="text-[11px] font-medium tracking-wide">
+                {t("home.trustChat")}
+              </p>
+              <p className="mt-2 text-[10px] leading-snug text-muted sm:text-xs">
+                {t("home.trustChatDesc")}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line px-2 py-3">
+              <p className="text-[11px] font-medium tracking-wide">
+                {t("home.trustDelivery")}
+              </p>
+              <p className="mt-2 text-[10px] leading-snug text-muted sm:text-xs">
+                {t("home.trustDeliveryDesc")}
+              </p>
+            </div>
           </div>
         </Container>
-        </Reveal>
       </section>
     </div>
   );
