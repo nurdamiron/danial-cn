@@ -61,59 +61,59 @@ export function CustomerAuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="border border-line bg-paper p-6 sm:p-8">
-      <h1 className="mb-2 text-center text-xs tracking-[0.3em] uppercase">
-        Danial CN
-      </h1>
-      <p className="mb-6 text-center text-sm text-muted">
+    <div className="card p-6 sm:p-8">
+      <h1 className="t-display t-h3 text-center">
         {mode === "login" ? t("loginTitle") : t("registerTitle")}
-      </p>
+      </h1>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="mt-7 space-y-4">
         {mode === "register" ? (
           <>
-            <label className="block text-xs text-muted">
-              {t("name")}
+            <label className="block">
+              <span className="field-label">{t("name")}</span>
               <input
                 required
-                className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm text-ink"
+                className="field"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="name"
               />
             </label>
-            <label className="block text-xs text-muted">
-              {t("phone")}
+            <label className="block">
+              <span className="field-label">{t("phone")}</span>
               <input
-                className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm text-ink"
+                className="field"
+                type="tel"
+                inputMode="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+7 …"
+                placeholder="+7 7__ ___ __ __"
                 autoComplete="tel"
               />
             </label>
           </>
         ) : null}
 
-        <label className="block text-xs text-muted">
-          {t("email")}
+        <label className="block">
+          <span className="field-label">{t("email")}</span>
           <input
             type="email"
             required
-            className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm text-ink"
+            className="field"
+            inputMode="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           />
         </label>
 
-        <label className="block text-xs text-muted">
-          {t("password")}
+        <label className="block">
+          <span className="field-label">{t("password")}</span>
           <input
             type="password"
             required
             minLength={mode === "register" ? 8 : 1}
-            className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm text-ink"
+            className="field"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={
@@ -121,35 +121,42 @@ export function CustomerAuthForm({ mode }: { mode: Mode }) {
             }
           />
           {mode === "register" ? (
-            <span className="mt-1 block text-[11px] text-muted">
+            <span className="t-micro mt-1.5 block text-muted">
               {t("passwordHint")}
             </span>
           ) : null}
         </label>
 
-        {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        {error ? (
+          <p
+            role="alert"
+            className="alert-error"
+          >
+            {error}
+          </p>
+        ) : null}
 
         <button
           type="submit"
           disabled={loading}
-          className="h-11 w-full bg-ink text-sm text-paper disabled:opacity-50"
+          className="btn btn-primary h-12 w-full text-sm"
         >
           {loading ? "…" : mode === "login" ? t("loginBtn") : t("registerBtn")}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-xs text-muted">
+      <p className="mt-6 text-center text-[0.8125rem] text-muted">
         {mode === "login" ? (
           <>
             {t("noAccount")}{" "}
-            <Link href="/register" className="text-ink underline">
+            <Link href="/register" className="text-ink underline-offset-4 hover:underline">
               {t("toRegister")}
             </Link>
           </>
         ) : (
           <>
             {t("hasAccount")}{" "}
-            <Link href="/login" className="text-ink underline">
+            <Link href="/login" className="text-ink underline-offset-4 hover:underline">
               {t("toLogin")}
             </Link>
           </>

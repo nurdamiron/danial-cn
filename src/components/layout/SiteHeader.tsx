@@ -4,24 +4,15 @@ import { Container } from "@/components/ui/Container";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { CartCount } from "@/components/layout/CartCount";
 import { NavLinks } from "@/components/layout/NavLinks";
-import { CartIcon, InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
+import {
+  CartIcon,
+  HeartIcon,
+  InstagramIcon,
+  ShellMark,
+  UserIcon,
+  WhatsAppIcon,
+} from "@/components/ui/icons";
 import { getSiteConfig, siteUrls } from "@/lib/settings";
-
-function ProfileIcon({ className = "h-[18px] w-[18px]" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      className={className}
-      aria-hidden
-    >
-      <circle cx="12" cy="9" r="3.5" />
-      <path d="M5 19.5c1.5-3 4-4.5 7-4.5s5.5 1.5 7 4.5" />
-    </svg>
-  );
-}
 
 export async function SiteHeader() {
   const t = await getTranslations();
@@ -36,60 +27,93 @@ export async function SiteHeader() {
   ] as const;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/80 bg-sand/90 backdrop-blur-md">
-      <Container className="flex h-16 items-center justify-between gap-4 sm:h-[4.25rem]">
-        <Link
-          href="/"
-          className="text-[11px] font-medium tracking-[0.35em] text-ink uppercase sm:text-xs"
-        >
-          {t("brand.name")}
-        </Link>
+    <header className="sticky top-0 z-50">
+      {/* What every visitor asks first: where do you ship, how do I pay.
+          Narrow screens get the delivery half only — a clipped promise is worse
+          than a short one. */}
+      <div className="on-dark bg-ink text-paper">
+        <Container className="flex h-8 items-center justify-center">
+          <p className="t-label truncate text-alu">
+            {t("home.trustDelivery")}
+            <span className="hidden sm:inline">
+              <span className="mx-2 text-alu/50">·</span>
+              {t("payment.kaspiNote")}
+            </span>
+          </p>
+        </Container>
+      </div>
 
-        <NavLinks items={navItems} />
+      <div className="border-b border-line bg-sand/92 backdrop-blur-xl">
+        <Container className="flex h-16 items-center justify-between gap-4 sm:h-[4.5rem]">
+          <Link
+            href="/"
+            className="group flex items-center gap-2.5 text-ink"
+            aria-label={t("brand.name")}
+          >
+            <ShellMark className="h-[22px] w-[22px] transition-transform duration-500 group-hover:-translate-y-0.5" />
+            <span className="t-display text-[0.9375rem] font-medium tracking-[0.3em] uppercase">
+              {t("brand.name")}
+            </span>
+          </Link>
 
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden sm:block">
-            <LocaleSwitcher />
+          <NavLinks items={navItems} />
+
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <LocaleSwitcher className="mr-1 hidden sm:inline-flex" />
+
+            <Link
+              href="/favorites"
+              aria-label={t("nav.favorites")}
+              title={t("nav.favorites")}
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-stone md:flex"
+            >
+              <HeartIcon />
+            </Link>
+            <Link
+              href="/profile"
+              aria-label={t("nav.profile")}
+              title={t("nav.profile")}
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-stone sm:flex"
+            >
+              <UserIcon />
+            </Link>
+            <Link
+              href="/cart"
+              aria-label={t("nav.cart")}
+              title={t("nav.cart")}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-stone"
+            >
+              <CartIcon />
+              <CartCount />
+            </Link>
+
+            <span
+              aria-hidden="true"
+              className="mx-1 hidden h-5 w-px bg-line md:block"
+            />
+
+            <a
+              href={urls.instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={t("nav.instagram")}
+              title={t("nav.instagram")}
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-ink transition hover:bg-stone md:flex"
+            >
+              <InstagramIcon />
+            </a>
+            <a
+              href={urls.whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-primary hidden h-10 px-4 text-[0.8125rem] lg:inline-flex"
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+              {t("nav.chat")}
+            </a>
           </div>
-          <Link
-            href="/profile"
-            aria-label={t("nav.profile")}
-            title={t("nav.profile")}
-            className="relative -m-1.5 flex items-center justify-center p-1.5 text-ink transition hover:opacity-50"
-          >
-            <ProfileIcon />
-          </Link>
-          <Link
-            href="/cart"
-            aria-label={t("nav.cart")}
-            title={t("nav.cart")}
-            className="relative -m-1.5 flex items-center justify-center p-1.5 text-ink transition hover:opacity-50"
-          >
-            <CartIcon />
-            <CartCount />
-          </Link>
-          <a
-            href={urls.instagramUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={t("nav.instagram")}
-            title={t("nav.instagram")}
-            className="-m-1.5 hidden items-center justify-center p-1.5 text-ink transition hover:opacity-50 md:flex"
-          >
-            <InstagramIcon />
-          </a>
-          <a
-            href={urls.whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={t("nav.chat")}
-            title={t("nav.chat")}
-            className="-m-1.5 hidden items-center justify-center p-1.5 text-ink transition hover:opacity-50 sm:flex"
-          >
-            <WhatsAppIcon />
-          </a>
-        </div>
-      </Container>
+        </Container>
+      </div>
     </header>
   );
 }

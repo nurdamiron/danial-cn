@@ -1,13 +1,31 @@
 import type { Metadata } from "next";
-import { Noto_Sans } from "next/font/google";
+import { Golos_Text, JetBrains_Mono, Manrope } from "next/font/google";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
-// Noto Sans: full Kazakh Cyrillic (ә ғ қ ң ө ұ ү һ і) via cyrillic-ext
-const notoSans = Noto_Sans({
+/*
+  Three voices, all carrying full Kazakh Cyrillic (ә ғ қ ң ө ұ ү һ і) through
+  the cyrillic-ext subset:
+    Manrope     — headlines, prices, product names
+    Golos Text  — Cyrillic-first UI and body copy
+    JetBrains   — machined data: cm, litres, kg, SKU, size codes
+*/
+const display = Manrope({
   subsets: ["latin", "cyrillic", "cyrillic-ext"],
-  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-display-family",
+  display: "swap",
+});
+
+const sans = Golos_Text({
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
   variable: "--font-sans-family",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  weight: ["400", "500"],
+  variable: "--font-mono-family",
   display: "swap",
 });
 
@@ -27,8 +45,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${notoSans.variable} h-full antialiased`}>
-      <body className={`${notoSans.className} min-h-full`}>{children}</body>
+    <html
+      lang="ru"
+      className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`}
+    >
+      <body className={`${sans.className} min-h-full`}>{children}</body>
     </html>
   );
 }

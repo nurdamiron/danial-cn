@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
-import { WhatsAppIcon } from "@/components/ui/icons";
+import { CheckIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { QuickOrderModal } from "@/components/product/QuickOrderModal";
 import { addItem } from "@/store/cart";
@@ -48,6 +49,8 @@ type Props = {
   images: ConfigImage[];
   siteUrl: string;
   waE164: string;
+  kaspiNote: string;
+  deliveryNote: string;
 };
 
 export function ProductConfigurator({
@@ -56,6 +59,8 @@ export function ProductConfigurator({
   images,
   siteUrl,
   waE164,
+  kaspiNote,
+  deliveryNote,
 }: Props) {
   const t = useTranslations();
   const locale = useLocale() as "ru" | "kk";
@@ -79,6 +84,8 @@ export function ProductConfigurator({
   }, [variants]);
 
   const [orderOpen, setOrderOpen] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [colorKey, setColorKey] = useState(colors[0]?.colorKey ?? "");
   const sizesForColor = useMemo(
     () => variants.filter((v) => v.colorKey === colorKey),
@@ -96,6 +103,13 @@ export function ProductConfigurator({
       setSizeKey(sizesForColor[0]?.sizeKey ?? "");
     }
   }
+
+  useEffect(
+    () => () => {
+      if (addedTimer.current) clearTimeout(addedTimer.current);
+    },
+    [],
+  );
 
   const selected =
     variants.find((v) => v.colorKey === colorKey && v.sizeKey === sizeKey) ??
@@ -173,73 +187,73 @@ export function ProductConfigurator({
         alt={`${name} — ${colorLabel ?? ""}`}
       />
 
-      <div className="space-y-7">
-        {/* Color swatches */}
+      <div className="space-y-8">
+        {/* Colour */}
         <div>
           <div className="flex items-baseline justify-between gap-3">
-            <p className="text-[10px] tracking-[0.2em] text-muted uppercase">
-              {t("catalog.color")}
-            </p>
-            <p className="text-sm font-light">
+            <p className="t-label text-muted">{t("catalog.color")}</p>
+            <p className="text-sm">
               {locale === "kk"
                 ? colors.find((c) => c.colorKey === colorKey)?.labelKk
                 : colors.find((c) => c.colorKey === colorKey)?.labelRu}
             </p>
           </div>
-          <div className="mt-3 flex flex-wrap gap-3">
+          <div className="mt-3.5 flex flex-wrap gap-2.5">
             {colors.map((c) => {
               const active = colorKey === c.colorKey;
+              const label = locale === "kk" ? c.labelKk : c.labelRu;
               return (
                 <button
                   key={c.colorKey}
                   type="button"
-                  title={locale === "kk" ? c.labelKk : c.labelRu}
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={active}
                   onClick={() => setColorKey(c.colorKey)}
-                  className={`group relative h-10 w-10 rounded-full border-2 transition ${
+                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${
                     active
-                      ? "border-[var(--ink)] scale-110"
-                      : "border-transparent hover:border-black/20"
+                      ? "ring-2 ring-ink ring-offset-2 ring-offset-paper"
+                      : "ring-1 ring-line hover:ring-line-strong"
                   }`}
-                  aria-label={locale === "kk" ? c.labelKk : c.labelRu}
                 >
                   <span
-                    className="absolute inset-1 rounded-full border border-black/10 shadow-inner"
+                    className="h-full w-full rounded-full ring-1 ring-black/10 ring-inset"
                     style={{ backgroundColor: c.hex || "#ccc" }}
                   />
+                  {active ? (
+                    <CheckIcon className="absolute h-4 w-4 text-paper mix-blend-difference" />
+                  ) : null}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Size pills — cabin / m / check-in like Samsonite/Delsey */}
+        {/* Size — the price moves with it, so it is shown on every option */}
         <div>
-          <p className="text-[10px] tracking-[0.2em] text-muted uppercase">
-            {t("catalog.size")}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <p className="t-label text-muted">{t("catalog.size")}</p>
+          <div className="mt-3.5 grid gap-2 sm:grid-cols-2">
             {sizesForColor.map((s) => {
               const active = sizeKey === s.sizeKey;
-              const label =
-                locale === "kk" ? s.sizeLabelKk : s.sizeLabelRu;
+              const out = s.stock <= 0;
+              const label = locale === "kk" ? s.sizeLabelKk : s.sizeLabelRu;
               return (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => setSizeKey(s.sizeKey)}
-                  disabled={s.stock <= 0}
-                  className={`min-w-[7.5rem] border px-4 py-3 text-left transition ${
+                  disabled={out}
+                  aria-pressed={active}
+                  className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-left transition ${
                     active
-                      ? "border-[var(--ink)] bg-[var(--ink)] text-white"
-                      : "border-line hover:border-[var(--ink)]"
-                  } ${s.stock <= 0 ? "opacity-40" : ""}`}
+                      ? "border-ink bg-ink text-paper"
+                      : "border-line bg-paper hover:border-line-strong"
+                  } ${out ? "cursor-not-allowed opacity-40" : ""}`}
                 >
-                  <span className="block text-[11px] tracking-wide">
-                    {label}
-                  </span>
+                  <span className="text-sm">{label}</span>
                   <span
-                    className={`mt-1 block text-[10px] ${
-                      active ? "text-white/70" : "text-muted"
+                    className={`t-price text-sm ${
+                      active ? "text-paper/80" : "text-muted"
                     }`}
                   >
                     {formatKzt(s.priceKzt ?? product.basePriceKzt)}
@@ -250,36 +264,61 @@ export function ProductConfigurator({
           </div>
         </div>
 
-        <div className="border-t border-line pt-5">
-          <p className="text-2xl font-light tracking-tight">
-            {formatKzt(price)}
-          </p>
+        {/* Price and availability */}
+        <div className="border-t border-line pt-6">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+            <p className="t-price text-[2rem] leading-none">
+              {formatKzt(price)}
+            </p>
+            {selected ? (
+              <span
+                className={`tag ${
+                  selected.stock > 0 ? "text-ink" : "text-muted"
+                }`}
+              >
+                {selected.stock > 0
+                  ? t("product.inStockLabel")
+                  : t("product.outOfStock")}
+              </span>
+            ) : null}
+          </div>
           {selected ? (
-            <p className="mt-1 text-xs text-muted">
-              {t("product.article")} {selected.id.toUpperCase()} ·{" "}
-              {selected.stock > 0
-                ? t("product.inStockLabel")
-                : t("product.outOfStock")}
+            <p className="t-data mt-2 text-muted">
+              {t("product.article")} {selected.id.toUpperCase()}
             </p>
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {/* Actions */}
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
-            className="sm:min-w-[10rem]"
+            size="lg"
+            className="min-w-[11rem] flex-1 sm:flex-none"
             onClick={() => {
               const item = toCartItem(1);
-              if (item) addItem(item);
+              if (!item) return;
+              addItem(item);
+              setJustAdded(true);
+              if (addedTimer.current) clearTimeout(addedTimer.current);
+              addedTimer.current = setTimeout(() => setJustAdded(false), 2200);
             }}
             disabled={!selected || selected.stock <= 0}
           >
-            {t("cta.addToCart")}
+            {justAdded ? (
+              <>
+                <CheckIcon className="h-[18px] w-[18px]" />
+                {t("cta.added")}
+              </>
+            ) : (
+              t("cta.addToCart")
+            )}
           </Button>
           <Button
             type="button"
             variant="outline"
-            className="gap-2"
+            size="lg"
+            className="flex-1 sm:flex-none"
             disabled={!selected || selected.stock <= 0}
             onClick={() => setOrderOpen(true)}
           >
@@ -287,6 +326,7 @@ export function ProductConfigurator({
             {t("cta.buyWhatsApp")}
           </Button>
           <FavoriteButton
+            size="md"
             item={{
               productId: product.id,
               slug: product.slug,
@@ -297,6 +337,17 @@ export function ProductConfigurator({
             }}
           />
         </div>
+
+        {/* What happens after the order */}
+        <ul className="space-y-3 rounded-lg border border-line bg-sand p-5">
+          <li className="flex items-start gap-3">
+            <KaspiBadge height={18} className="mt-0.5 shrink-0" />
+            <span className="t-micro text-muted">{kaspiNote}</span>
+          </li>
+          <li className="t-micro border-t border-line pt-3 text-muted">
+            {deliveryNote}
+          </li>
+        </ul>
       </div>
 
       <QuickOrderModal

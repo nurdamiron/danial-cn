@@ -25,9 +25,10 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <div className="flex min-h-screen flex-col">
+      {/* Bottom padding clears the fixed mobile tab bar — footer included */}
+      <div className="flex min-h-screen flex-col pb-[calc(3.875rem+env(safe-area-inset-bottom))] md:pb-0">
         <SiteHeader />
-        <main className="flex-1 pb-16 md:pb-0">{children}</main>
+        <main className="flex-1">{children}</main>
         <SiteFooter />
         <BottomNav />
       </div>

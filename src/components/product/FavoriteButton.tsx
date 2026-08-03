@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { HeartIcon } from "@/components/ui/icons";
 import {
   isFavorite,
   toggleFavorite,
@@ -11,9 +12,10 @@ import {
 type Props = {
   item: Omit<FavoriteItem, "addedAt">;
   className?: string;
+  size?: "sm" | "md";
 };
 
-export function FavoriteButton({ item, className = "" }: Props) {
+export function FavoriteButton({ item, className = "", size = "sm" }: Props) {
   const t = useTranslations("favorites");
   const [on, setOn] = useState(false);
 
@@ -24,12 +26,16 @@ export function FavoriteButton({ item, className = "" }: Props) {
     return () => window.removeEventListener("danial-favorites-updated", sync);
   }, [item.productId]);
 
+  const box = size === "md" ? "h-12 w-12" : "h-9 w-9";
+
   return (
     <button
       type="button"
       aria-label={on ? t("remove") : t("add")}
       aria-pressed={on}
-      className={`inline-flex h-9 w-9 items-center justify-center border border-line bg-paper text-sm transition hover:border-ink ${className}`}
+      className={`inline-flex ${box} items-center justify-center rounded-full border border-line bg-paper/90 backdrop-blur transition hover:border-ink ${
+        on ? "text-ink" : "text-muted"
+      } ${className}`}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -39,7 +45,10 @@ export function FavoriteButton({ item, className = "" }: Props) {
         });
       }}
     >
-      <span className={on ? "text-ink" : "text-muted"}>{on ? "♥" : "♡"}</span>
+      <HeartIcon
+        filled={on}
+        className={size === "md" ? "h-5 w-5" : "h-[18px] w-[18px]"}
+      />
     </button>
   );
 }

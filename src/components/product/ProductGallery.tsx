@@ -8,40 +8,48 @@ type Img = { url: string; id: string };
 export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) {
   const [active, setActive] = useState(0);
   if (!images.length) return null;
-  const current = images[Math.min(active, images.length - 1)];
+  const index = Math.min(active, images.length - 1);
+  const current = images[index];
 
   return (
-    <div className="space-y-3">
-      <div className="relative aspect-[3/4] bg-white">
+    <div className="lg:sticky lg:top-32">
+      <div className="media aspect-[4/5]">
         <Image
+          key={current.url}
           src={current.url}
           alt={alt}
           fill
           priority
           quality={95}
-          className="object-contain p-6 sm:p-8"
-          sizes="(max-width:768px) 100vw, 50vw"
+          className="fade-in object-contain p-6 sm:p-10"
+          sizes="(max-width:1024px) 100vw, 50vw"
         />
+        {images.length > 1 ? (
+          <span className="tag absolute right-3 bottom-3">
+            {index + 1} / {images.length}
+          </span>
+        ) : null}
       </div>
+
       {images.length > 1 ? (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
           {images.map((img, i) => (
             <button
               key={img.id}
               type="button"
+              aria-label={`${alt} — ${i + 1}`}
+              aria-current={i === index}
               onClick={() => setActive(i)}
-              className={`relative h-20 w-16 shrink-0 overflow-hidden bg-white transition ${
-                i === active
-                  ? "ring-1 ring-[var(--ink)] ring-offset-2"
-                  : "opacity-70 hover:opacity-100"
+              className={`media relative h-20 w-[4.25rem] shrink-0 transition ${
+                i === index ? "border-ink" : "opacity-70 hover:opacity-100"
               }`}
             >
               <Image
                 src={img.url}
                 alt=""
                 fill
-                className="object-contain p-1.5"
-                sizes="64px"
+                className="object-contain p-2"
+                sizes="68px"
               />
             </button>
           ))}

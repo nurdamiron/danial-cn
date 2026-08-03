@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { buttonClass } from "@/components/ui/Button";
+import { TrashIcon } from "@/components/ui/icons";
 import {
   loadFavorites,
   removeFavorite,
@@ -23,11 +25,11 @@ export function FavoritesView() {
 
   if (items.length === 0) {
     return (
-      <div className="border border-line bg-paper py-16 text-center">
-        <p className="text-sm text-muted">{t("empty")}</p>
+      <div className="card px-6 py-16 text-center">
+        <p className="t-display t-h3">{t("empty")}</p>
         <Link
           href="/catalog"
-          className="mt-4 inline-block text-sm underline underline-offset-4"
+          className={buttonClass("primary", "md", "mt-6 inline-flex")}
         >
           {t("toCatalog")}
         </Link>
@@ -36,38 +38,37 @@ export function FavoritesView() {
   }
 
   return (
-    <ul className="divide-y divide-line border border-line bg-paper">
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
-        <li key={item.productId} className="flex gap-4 p-4">
+        <li key={item.productId} className="card flex gap-4 p-4">
           <Link
             href={`/catalog/${item.slug}`}
-            className="relative h-24 w-20 shrink-0 bg-stone"
+            className="media relative h-28 w-24 shrink-0"
           >
             <Image
               src={item.coverUrl}
               alt={item.name}
               fill
-              className="object-contain p-1"
-              sizes="80px"
-              quality={90}
+              className="object-contain p-2"
+              sizes="96px"
+              quality={95}
             />
           </Link>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] tracking-wide text-muted uppercase">
-              {item.brand}
-            </p>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <p className="t-label text-muted">{item.brand}</p>
             <Link
               href={`/catalog/${item.slug}`}
-              className="mt-0.5 block text-sm font-light hover:underline"
+              className="t-display mt-0.5 truncate text-base hover:opacity-60"
             >
               {item.name}
             </Link>
-            <p className="mt-1 text-sm text-muted">{item.priceLabel}</p>
+            <p className="t-price mt-1 text-sm">{item.priceLabel}</p>
             <button
               type="button"
-              className="mt-2 text-xs text-muted underline"
+              className="link-quiet mt-auto flex items-center gap-1.5 pt-3 text-[0.8125rem]"
               onClick={() => removeFavorite(item.productId)}
             >
+              <TrashIcon className="h-4 w-4" />
               {t("remove")}
             </button>
           </div>

@@ -31,8 +31,11 @@ export default async function CartPage({
   return (
     <div>
       <PageHeader eyebrow={t("brand.name")} title={t("cart.title")} />
-      <Container className="py-14 sm:py-20">
-        <CartView waE164={config.whatsappE164} />
+      <Container className="py-10 sm:py-14">
+        <CartView
+          waE164={config.whatsappE164}
+          kaspiNote={locale === "kk" ? config.kaspiNoteKk : config.kaspiNoteRu}
+        />
       </Container>
     </div>
   );

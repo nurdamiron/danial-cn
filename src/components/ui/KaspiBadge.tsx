@@ -1,8 +1,8 @@
 import Image from "next/image";
 
 /**
- * Official-style Kaspi payment mark (public brand asset).
- * Used wherever we signal Kaspi payment acceptance.
+ * Kaspi payment mark. Sized by height — the width follows the asset's 168:48
+ * ratio, and both are pinned so the badge can never collapse inside a flex row.
  */
 export function KaspiBadge({
   className = "",
@@ -11,20 +11,19 @@ export function KaspiBadge({
   className?: string;
   height?: number;
 }) {
-  const width = Math.round((height * 160) / 48);
+  const width = Math.round((height * 168) / 48);
   return (
     <span
-      className={`inline-flex items-center ${className}`}
+      className={`inline-flex shrink-0 items-center ${className}`}
       title="Kaspi"
+      style={{ width, height }}
     >
       <Image
         src="/brands/kaspi.svg"
         alt="Kaspi"
         width={width}
         height={height}
-        className="h-auto w-auto"
         unoptimized
-        priority={false}
       />
     </span>
   );

@@ -4,23 +4,28 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/Button";
-import { WhatsAppIcon } from "@/components/ui/icons";
+import { Button, buttonClass } from "@/components/ui/Button";
+import {
+  MinusIcon,
+  PlusIcon,
+  TrashIcon,
+  WhatsAppIcon,
+} from "@/components/ui/icons";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
-import {
-  cartSubtotal,
-  loadCart,
-  removeItem,
-  updateQty,
-} from "@/store/cart";
+import { cartSubtotal, loadCart, removeItem, updateQty } from "@/store/cart";
 import { saveOrder } from "@/store/orders";
 import { loadProfile, saveProfile } from "@/store/profile";
 
-
-export function CartView({ waE164 }: { waE164: string }) {
+export function CartView({
+  waE164,
+  kaspiNote,
+}: {
+  waE164: string;
+  kaspiNote: string;
+}) {
   const t = useTranslations();
   const locale = useLocale() as "ru" | "kk";
   const [items, setItems] = useState<CartItem[]>([]);
@@ -48,11 +53,12 @@ export function CartView({ waE164 }: { waE164: string }) {
 
   if (items.length === 0) {
     return (
-      <div className="border border-line bg-paper py-20 text-center">
-        <p className="text-sm text-muted">{t("cart.empty")}</p>
+      <div className="card px-6 py-20 text-center">
+        <p className="t-display t-h3">{t("cart.empty")}</p>
+        <p className="mt-2 text-sm text-muted">{t("orders.emptyHint")}</p>
         <Link
           href="/catalog"
-          className="mt-4 inline-block text-sm tracking-wide underline underline-offset-4 hover:opacity-60"
+          className={buttonClass("primary", "md", "mt-7 inline-flex")}
         >
           {t("cta.continueShopping")}
         </Link>
@@ -60,8 +66,10 @@ export function CartView({ waE164 }: { waE164: string }) {
     );
   }
 
+  const canSend = Boolean(meta.name.trim() && meta.city.trim());
+
   function send() {
-    if (!meta.name.trim() || !meta.city.trim()) return;
+    if (!canSend) return;
     const msg = buildOrderMessage({
       locale,
       meta: {
@@ -72,14 +80,18 @@ export function CartView({ waE164 }: { waE164: string }) {
       items,
       labels: {
         title:
-          locale === "kk" ? "Danial CN — жаңа тапсырыс" : "Danial CN — новый заказ",
+          locale === "kk"
+            ? "Danial CN — жаңа тапсырыс"
+            : "Danial CN — новый заказ",
         delivery: {
           cargo: t("delivery.cargo"),
           avia: t("delivery.avia"),
           express: t("delivery.express"),
         },
         replicaLine:
-          locale === "kk" ? "Danial CN · премиум багаж" : "Danial CN · премиум-багаж",
+          locale === "kk"
+            ? "Danial CN · премиум багаж"
+            : "Danial CN · премиум-багаж",
         paymentNote: t("payment.kaspiNote"),
         fields: {
           name: t("cart.name"),
@@ -110,133 +122,181 @@ export function CartView({ waE164 }: { waE164: string }) {
   }
 
   return (
-    <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr]">
-      <div className="space-y-6">
+    <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:gap-12">
+      {/* Items — min-w-0 lets the grid track shrink on narrow phones */}
+      <ul className="min-w-0 divide-y divide-line border-y border-line">
         {items.map((item) => (
-          <div
-            key={item.variantId}
-            className="flex gap-4 border-b border-line pb-6"
-          >
-            <div className="relative h-28 w-24 shrink-0 bg-white">
+          <li key={item.variantId} className="flex gap-3 py-5 sm:gap-5">
+            <Link
+              href={`/catalog/${item.slug}`}
+              className="media relative h-24 w-20 shrink-0 sm:h-32 sm:w-28"
+            >
               <Image
                 src={item.imageUrl}
                 alt={item.name}
                 fill
                 className="object-contain p-2"
-                sizes="96px"
+                sizes="112px"
               />
-            </div>
-            <div className="flex-1 space-y-2">
+            </Link>
+
+            <div className="flex min-w-0 flex-1 flex-col">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] tracking-widest text-muted uppercase">
-                    {item.brand}
-                  </p>
-                  <p className="text-sm">{item.name}</p>
-                  <p className="text-xs text-muted">
+                <div className="min-w-0">
+                  <p className="t-label text-muted">{item.brand}</p>
+                  <Link
+                    href={`/catalog/${item.slug}`}
+                    className="t-display mt-0.5 block truncate text-base hover:opacity-60"
+                  >
+                    {item.name}
+                  </Link>
+                  <p className="t-micro mt-1 text-muted">
                     {item.colorLabel} · {item.sizeLabel} · {item.material}
                   </p>
                 </div>
-              </div>
-              <p className="text-sm">
-                {formatKzt(item.unitPriceKzt * item.qty)}
-              </p>
-              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="h-8 w-8 border border-line"
-                  onClick={() => setItems(updateQty(item.variantId, item.qty - 1))}
-                >
-                  −
-                </button>
-                <span className="text-sm">{item.qty}</span>
-                <button
-                  type="button"
-                  className="h-8 w-8 border border-line"
-                  onClick={() => setItems(updateQty(item.variantId, item.qty + 1))}
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  className="ml-auto text-xs text-muted underline"
+                  aria-label={t("favorites.remove")}
+                  className="btn btn-ghost h-9 w-9 shrink-0 p-0 text-muted"
                   onClick={() => setItems(removeItem(item.variantId))}
                 >
-                  ×
+                  <TrashIcon />
                 </button>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="space-y-4 border border-line bg-white p-6">
-        <label className="block text-xs tracking-wide">
-          {t("cart.name")} *
-          <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
-            value={meta.name}
-            onChange={(e) => setMeta({ ...meta, name: e.target.value })}
-          />
-        </label>
-        <label className="block text-xs tracking-wide">
-          {t("cart.city")} *
-          <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
-            value={meta.city}
-            onChange={(e) => setMeta({ ...meta, city: e.target.value })}
-          />
-        </label>
-        <label className="block text-xs tracking-wide">
-          {t("cart.phone")}
-          <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
-            value={meta.phone ?? ""}
-            onChange={(e) => setMeta({ ...meta, phone: e.target.value })}
-          />
-        </label>
-        <fieldset className="space-y-2">
-          <legend className="text-xs tracking-wide">
-            {t("cart.deliveryMethod")}
-          </legend>
-          {(["cargo", "avia", "express"] as DeliveryMode[]).map((mode) => (
-            <label key={mode} className="flex items-center gap-2 text-sm">
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3">
+                <div
+                  className="inline-flex items-center rounded-full border border-line"
+                  role="group"
+                  aria-label={t("cart.qty")}
+                >
+                  <button
+                    type="button"
+                    aria-label="−"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone disabled:opacity-30"
+                    disabled={item.qty <= 1}
+                    onClick={() =>
+                      setItems(updateQty(item.variantId, item.qty - 1))
+                    }
+                  >
+                    <MinusIcon className="h-4 w-4" />
+                  </button>
+                  <span className="tabular w-8 text-center text-sm">
+                    {item.qty}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="+"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone"
+                    onClick={() =>
+                      setItems(updateQty(item.variantId, item.qty + 1))
+                    }
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="t-price text-base">
+                  {formatKzt(item.unitPriceKzt * item.qty)}
+                </p>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* Order form */}
+      <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">
+        <div className="card p-6">
+          <h2 className="t-display t-h3">{t("cta.sendWhatsApp")}</h2>
+
+          <div className="mt-5 space-y-4">
+            <label className="block">
+              <span className="field-label">{t("cart.name")} *</span>
               <input
-                type="radio"
-                name="delivery"
-                checked={meta.delivery === mode}
-                onChange={() => setMeta({ ...meta, delivery: mode })}
+                className="field"
+                value={meta.name}
+                autoComplete="name"
+                onChange={(e) => setMeta({ ...meta, name: e.target.value })}
               />
-              {t(`delivery.${mode}`)}
             </label>
-          ))}
-        </fieldset>
-        <label className="block text-xs tracking-wide">
-          {t("cart.comment")}
-          <textarea
-            className="mt-1 w-full border border-line px-3 py-2 text-sm outline-none focus:border-[var(--ink)]"
-            rows={3}
-            value={meta.comment ?? ""}
-            onChange={(e) => setMeta({ ...meta, comment: e.target.value })}
-          />
-        </label>
-        <p className="flex flex-wrap items-center gap-1.5 text-sm text-muted">
-          <KaspiBadge />
-          {t("payment.kaspiNote")}
-        </p>
-        <div className="flex items-center justify-between border-t border-line pt-4">
-          <span className="text-sm">{t("cart.subtotal")}</span>
-          <span className="text-lg">{formatKzt(cartSubtotal(items))}</span>
+            <label className="block">
+              <span className="field-label">{t("cart.city")} *</span>
+              <input
+                className="field"
+                value={meta.city}
+                autoComplete="address-level2"
+                onChange={(e) => setMeta({ ...meta, city: e.target.value })}
+              />
+            </label>
+            <label className="block">
+              <span className="field-label">{t("cart.phone")}</span>
+              <input
+                className="field"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+7 7__ ___ __ __"
+                value={meta.phone ?? ""}
+                onChange={(e) => setMeta({ ...meta, phone: e.target.value })}
+              />
+            </label>
+
+            <fieldset>
+              <legend className="field-label">
+                {t("cart.deliveryMethod")}
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {(["cargo", "avia", "express"] as DeliveryMode[]).map((mode) => (
+                  <label key={mode} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      className="peer sr-only"
+                      checked={meta.delivery === mode}
+                      onChange={() => setMeta({ ...meta, delivery: mode })}
+                    />
+                    <span className="chip peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-focus-visible:ring-offset-2">
+                      {t(`delivery.${mode}`)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <label className="block">
+              <span className="field-label">{t("cart.comment")}</span>
+              <textarea
+                className="field resize-y"
+                rows={3}
+                value={meta.comment ?? ""}
+                onChange={(e) => setMeta({ ...meta, comment: e.target.value })}
+              />
+            </label>
+          </div>
+
+          <div className="mt-6 flex items-baseline justify-between border-t border-line pt-5">
+            <span className="text-sm text-muted">{t("cart.subtotal")}</span>
+            <span className="t-price text-2xl">
+              {formatKzt(cartSubtotal(items))}
+            </span>
+          </div>
+
+          <Button
+            type="button"
+            size="lg"
+            className="mt-5 w-full"
+            disabled={!canSend}
+            onClick={send}
+          >
+            <WhatsAppIcon />
+            {t("cta.sendWhatsApp")}
+          </Button>
+
+          <p className="mt-4 flex items-start gap-2.5 text-[0.8125rem] leading-relaxed text-muted">
+            <KaspiBadge height={18} className="mt-0.5" />
+            {kaspiNote}
+          </p>
         </div>
-        <Button
-          type="button"
-          className="w-full gap-2"
-          disabled={!meta.name.trim() || !meta.city.trim()}
-          onClick={send}
-        >
-          <WhatsAppIcon />
-          {t("cta.sendWhatsApp")}
-        </Button>
       </div>
     </div>
   );

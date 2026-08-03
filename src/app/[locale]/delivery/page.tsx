@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
+import { TruckIcon } from "@/components/ui/icons";
 import { getSiteConfig } from "@/lib/settings";
 
 export async function generateMetadata({
@@ -62,19 +63,20 @@ export default async function DeliveryPage({
         subtitle={t("delivery.subtitle")}
       />
       <Container className="max-w-3xl py-14 sm:py-20">
-        <div className="grid gap-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           {blocks.map((b) => (
-            <div key={b.title} className="border border-line bg-white p-6">
-              <h2 className="text-sm tracking-widest uppercase">{b.title}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                {b.body}
-              </p>
+            <div key={b.title} className="card flex flex-col p-6">
+              <TruckIcon className="h-5 w-5 text-ink" />
+              <h2 className="t-display mt-4 text-lg">{b.title}</h2>
+              <p className="t-micro mt-2 text-muted">{b.body}</p>
             </div>
           ))}
         </div>
-        <div className="mt-6 border border-line bg-white p-6">
-          <KaspiBadge className="text-sm" />
-          <p className="mt-3 text-sm leading-relaxed text-muted">{kaspi}</p>
+        <div className="card mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 p-6">
+          <KaspiBadge height={26} />
+          <p className="min-w-[16rem] flex-1 text-sm leading-relaxed text-muted">
+            {kaspi}
+          </p>
         </div>
       </Container>
     </div>

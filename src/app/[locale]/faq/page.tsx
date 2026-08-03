@@ -35,16 +35,16 @@ export default async function FaqPage({
     <div>
       <PageHeader eyebrow={t("brand.name")} title={t("faq.title")} />
       <Container className="max-w-2xl py-14 sm:py-20">
-        <div>
+        <dl className="divide-y divide-line border-y border-line">
           {items.map(([q, a]) => (
-            <div key={q} className="border-b border-line py-6 first:pt-0">
-              <h2 className="text-sm">{t(`faq.${q}`)}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
+            <div key={q} className="py-7">
+              <dt className="t-display t-h3">{t(`faq.${q}`)}</dt>
+              <dd className="mt-3 leading-relaxed text-muted">
                 {t(`faq.${a}`)}
-              </p>
+              </dd>
             </div>
           ))}
-        </div>
+        </dl>
       </Container>
     </div>
   );

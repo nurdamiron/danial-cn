@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { CheckIcon, CloseIcon, SlidersIcon } from "@/components/ui/icons";
 
 export type FilterOption = { key: string; label: string; hex?: string };
 
@@ -42,6 +43,21 @@ export function CatalogFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+
+  // The drawer owns the screen while it is open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   const active = useMemo(
     () => ({
@@ -87,7 +103,6 @@ export function CatalogFilters({
   ];
 
   const pricePresets = [
-    { min: "", max: "", label: t("all") },
     {
       min: String(priceMin),
       max: "100000",
@@ -103,45 +118,83 @@ export function CatalogFilters({
       max: "200000",
       label: t("priceBetween", { a: "150 000", b: "200 000" }),
     },
-    {
-      min: "200000",
-      max: "",
-      label: t("priceFrom", { n: "200 000" }),
-    },
+    { min: "200000", max: "", label: t("priceFrom", { n: "200 000" }) },
   ];
 
   const panel = (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium">{t("filters")}</h2>
-        {activeCount > 0 ? (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-xs text-muted underline-offset-2 hover:underline"
-          >
-            {t("reset")}
-          </button>
-        ) : null}
-      </div>
-
-      {/* Category */}
+    <div className="space-y-7">
       <FilterGroup title={t("type")}>
         <div className="flex flex-wrap gap-2">
           {categories.map((c) => (
             <Chip
               key={c.key || "all"}
               active={active.category === c.key}
-              onClick={() =>
-                go({ category: c.key || null })
-              }
+              onClick={() => go({ category: c.key || null })}
               label={c.label}
             />
           ))}
         </div>
       </FilterGroup>
 
-      {/* Material / brand */}
+      <FilterGroup title={t("size")}>
+        <div className="flex flex-wrap gap-2">
+          <Chip
+            active={!active.size}
+            onClick={() => go({ size: null })}
+            label={t("all")}
+          />
+          {sizes.map((s) => (
+            <Chip
+              key={s.key}
+              active={active.size === s.key}
+              onClick={() => go({ size: active.size === s.key ? null : s.key })}
+              label={s.label}
+            />
+          ))}
+        </div>
+      </FilterGroup>
+
+      <FilterGroup title={t("color")}>
+        <div className="flex flex-wrap gap-x-3 gap-y-4">
+          {colors.map((c) => {
+            const on = active.color === c.key;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                title={c.label}
+                aria-pressed={on}
+                onClick={() => go({ color: on ? null : c.key })}
+                className="group flex w-14 flex-col items-center gap-1.5"
+              >
+                <span
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
+                    on
+                      ? "ring-2 ring-ink ring-offset-2 ring-offset-sand"
+                      : "ring-1 ring-line group-hover:ring-line-strong"
+                  }`}
+                >
+                  <span
+                    className="h-full w-full rounded-full ring-1 ring-black/10 ring-inset"
+                    style={{ backgroundColor: c.hex || "#ccc" }}
+                  />
+                  {on ? (
+                    <CheckIcon className="absolute h-4 w-4 text-paper mix-blend-difference" />
+                  ) : null}
+                </span>
+                <span
+                  className={`w-full text-center text-[0.6875rem] leading-tight ${
+                    on ? "text-ink" : "text-muted"
+                  }`}
+                >
+                  {c.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </FilterGroup>
+
       <FilterGroup title={t("material")}>
         <div className="flex flex-wrap gap-2">
           <Chip
@@ -162,109 +215,31 @@ export function CatalogFilters({
         </div>
       </FilterGroup>
 
-      {/* Size */}
-      <FilterGroup title={t("size")}>
-        <div className="flex flex-col gap-2">
-          {sizes.map((s) => (
-            <label
-              key={s.key}
-              className={`flex cursor-pointer items-center gap-3 border px-3 py-2.5 text-sm transition ${
-                active.size === s.key
-                  ? "border-ink bg-ink text-paper"
-                  : "border-line hover:border-ink"
-              }`}
-            >
-              <input
-                type="radio"
-                name="size"
-                className="sr-only"
-                checked={active.size === s.key}
-                onChange={() =>
-                  go({ size: active.size === s.key ? null : s.key })
-                }
-              />
-              <span className="flex-1">{s.label}</span>
-              {active.size === s.key ? (
-                <button
-                  type="button"
-                  className="text-xs opacity-70"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    go({ size: null });
-                  }}
-                >
-                  ×
-                </button>
-              ) : null}
-            </label>
-          ))}
-        </div>
-      </FilterGroup>
-
-      {/* Color swatches */}
-      <FilterGroup title={t("color")}>
-        <div className="flex flex-wrap gap-3">
-          {colors.map((c) => {
-            const on = active.color === c.key;
-            return (
-              <button
-                key={c.key}
-                type="button"
-                title={c.label}
-                onClick={() => go({ color: on ? null : c.key })}
-                className={`group flex flex-col items-center gap-1.5 ${on ? "" : "opacity-80 hover:opacity-100"}`}
-              >
-                <span
-                  className={`relative h-10 w-10 rounded-full border-2 transition ${
-                    on ? "border-ink scale-110" : "border-transparent"
-                  }`}
-                >
-                  <span
-                    className="absolute inset-1 rounded-full border border-black/10"
-                    style={{ backgroundColor: c.hex || "#ccc" }}
-                  />
-                </span>
-                <span
-                  className={`max-w-[4.5rem] truncate text-[10px] ${
-                    on ? "text-ink" : "text-muted"
-                  }`}
-                >
-                  {c.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </FilterGroup>
-
-      {/* Price */}
       <FilterGroup title={t("price")}>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Chip
+            active={!active.minPrice && !active.maxPrice}
+            onClick={() => go({ minPrice: null, maxPrice: null })}
+            label={t("all")}
+          />
           {pricePresets.map((p) => {
-            const on =
-              active.minPrice === p.min && active.maxPrice === p.max;
+            const on = active.minPrice === p.min && active.maxPrice === p.max;
             return (
-              <button
+              <Chip
                 key={p.label}
-                type="button"
+                active={on}
+                label={p.label}
                 onClick={() =>
                   go({
                     minPrice: on ? null : p.min || null,
                     maxPrice: on ? null : p.max || null,
                   })
                 }
-                className={`border px-3 py-2.5 text-left text-sm transition ${
-                  on
-                    ? "border-ink bg-ink text-paper"
-                    : "border-line hover:border-ink"
-                }`}
-              >
-                {p.label}
-              </button>
+              />
             );
           })}
         </div>
-        <p className="mt-2 text-[11px] text-muted">
+        <p className="mt-3 text-[0.75rem] text-muted">
           {t("priceRangeHint", {
             min: priceMin.toLocaleString("ru-RU"),
             max: priceMax.toLocaleString("ru-RU"),
@@ -272,15 +247,12 @@ export function CatalogFilters({
         </p>
       </FilterGroup>
 
-      {/* In stock */}
-      <label className="flex cursor-pointer items-center gap-3 text-sm">
+      <label className="flex cursor-pointer items-center gap-3 border-t border-line pt-5 text-sm">
         <input
           type="checkbox"
           checked={active.inStock}
-          onChange={(e) =>
-            go({ inStock: e.target.checked ? "1" : null })
-          }
-          className="h-4 w-4 accent-ink"
+          onChange={(e) => go({ inStock: e.target.checked ? "1" : null })}
+          className="h-4 w-4 rounded-[3px] accent-[var(--ink)]"
         />
         <span>{t("inStockOnly")}</span>
       </label>
@@ -289,58 +261,63 @@ export function CatalogFilters({
 
   return (
     <>
-      {/* Mobile bar */}
+      {/* Mobile: filters + sort */}
       <div className="mb-6 flex items-center gap-2 lg:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex flex-1 items-center justify-center gap-2 border border-ink bg-paper px-4 py-3 text-sm"
+          className="btn btn-outline h-11 flex-1 px-4 text-sm"
         >
+          <SlidersIcon className="h-[18px] w-[18px]" />
           {t("filters")}
           {activeCount > 0 ? (
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-[11px] text-paper">
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-[0.6875rem] text-paper">
               {activeCount}
             </span>
           ) : null}
         </button>
-        <select
-          className="border border-line bg-paper px-3 py-3 text-sm outline-none"
+        <SortSelect
           value={active.sort}
-          onChange={(e) => go({ sort: e.target.value === "new" ? null : e.target.value })}
-          aria-label={t("sort")}
-        >
-          <option value="new">{t("sortNew")}</option>
-          <option value="price_asc">{t("sortPriceAsc")}</option>
-          <option value="price_desc">{t("sortPriceDesc")}</option>
-        </select>
+          onChange={(v) => go({ sort: v === "new" ? null : v })}
+          className="h-11 flex-1"
+        />
       </div>
 
-      {/* Mobile drawer */}
       {open ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-[60] lg:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-ink/40"
+            className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]"
             aria-label={t("close")}
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 flex w-[min(100%,20rem)] flex-col bg-paper shadow-xl">
-            <div className="flex items-center justify-between border-b border-line px-4 py-4">
-              <span className="text-sm font-medium">{t("filters")}</span>
+          <div className="slide-in-left absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col bg-sand">
+            <div className="flex items-center justify-between border-b border-line px-5 py-4">
+              <span className="t-display text-lg">{t("filters")}</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-sm text-muted"
+                aria-label={t("close")}
+                className="btn btn-ghost h-9 w-9 p-0"
               >
-                {t("close")}
+                <CloseIcon />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-6">{panel}</div>
-            <div className="border-t border-line p-4">
+            <div className="flex-1 overflow-y-auto px-5 py-6">{panel}</div>
+            <div className="flex gap-2 border-t border-line bg-paper p-4">
+              {activeCount > 0 ? (
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="btn btn-outline h-12 px-5 text-sm"
+                >
+                  {t("reset")}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="w-full bg-ink py-3 text-sm text-paper"
+                className="btn btn-primary h-12 flex-1 text-sm"
               >
                 {t("showResults", { n: resultCount })}
               </button>
@@ -350,16 +327,28 @@ export function CatalogFilters({
       ) : null}
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block">{panel}</aside>
+      <aside className="hidden lg:block">
+        <div className="sticky top-32">
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <h2 className="t-label text-muted">{t("filters")}</h2>
+            {activeCount > 0 ? (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="link-quiet text-[0.8125rem]"
+              >
+                {t("reset")}
+              </button>
+            ) : null}
+          </div>
+          {panel}
+        </div>
+      </aside>
     </>
   );
 }
 
-export function CatalogSortBar({
-  resultCount,
-}: {
-  resultCount: number;
-}) {
+export function CatalogSortBar({ resultCount }: { resultCount: number }) {
   const t = useTranslations("catalog");
   const router = useRouter();
   const pathname = usePathname();
@@ -376,22 +365,36 @@ export function CatalogSortBar({
 
   return (
     <div className="mb-8 hidden items-center justify-between gap-4 border-b border-line pb-4 lg:flex">
-      <p className="text-sm text-muted">
-        {t("found", { n: resultCount })}
-      </p>
+      <p className="t-data text-muted">{t("found", { n: resultCount })}</p>
       <label className="flex items-center gap-2 text-sm">
         <span className="text-muted">{t("sort")}</span>
-        <select
-          className="border border-line bg-paper px-3 py-2 outline-none"
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-        >
-          <option value="new">{t("sortNew")}</option>
-          <option value="price_asc">{t("sortPriceAsc")}</option>
-          <option value="price_desc">{t("sortPriceDesc")}</option>
-        </select>
+        <SortSelect value={sort} onChange={setSort} className="h-10" />
       </label>
     </div>
+  );
+}
+
+function SortSelect({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+}) {
+  const t = useTranslations("catalog");
+  return (
+    <select
+      aria-label={t("sort")}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`field cursor-pointer appearance-none rounded-full bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e5e5e' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E")] bg-[length:18px_18px] bg-[position:right_0.75rem_center] bg-no-repeat py-0 pr-10 pl-4 text-sm ${className}`}
+    >
+      <option value="new">{t("sortNew")}</option>
+      <option value="price_asc">{t("sortPriceAsc")}</option>
+      <option value="price_desc">{t("sortPriceDesc")}</option>
+    </select>
   );
 }
 
@@ -404,7 +407,7 @@ function FilterGroup({
 }) {
   return (
     <div>
-      <p className="mb-3 text-xs font-medium tracking-wide text-ink">{title}</p>
+      <p className="t-label mb-3 text-ink">{title}</p>
       {children}
     </div>
   );
@@ -423,11 +426,9 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`border px-3 py-1.5 text-xs transition ${
-        active
-          ? "border-ink bg-ink text-paper"
-          : "border-line text-ink hover:border-ink"
-      }`}
+      data-active={active}
+      aria-pressed={active}
+      className="chip"
     >
       {label}
     </button>

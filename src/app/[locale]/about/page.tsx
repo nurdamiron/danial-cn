@@ -30,7 +30,7 @@ export default async function AboutPage({
     <div>
       <PageHeader eyebrow={t("brand.name")} title={t("about.title")} />
       <Container className="max-w-2xl py-14 sm:py-20">
-        <p className="text-sm leading-relaxed text-muted">{t("about.body")}</p>
+        <p className="t-lead text-ink/85">{t("about.body")}</p>
       </Container>
     </div>
   );

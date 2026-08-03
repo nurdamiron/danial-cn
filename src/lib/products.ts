@@ -150,12 +150,17 @@ function buildFilterOptions(locale: string, products: FilterProduct[]) {
     }
   }
 
-  const sizeOrder = ["55", "65", "75"];
+  // Shell height ascending; non-numeric keys ("set", "one") go last
+  const sizeRank = (key: string) => {
+    const cm = Number.parseInt(key, 10);
+    return Number.isFinite(cm) ? cm : Number.MAX_SAFE_INTEGER;
+  };
+
   return {
     brands: [...brands.entries()].map(([key, label]) => ({ key, label })),
     colors: [...colors.values()],
     sizes: [...sizes.values()].sort(
-      (a, b) => sizeOrder.indexOf(a.key) - sizeOrder.indexOf(b.key),
+      (a, b) => sizeRank(a.key) - sizeRank(b.key),
     ),
     minPrice: Number.isFinite(minPrice) ? minPrice : 0,
     maxPrice: maxPrice || 0,

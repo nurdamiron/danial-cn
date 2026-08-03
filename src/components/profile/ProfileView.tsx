@@ -12,6 +12,7 @@ import {
 import { loadOrders } from "@/store/orders";
 import { loadFavorites } from "@/store/favorites";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
+import { buttonClass } from "@/components/ui/Button";
 
 type SessionUser = {
   id: string;
@@ -36,7 +37,7 @@ function RowIcon({
         : "bg-stone text-ink";
   return (
     <span
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bg}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${bg}`}
     >
       {children}
     </span>
@@ -157,48 +158,44 @@ export function ProfileView() {
 
   if (user === undefined) {
     return (
-      <div className="border border-line bg-paper py-16 text-center text-sm text-muted">
-        …
+      <div className="space-y-4">
+        <div className="skeleton h-52 rounded-lg" />
+        <div className="skeleton h-16 rounded-lg" />
+        <div className="skeleton h-16 rounded-lg" />
       </div>
     );
   }
 
-  /** Guest cabinet gate — structure like e-com profile (login card + device rows) */
+  /** Guest cabinet gate — login card, then the rows that work without an account */
   if (!user) {
     return (
-      <div className="space-y-6">
-        <section className="overflow-hidden rounded-2xl border border-line bg-ink text-paper shadow-sm">
-          <div className="px-6 pb-8 pt-10 text-center">
-            <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border-2 border-paper/15 bg-paper text-xl font-light tracking-wide text-ink">
+      <div className="space-y-8">
+        <section className="on-dark overflow-hidden rounded-lg bg-ink text-paper">
+          <div className="px-6 pt-10 pb-9 text-center">
+            <span className="t-display mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-paper text-xl text-ink">
               DC
-            </div>
-            <h1 className="mt-5 text-xl font-light tracking-tight">
-              {t("cabinet")}
-            </h1>
-            <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-paper/55">
+            </span>
+            <h1 className="t-display t-h3 mt-5">{t("cabinet")}</h1>
+            <p className="mx-auto mt-2.5 max-w-xs text-sm leading-relaxed text-paper/60">
               {t("loginHint")}
             </p>
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Link
-                href="/login"
-                className="inline-flex h-11 items-center justify-center rounded-full bg-paper px-8 text-sm text-ink"
-              >
+            <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+              <Link href="/login" className={buttonClass("secondary", "md")}>
                 {tAuth("loginBtn")}
               </Link>
               <Link
                 href="/register"
-                className="inline-flex h-11 items-center justify-center rounded-full border border-paper/30 px-8 text-sm text-paper"
+                className={buttonClass("outlineInverse", "md")}
               >
                 {tAuth("registerBtn")}
               </Link>
             </div>
           </div>
+          <div className="flute-edge-dark" aria-hidden="true" />
         </section>
 
         <section>
-          <h2 className="mb-3 px-1 text-[11px] tracking-[0.18em] text-muted uppercase">
-            {t("settings")}
-          </h2>
+          <h2 className="t-label mb-3 px-1 text-muted">{t("settings")}</h2>
           <div className="space-y-2">
             <SettingsRow
               href="/orders"
@@ -220,7 +217,7 @@ export function ProfileView() {
               title={t("favorites")}
               subtitle={t("favoritesHint", { n: favCount })}
             />
-            <div className="flex items-center justify-between rounded-2xl border border-line bg-paper px-4 py-3.5">
+            <div className="card flex items-center justify-between px-4 py-3.5">
               <div className="flex items-center gap-3">
                 <RowIcon>
                   <GlobeIcon />
@@ -245,22 +242,23 @@ export function ProfileView() {
   const initials = profileInitials(displayName);
 
   return (
-    <div className="space-y-6">
-      {/* Profile hero card — e-com structure, Danial monochrome palette */}
-      <section className="overflow-hidden rounded-2xl border border-line bg-ink text-paper shadow-sm">
-        <div className="px-6 pb-8 pt-10 text-center">
-          <div className="mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border-2 border-paper/15 bg-paper text-xl font-light tracking-wide text-ink">
+    <div className="space-y-8">
+      <section className="on-dark overflow-hidden rounded-lg bg-ink text-paper">
+        <div className="px-6 pt-10 pb-9 text-center">
+          <span className="t-display mx-auto flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-paper text-xl text-ink">
             {initials}
-          </div>
-          <h1 className="mt-5 text-xl font-light tracking-tight">{displayName}</h1>
-          <p className="mt-1.5 text-sm text-paper/55">{user.email}</p>
-          {(user.phone || profile.phone) && (
-            <p className="mt-1 text-sm text-paper/45">
+          </span>
+          <h1 className="t-display t-h3 mt-5">{displayName}</h1>
+          <p className="mt-1.5 text-sm text-paper/60">{user.email}</p>
+          {user.phone || profile.phone ? (
+            <p className="t-data mt-1 text-paper/50">
               {user.phone || profile.phone}
             </p>
-          )}
-          <p className="mt-2 text-[10px] tracking-[0.16em] text-paper/40 uppercase">
-            {user.role === "ADMIN" ? "admin" : t("member")}
+          ) : null}
+          <p className="mt-3">
+            <span className="tag tag-dark">
+              {user.role === "ADMIN" ? "admin" : t("member")}
+            </span>
           </p>
           <button
             type="button"
@@ -272,14 +270,14 @@ export function ProfileView() {
               });
               setEditing((v) => !v);
             }}
-            className="mt-5 inline-flex items-center gap-2 rounded-full border border-paper/25 px-6 py-2.5 text-xs tracking-wide text-paper transition hover:bg-paper/10"
+            className={buttonClass("outlineInverse", "sm", "mt-6")}
           >
             {editing ? t("cancel") : t("edit")}
           </button>
         </div>
 
         {editing ? (
-          <div className="space-y-3 border-t border-paper/10 bg-paper p-5 text-ink">
+          <div className="space-y-4 border-t border-white/10 bg-paper p-6 text-ink">
             <Field
               label={t("name")}
               value={draft.name}
@@ -288,6 +286,7 @@ export function ProfileView() {
             <Field
               label={t("phone")}
               value={draft.phone}
+              type="tel"
               onChange={(v) => setDraft((d) => ({ ...d, phone: v }))}
             />
             <Field
@@ -295,45 +294,47 @@ export function ProfileView() {
               value={draft.city}
               onChange={(v) => setDraft((d) => ({ ...d, city: v }))}
             />
-            <div className="border-t border-line pt-3">
-              <p className="mb-2 text-[10px] tracking-wide text-muted uppercase">
-                {tAuth("changePassword")}
-              </p>
+            <div className="space-y-4 border-t border-line pt-4">
+              <p className="t-label text-muted">{tAuth("changePassword")}</p>
               <Field
                 label={tAuth("currentPassword")}
                 value={pwd.current}
                 type="password"
                 onChange={(v) => setPwd((p) => ({ ...p, current: v }))}
               />
-              <div className="mt-2">
-                <Field
-                  label={tAuth("newPassword")}
-                  value={pwd.next}
-                  type="password"
-                  onChange={(v) => setPwd((p) => ({ ...p, next: v }))}
-                />
-              </div>
+              <Field
+                label={tAuth("newPassword")}
+                value={pwd.next}
+                type="password"
+                onChange={(v) => setPwd((p) => ({ ...p, next: v }))}
+              />
             </div>
-            {error ? <p className="text-xs text-red-600">{error}</p> : null}
+            {error ? (
+              <p
+                role="alert"
+                className="alert-error"
+              >
+                {error}
+              </p>
+            ) : null}
             <button
               type="button"
               disabled={saving}
               onClick={() => void saveEdit()}
-              className="h-11 w-full rounded-full bg-ink text-sm text-paper disabled:opacity-50"
+              className="btn btn-primary h-12 w-full text-sm"
             >
               {saving ? "…" : t("save")}
             </button>
           </div>
-        ) : null}
+        ) : (
+          <div className="flute-edge-dark" aria-hidden="true" />
+        )}
       </section>
 
-      {/* Settings list — same structure as reference */}
       <section>
-        <h2 className="mb-3 px-1 text-[11px] tracking-[0.18em] text-muted uppercase">
-          {t("settings")}
-        </h2>
+        <h2 className="t-label mb-3 px-1 text-muted">{t("settings")}</h2>
         <div className="space-y-2">
-          <div className="flex items-center justify-between rounded-2xl border border-line bg-paper px-4 py-3.5">
+          <div className="card flex items-center justify-between px-4 py-3.5">
             <div className="flex items-center gap-3">
               <RowIcon>
                 <GlobeIcon />
@@ -394,7 +395,7 @@ export function ProfileView() {
           <button
             type="button"
             onClick={() => void logout()}
-            className="flex w-full items-center justify-between rounded-2xl border border-line bg-paper px-4 py-3.5 text-left transition hover:border-ink"
+            className="card flex w-full items-center justify-between px-4 py-3.5 text-left transition hover:border-line-strong"
           >
             <div className="flex items-center gap-3">
               <RowIcon tone="line">
@@ -407,7 +408,7 @@ export function ProfileView() {
           {user.role === "ADMIN" ? (
             <a
               href="/admin"
-              className="flex items-center justify-between rounded-2xl border border-line bg-paper px-4 py-3.5 transition hover:border-ink"
+              className="card flex items-center justify-between px-4 py-3.5 transition hover:border-line-strong"
             >
               <div className="flex items-center gap-3">
                 <RowIcon tone="ink">
@@ -440,18 +441,23 @@ function SettingsRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-paper px-4 py-3.5 transition hover:border-ink"
+      className="card group flex items-center justify-between gap-3 px-4 py-3.5 transition hover:border-line-strong"
     >
       <div className="flex min-w-0 items-center gap-3">
         {icon}
         <div className="min-w-0">
           <p className="text-sm">{title}</p>
-          <p className="truncate text-xs text-muted">{subtitle}</p>
+          <p className="t-micro truncate text-muted">{subtitle}</p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2.5">
         {extra}
-        <span className="text-muted">›</span>
+        <span
+          aria-hidden="true"
+          className="text-muted transition-transform duration-300 group-hover:translate-x-0.5"
+        >
+          →
+        </span>
       </div>
     </Link>
   );
@@ -471,18 +477,24 @@ function LangToggle({
   kk: string;
 }) {
   return (
-    <div className="flex overflow-hidden rounded-full border border-line text-xs">
+    <div className="inline-flex items-center rounded-full border border-line p-0.5">
       <button
         type="button"
         onClick={onRu}
-        className={`px-3 py-1.5 ${locale === "ru" ? "bg-ink text-paper" : "text-muted"}`}
+        aria-pressed={locale === "ru"}
+        className={`t-label rounded-full px-2.5 py-1.5 transition ${
+          locale === "ru" ? "bg-ink text-paper" : "text-muted hover:text-ink"
+        }`}
       >
         {ru}
       </button>
       <button
         type="button"
         onClick={onKk}
-        className={`px-3 py-1.5 ${locale === "kk" ? "bg-ink text-paper" : "text-muted"}`}
+        aria-pressed={locale === "kk"}
+        className={`t-label rounded-full px-2.5 py-1.5 transition ${
+          locale === "kk" ? "bg-ink text-paper" : "text-muted hover:text-ink"
+        }`}
       >
         {kk}
       </button>
@@ -502,11 +514,11 @@ function Field({
   type?: string;
 }) {
   return (
-    <label className="block text-xs text-muted">
-      {label}
+    <label className="block">
+      <span className="field-label">{label}</span>
       <input
         type={type}
-        className="mt-1 w-full border border-line px-3 py-2.5 text-sm text-ink"
+        className="field"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />

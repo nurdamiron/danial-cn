@@ -1,145 +1,499 @@
 @import "tailwindcss";
 
 /*
-  Danial CN color system (Rimowa / premium luggage e-com inspired)
-  --------------------------------------------------------------
-  --ink      #0B0B0B  primary text, dark bands, CTAs
-  --paper    #FFFFFF  product cards, clean surfaces
-  --sand     #F5F4F1  page background (warm off-white, not cold gray)
-  --muted    #6F6F6F  secondary text (AA on sand/paper)
-  --line     #E6E4E0  hairline borders
-  --stone    #EFEDE8  soft section alternate
-  White product photos sit on pure white; page uses warm sand for contrast.
+  Danial CN — design system "Anodized"
+  ====================================
+  The products are milled aluminium and matte polycarbonate shells, sold to
+  people who are about to fly somewhere. Everything below comes from that
+  world: cold metal hairlines, airport light, machined technical data.
+
+  Surfaces   ink / graphite  dark bands, CTAs
+             sand            page ground (warm off-white, never cold gray)
+             paper           product media and cards — product shots are on white
+  Metal      alu             cool aluminium: rules, flutes, data on dark
+  Voice      display  Manrope    — headlines, prices, product names
+             sans     Golos Text — Cyrillic-first UI and body copy (RU + KK)
+             mono     JetBrains  — dimensions, SKU, size codes, eyebrows
 */
 
 :root {
+  /* Surfaces */
   --ink: #0b0b0b;
+  --graphite: #17181b;
+  --sand: #f2f1ed;
+  --stone: #e8e6e1;
   --paper: #ffffff;
-  --sand: #f5f4f1;
-  --stone: #efede8;
-  --muted: #6f6f6f;
-  --line: #e6e4e0;
+
+  /* Lines */
+  --line: #e2dfda;
+  --line-strong: #cbc7c0;
+
+  /* Text */
+  --muted: #5e5e5e; /* AA on sand and paper */
+
+  /* Metal */
+  --alu: #9aa0a8;
+  --alu-line: rgba(154, 160, 168, 0.22);
+  --alu-line-dark: rgba(11, 11, 11, 0.14);
+
+  /* Brand-adjacent */
+  --kaspi: #f14635;
+  /* Kaspi red is only AA as a fill behind white; error copy needs a darker red */
+  --danger: #b3261e;
+  --danger-tint: #fdf3f2;
+
+  /* Radii — soft on frames, tight on controls */
+  --r-xs: 3px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
   --background: var(--sand);
   --foreground: var(--ink);
-  --card: var(--paper);
-  --accent: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-card: var(--card);
   --color-ink: var(--ink);
+  --color-graphite: var(--graphite);
   --color-paper: var(--paper);
   --color-sand: var(--sand);
   --color-stone: var(--stone);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-muted: var(--muted);
+  --color-alu: var(--alu);
+  --color-kaspi: var(--kaspi);
+  --color-danger: var(--danger);
+
   --font-sans: var(--font-sans-family);
+  --font-display: var(--font-display-family);
+  --font-mono: var(--font-mono-family);
+
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
 }
 
-/* Explicit utilities so dark/light surfaces never lose contrast */
-.bg-ink {
-  background-color: var(--ink) !important;
-}
-.bg-paper {
-  background-color: var(--paper) !important;
-}
-.bg-sand {
-  background-color: var(--sand) !important;
-}
-.bg-stone {
-  background-color: var(--stone) !important;
-}
-.text-ink {
-  color: var(--ink) !important;
-}
-.text-paper {
-  color: var(--paper) !important;
-}
-.text-muted {
-  color: var(--muted) !important;
-}
-.border-line {
-  border-color: var(--line) !important;
-}
-.border-ink {
-  border-color: var(--ink) !important;
-}
-.accent-ink {
-  accent-color: var(--ink);
-}
-.text-paper\/65 {
-  color: color-mix(in srgb, var(--paper) 65%, transparent) !important;
-}
-.text-paper\/55 {
-  color: color-mix(in srgb, var(--paper) 55%, transparent) !important;
-}
-.text-paper\/45 {
-  color: color-mix(in srgb, var(--paper) 45%, transparent) !important;
-}
-.bg-paper\/35 {
-  background-color: color-mix(in srgb, var(--paper) 35%, transparent) !important;
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--sand);
+    color: var(--ink);
+    font-family: var(--font-sans-family), "Noto Sans", system-ui, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    letter-spacing: 0;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  /* Prices and dimensions must never jitter between states */
+  :where(.t-price, .t-data, table, input, .tabular) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* One focus treatment across the site — ink, never browser blue */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: var(--r-xs);
+  }
+
+  /* …and its inverse for controls sitting on ink */
+  .on-dark :where(a, button, [tabindex]):focus-visible {
+    outline-color: var(--paper);
+  }
 }
 
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer components {
+  /* ---------------------------------------------------------------- type */
+
+  .t-display {
+    font-family: var(--font-display-family), system-ui, sans-serif;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.06;
+  }
+
+  .t-hero {
+    font-size: clamp(2.125rem, 1.35rem + 3.4vw, 4.25rem);
+  }
+
+  .t-h1 {
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 2.875rem);
+  }
+
+  .t-h2 {
+    font-size: clamp(1.375rem, 1.15rem + 1.05vw, 2rem);
+  }
+
+  .t-h3 {
+    font-size: clamp(1.0625rem, 0.98rem + 0.4vw, 1.25rem);
+    line-height: 1.25;
+  }
+
+  .t-price {
+    font-family: var(--font-display-family), system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+
+  .t-lead {
+    font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+    line-height: 1.65;
+  }
+
+  /*
+    Machined data: cm, litres, kg, SKU, counts, dates. Never for prose —
+    JetBrains Mono has no Kazakh ә ғ қ ң ұ һ, so any word carrying them would
+    silently swap to a system font mid-line.
+  */
+  .t-data {
+    font-family: var(--font-mono-family), ui-monospace, monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Section eyebrows and micro-labels — localized words, so sans, not mono */
+  .t-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+
+  .t-micro {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  /* ------------------------------------------------------------ signature */
+
+  /*
+    The flute. Every aluminium shell in the catalogue is defined by its
+    vertical ribs — so section edges, the hero base and the order band carry
+    the same rhythm instead of a plain 1px rule.
+  */
+  .flute {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--alu-line-dark) 0 1px,
+      transparent 1px 10px
+    );
+  }
+
+  .flute-dark {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--alu-line) 0 1px,
+      transparent 1px 10px
+    );
+  }
+
+  /* A drawn shell: ribbed anodized face, lit from the left */
+  .shell-body {
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        rgba(11, 11, 11, 0.11) 0 1px,
+        transparent 1px 8px
+      ),
+      linear-gradient(100deg, #fcfcfb 0%, #e6e4df 52%, #f8f7f5 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -8px 12px -10px rgba(11, 11, 11, 0.25);
+  }
+
+  .flute-edge {
+    height: 10px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--line-strong) 0 1px,
+      transparent 1px 9px
+    );
+    mask-image: linear-gradient(to bottom, #000, transparent);
+  }
+
+  .flute-edge-dark {
+    height: 14px;
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(154, 160, 168, 0.45) 0 1px,
+      transparent 1px 9px
+    );
+    mask-image: linear-gradient(to top, #000, transparent);
+  }
+
+  /* ------------------------------------------------------------- surfaces */
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
+
+  .card-dark {
+    background: var(--graphite);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--r-lg);
+  }
+
+  /* Product photography sits on pure white, always */
+  .media {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+
+  .lift {
+    transition:
+      transform 0.5s var(--ease),
+      box-shadow 0.5s var(--ease),
+      border-color 0.3s var(--ease);
+  }
+
+  .lift:hover {
+    transform: translateY(-4px);
+    border-color: var(--line-strong);
+    box-shadow: 0 28px 50px -32px rgba(11, 11, 11, 0.35);
+  }
+
+  /* ------------------------------------------------------------- controls */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s var(--ease),
+      color 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #000;
+  }
+
+  .btn-secondary {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--sand);
+  }
+
+  .btn-outline {
+    border-color: var(--line-strong);
+    color: var(--ink);
+    background: transparent;
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .btn-outline-inverse {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: var(--paper);
+    background: transparent;
+  }
+
+  .btn-outline-inverse:hover:not(:disabled) {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--paper);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: rgba(11, 11, 11, 0.06);
+  }
+
+  /* Selectable option: filter chips, colours, sizes */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 999px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    color: var(--ink);
+    transition:
+      border-color 0.2s var(--ease),
+      background-color 0.2s var(--ease),
+      color 0.2s var(--ease);
+  }
+
+  .chip:hover:not(:disabled) {
+    border-color: var(--line-strong);
+  }
+
+  .chip[data-active="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .field {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .field::placeholder {
+    color: #9c9c9c;
+  }
+
+  .field:hover {
+    border-color: var(--line-strong);
+  }
+
+  .field:focus {
+    border-color: var(--ink);
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  /* Errors state what went wrong; they never apologise and never shout */
+  .alert-error {
+    border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
+    background: var(--danger-tint);
+    border-radius: var(--r-md);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--danger);
+  }
+
+  /* A luggage tag: size code, stock state, badges */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xs);
+    padding: 0.25rem 0.4375rem;
+    background: var(--paper);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .tag-dark {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--alu);
+  }
 }
 
-/* Consistent keyboard focus ring across the whole site (ink, not browser blue) */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+@layer utilities {
+  .link-quiet {
+    color: var(--muted);
+    text-underline-offset: 4px;
+    transition: color 0.2s var(--ease);
+  }
+
+  .link-quiet:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-/* For controls that sit on dark (ink) surfaces — e.g. hero slide dots */
-.focus-ring-inverse:focus-visible {
-  outline-color: var(--paper);
+/* ---------------------------------------------------------------- motion */
+
+/* Hero load: one orchestrated sequence, not scattered effects */
+.rise {
+  animation: rise 0.9s var(--ease) both;
 }
 
-body {
-  background: var(--sand);
-  color: var(--ink);
-  font-family: var(--font-sans-family), "Noto Sans", system-ui, sans-serif;
-  /* lighter tracking — better for Kazakh multi-glyph words */
-  letter-spacing: 0;
-  line-height: 1.55;
-  font-feature-settings: "kern" 1, "liga" 1;
+.rise-1 {
+  animation-delay: 0.05s;
+}
+.rise-2 {
+  animation-delay: 0.15s;
+}
+.rise-3 {
+  animation-delay: 0.25s;
+}
+.rise-4 {
+  animation-delay: 0.35s;
 }
 
-::selection {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.product-media {
-  background: #ffffff;
-}
-
-.card-lift {
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.card-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 24px 48px -28px rgba(11, 11, 11, 0.28);
-}
-
-.fade-in {
-  animation: fadeUp 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes fadeUp {
+@keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -147,22 +501,49 @@ body {
   }
 }
 
-/* cinematic hero pan/zoom when video file is unavailable */
-.hero-kenburns {
-  animation: kenburns 8.5s ease-out both;
+/* Gallery swaps: cross-fade rather than a hard cut */
+.fade-in {
+  animation: fadeIn 0.45s var(--ease) both;
 }
 
-@keyframes kenburns {
+@keyframes fadeIn {
   from {
-    transform: scale(1.08) translate3d(0, 0, 0);
+    opacity: 0;
   }
   to {
-    transform: scale(1) translate3d(0, -1.5%, 0);
+    opacity: 1;
   }
+}
+
+.hero-pan {
+  animation: heroPan 18s ease-out both;
+}
+
+@keyframes heroPan {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Scroll reveal — one fade+rise per section, never per element */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .marquee {
-  animation: marquee 28s linear infinite;
+  animation: marquee 34s linear infinite;
   width: max-content;
 }
 
@@ -175,28 +556,50 @@ body {
   }
 }
 
-/* Scroll reveal — one orchestrated fade+rise per section, not per element */
-.reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+.dropdown-in {
+  animation: dropdownIn 0.18s var(--ease) both;
 }
 
-.reveal-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
     opacity: 1;
-    transform: none;
-    transition: none;
+    transform: translateY(0) scale(1);
   }
 }
 
-/* Loading skeletons — quiet neutral blocks with a slow, subtle sweep */
+.sheet-in {
+  animation: sheetIn 0.28s var(--ease) both;
+}
+
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.3s var(--ease) both;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Loading skeletons — quiet neutral blocks with a slow sweep */
 .skeleton {
   position: relative;
   overflow: hidden;
@@ -211,7 +614,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.55),
     transparent
   );
   animation: skeletonSweep 1.8s ease-in-out infinite;
@@ -223,27 +626,25 @@ body {
   }
 }
 
-.dropdown-in {
-  animation: dropdownIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes dropdownIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .hero-kenburns,
-  .marquee,
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .rise,
   .fade-in,
+  .hero-pan,
+  .marquee,
   .dropdown-in,
+  .sheet-in,
+  .slide-in-left,
   .skeleton::after {
     animation: none !important;
+  }
+
+  .lift:hover {
+    transform: none;
   }
 }
