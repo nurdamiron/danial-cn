@@ -86,9 +86,15 @@ export default function middleware(req: NextRequest) {
     }
   }
 
-  // API routes carry no locale — without this next-intl rewrites
-  // /api/auth/me to /ru/api/auth/me and the cabinet never sees its session.
-  if (pathname === "/api" || pathname.startsWith("/api/")) {
+  // The admin app and the APIs are not localized. Without this next-intl
+  // prefixes them — /api/auth/me becomes /ru/api/auth/me (the cabinet never
+  // sees its session) and /admin/login becomes /ru/admin/login (404).
+  if (
+    pathname === "/api" ||
+    pathname.startsWith("/api/") ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/")
+  ) {
     return NextResponse.next();
   }
 

@@ -116,8 +116,8 @@ export function ProfileView() {
     setSaving(true);
     setError("");
     try {
-      saveProfile(draft);
-      setProfile(draft);
+      // Signed in: the server decides first. Persisting locally before it
+      // answers would show a rejected edit as saved until the next reload.
       if (user) {
         const body: Record<string, string> = {
           name: draft.name,
@@ -140,6 +140,10 @@ export function ProfileView() {
         setUser(data.user);
         setPwd({ current: "", next: "" });
       }
+
+      // City lives only on this device — the server has no field for it.
+      saveProfile(draft);
+      setProfile(draft);
       setEditing(false);
     } finally {
       setSaving(false);
