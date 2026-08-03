@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 import { UsersAdmin } from "@/components/admin/UsersAdmin";
 import { getCurrentUser } from "@/lib/auth";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { hasDatabase } from "@/lib/db-config";
 
 export default async function AdminUsersPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/admin/login");
   if (user.role !== "ADMIN") redirect("/admin/account");
-  if (isStaticCatalog()) redirect("/admin");
+  // Accounts live in the database, not in the exported catalogue — so this
+  // page works wherever there is a database, static storefront or not.
+  if (!hasDatabase()) redirect("/admin");
 
   const { prisma } = await import("@/lib/prisma");
   const users = await prisma.user.findMany({

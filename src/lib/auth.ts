@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { hasDatabase } from "@/lib/db-config";
 
 export { hashPassword, verifyPassword };
 
@@ -93,10 +94,9 @@ export function toSessionUser(user: {
 }
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
-  // Static catalog (e.g. Vercel without durable DB) has no user table access.
-  if (process.env.USE_STATIC_CATALOG === "1" || process.env.VERCEL === "1") {
-    return null;
-  }
+  // Accounts need a durable store. The catalogue may still be static JSON —
+  // these two are independent, so this checks the database, not the platform.
+  if (!hasDatabase()) return null;
 
   const jar = await cookies();
   const parsed = parseSessionToken(jar.get(SESSION_COOKIE)?.value);

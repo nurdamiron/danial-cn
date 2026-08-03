@@ -9,17 +9,11 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { loginSchema } from "@/lib/auth-validation";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { hasDatabase, NO_DATABASE_ERROR } from "@/lib/db-config";
 
 export async function POST(req: Request) {
-  if (isStaticCatalog()) {
-    return NextResponse.json(
-      {
-        error:
-          "Вход недоступен в static-режиме (Vercel). Запустите локально.",
-      },
-      { status: 503 },
-    );
+  if (!hasDatabase()) {
+    return NextResponse.json({ error: NO_DATABASE_ERROR }, { status: 503 });
   }
 
   let json: unknown;

@@ -1,22 +1,10 @@
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
 import fs from "fs";
+import { cliPrisma, cliTarget } from "./prisma-cli-client";
 
-function resolveDbPath(url: string) {
-  let dbPath = url.replace(/^file:/, "");
-  if (dbPath.startsWith("./") || dbPath.startsWith(".\\")) {
-    dbPath = path.join(process.cwd(), dbPath.slice(2));
-  }
-  return dbPath;
-}
-
-const prisma = new PrismaClient({
-  adapter: new PrismaBetterSqlite3({
-    url: resolveDbPath(process.env.DATABASE_URL ?? "file:./prisma/dev.db"),
-  }),
-});
+const prisma = cliPrisma();
+console.log("exporting from →", cliTarget());
 
 async function main() {
   const products = await prisma.product.findMany({

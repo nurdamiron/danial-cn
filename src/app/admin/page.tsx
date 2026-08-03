@@ -2,25 +2,70 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ExportCatalogButton } from "@/components/admin/ExportCatalogButton";
 import { getCurrentUser } from "@/lib/auth";
+import { hasDatabase } from "@/lib/db-config";
 import { isStaticCatalog } from "@/lib/static-catalog";
+
+async function countUsers(): Promise<number> {
+  const { prisma } = await import("@/lib/prisma");
+  return prisma.user.count();
+}
 
 export default async function AdminHomePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/admin/login");
   if (user.role !== "ADMIN") redirect("/admin/account");
 
+  // Static storefront: the catalogue comes from exported JSON, so product and
+  // settings edits belong to a local run. Accounts live in the database and
+  // stay editable here.
   if (isStaticCatalog()) {
+    const accountsAvailable = hasDatabase();
+    const userCount = accountsAvailable ? await countUsers() : 0;
+
     return (
-      <div className="space-y-4">
-        <h1 className="text-xl font-light">Админ</h1>
-        <p className="text-sm text-muted">
-          На Vercel сейчас static-каталог (без записи в БД). Управление
-          товарами, пользователями и регистрация — локально:{" "}
-          <code className="text-ink">npm run dev</code>, затем деплой.
-        </p>
-        <Link href="/ru" className="text-sm underline">
-          Открыть сайт
-        </Link>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-light">Обзор</h1>
+          <p className="mt-1 text-sm text-muted">
+            Здравствуйте, {user.name || "Admin"}.
+          </p>
+        </div>
+
+        {accountsAvailable ? (
+          <Link
+            href="/admin/users"
+            className="block border border-line bg-paper p-5 transition hover:border-ink"
+          >
+            <p className="text-2xl font-light">{userCount}</p>
+            <p className="mt-1 text-[11px] tracking-[0.16em] text-muted uppercase">
+              Пользователи
+            </p>
+            <p className="mt-3 text-sm text-muted">
+              Аккаунты в базе — создание, роли, пароли. Работает и на проде.
+            </p>
+          </Link>
+        ) : (
+          <div className="border border-line bg-paper p-5">
+            <p className="text-sm text-muted">
+              База данных не подключена. Добавьте{" "}
+              <code className="text-ink">TURSO_DATABASE_URL</code> и{" "}
+              <code className="text-ink">TURSO_AUTH_TOKEN</code>, чтобы вход и
+              аккаунты работали.
+            </p>
+          </div>
+        )}
+
+        <div className="border border-line bg-paper p-5">
+          <p className="text-sm font-medium">Каталог</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            Витрина читает static JSON, поэтому товары и настройки правятся
+            локально: <code className="text-ink">npm run dev</code> → правки →{" "}
+            <code className="text-ink">npm run export:static</code> → коммит.
+          </p>
+          <Link href="/ru" className="mt-3 inline-block text-sm underline">
+            Открыть сайт
+          </Link>
+        </div>
       </div>
     );
   }

@@ -36,6 +36,9 @@ npm run dev
 | Email | `admin@danial.cn` (`ADMIN_EMAIL`) |
 | Password | `ADMIN_PASSWORD` from `.env` |
 
+Change `ADMIN_PASSWORD` and `AUTH_SECRET` before the site is reachable by
+anyone else — `AUTH_SECRET` signs the session cookies.
+
 ## Full admin CRUD
 
 | Resource | Create | Read | Update | Delete |
@@ -53,16 +56,59 @@ npm run dev
 2. Variants CRUD (color hex + stock)  
 3. Photos CRUD (bind photo → colorKey for storefront gallery)  
 
-### Publish to Vercel
+## Where data lives
 
-On Vercel the store uses **static JSON** (no writable SQLite).
+Two independent stores, on purpose:
+
+| | Source | Why |
+|---|---|---|
+| **Catalog** | `src/data/static-products.json` | Catalog pages stay static — no query per page view |
+| **Accounts** | SQLite locally, **Turso** in production | Sign-in needs durable writes |
+
+`hasDatabase()` in `src/lib/db-config.ts` decides whether accounts are
+available; it checks the database, not the hosting platform.
+
+### Production database (Turso)
+
+Turso speaks the same SQLite dialect, so the schema, the seed and every query
+are identical — only the connection changes.
 
 ```bash
-# after local admin changes:
-npm run export:static
-# or button "Export → static" on /admin
+brew install tursodatabase/tap/turso    # or: npm i -g @tursodatabase/turso-cli
+turso auth signup
+turso db create danial-cn
+
+turso db show danial-cn --url           # → TURSO_DATABASE_URL
+turso db tokens create danial-cn        # → TURSO_AUTH_TOKEN
+```
+
+Add both to **Vercel → Settings → Environment Variables**, along with a real
+`AUTH_SECRET` (`openssl rand -base64 48`), then create the tables and the admin
+account once:
+
+```bash
+export TURSO_DATABASE_URL="libsql://..."
+export TURSO_AUTH_TOKEN="ey..."
+npm run db:push
+npm run db:seed          # prints which database it wrote to
+```
+
+Without these variables the storefront still runs; sign-in returns a 503 that
+says the database is missing.
+
+### Publish catalog changes
+
+The storefront reads exported JSON, so product and settings edits are made in a
+local run and shipped as a commit:
+
+```bash
+npm run dev              # edit in /admin
+npm run export:static    # or the "Export → static" button on /admin
 git add src/data && git commit -m "chore: export catalog" && git push
 ```
+
+User accounts are not part of that export — they are edited on the live site at
+`/admin/users`.
 
 ## Contacts
 

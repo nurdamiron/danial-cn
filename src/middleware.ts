@@ -55,17 +55,24 @@ export default function middleware(req: NextRequest) {
   // In production, send /admin* to the admin origin when configured.
   const adminOrigin = getAdminOrigin();
   const storeOrigin = getStoreOrigin();
+  // The split only turns on when an admin origin was actually configured.
+  // getAdminOrigin() has a built-in fallback, and auto-enabling on that
+  // fallback would bounce /admin to a project that may not exist — leaving the
+  // panel unreachable on a plain single-project deployment.
+  const adminOriginConfigured = Boolean(
+    process.env.NEXT_PUBLIC_ADMIN_URL?.trim() || process.env.ADMIN_URL?.trim(),
+  );
   const splitEnabled =
     process.env.ADMIN_HOST_SPLIT === "1" ||
     process.env.NEXT_PUBLIC_ADMIN_HOST_SPLIT === "1" ||
-    // auto-enable when admin URL host differs from store
-    (() => {
-      try {
-        return new URL(adminOrigin).host !== new URL(storeOrigin).host;
-      } catch {
-        return false;
-      }
-    })();
+    (adminOriginConfigured &&
+      (() => {
+        try {
+          return new URL(adminOrigin).host !== new URL(storeOrigin).host;
+        } catch {
+          return false;
+        }
+      })());
 
   // Only admin UI/API — keep /api/auth on the store for personal cabinet login
   if (
