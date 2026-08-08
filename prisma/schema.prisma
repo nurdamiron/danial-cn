@@ -80,8 +80,8 @@ model SiteSettings {
   deliveryExpressKk String @default("Экспресс — ең жылдам нұсқа")
   kaspiNoteRu       String @default("Оплата через Kaspi после подтверждения заказа в WhatsApp")
   kaspiNoteKk       String @default("Тапсырыс WhatsApp-та расталғаннан кейін Kaspi арқылы төлем")
-  disclaimerRu      String @default("Все товары — копии 1:1 (реплики), не оригинальные бренды.")
-  disclaimerKk      String @default("Барлық тауарлар — 1:1 көшірмелер (реплика), түпнұсқа бренд емес.")
+  disclaimerRu      String @default("Все товары это копии 1 в 1 (реплики), не оригинальные бренды.")
+  disclaimerKk      String @default("Барлық тауарлар 1 ге 1 көшірмелер (реплика), түпнұсқа бренд емес.")
 }
 
 /// role: USER (default) | ADMIN (exactly one in the system)

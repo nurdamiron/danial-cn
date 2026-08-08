@@ -195,7 +195,7 @@ export function CatalogFilters({
         </div>
       </FilterGroup>
 
-      <FilterGroup title={t("material")}>
+      <FilterGroup title={t("brand")}>
         <div className="flex flex-wrap gap-2">
           <Chip
             active={!active.brand}

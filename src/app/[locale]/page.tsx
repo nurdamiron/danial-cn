@@ -60,22 +60,22 @@ export default async function HomePage({
     {
       key: "cabin" as const,
       href: "/catalog?category=cabin",
-      image: "/products/alu-cabin-55/silver-front.jpg",
+      image: "/editorial/cat-cabin.jpg",
     },
     {
       key: "checkin" as const,
       href: "/catalog?category=checkin",
-      image: "/products/pc-checkin-75/01-front.jpg",
+      image: "/editorial/cat-checkin.jpg",
     },
     {
       key: "set" as const,
       href: "/catalog?category=set",
-      image: "/products/soft-cabin-55/01-front.jpg",
+      image: "/editorial/cat-set.jpg",
     },
     {
       key: "bag" as const,
       href: "/catalog?category=bag",
-      image: "/products/soft-cabin-55/02-interior.jpg",
+      image: "/editorial/cat-bag.jpg",
     },
   ];
 
@@ -161,7 +161,7 @@ export default async function HomePage({
                       alt=""
                       fill
                       quality={95}
-                      className="object-contain p-4 transition duration-700 ease-out group-hover:scale-[1.04] sm:p-6"
+                      className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
                       sizes="(max-width:640px) 50vw, 25vw"
                     />
                   </div>

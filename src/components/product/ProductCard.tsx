@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { FavoriteButton } from "@/components/product/FavoriteButton";
+import { BrandMark, brandMarkName } from "@/components/ui/BrandMark";
 import type { FavoriteItem } from "@/store/favorites";
 
 type ColorDot = { hex: string; label: string };
@@ -36,6 +37,7 @@ export function ProductCard({
   favorite,
   priority = false,
 }: Props) {
+  const markName = brandMarkName(brand);
   const visibleColors = colors?.slice(0, MAX_COLOR_DOTS) ?? [];
   const extraColors = colors ? colors.length - visibleColors.length : 0;
 
@@ -48,7 +50,7 @@ export function ProductCard({
           fill
           quality={95}
           priority={priority}
-          className={`object-contain p-5 transition duration-700 ease-out sm:p-7 ${
+          className={`object-cover transition duration-700 ease-out ${
             hoverUrl
               ? "group-hover:scale-[1.03] group-hover:opacity-0"
               : "group-hover:scale-[1.03]"
@@ -61,7 +63,7 @@ export function ProductCard({
             alt=""
             fill
             quality={95}
-            className="object-contain p-5 opacity-0 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100 sm:p-7"
+            className="object-cover opacity-0 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100"
             sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
           />
         ) : null}
@@ -76,7 +78,16 @@ export function ProductCard({
       ) : null}
 
       <div className="mt-4 flex flex-1 flex-col gap-1.5">
-        <p className="t-label text-muted">{brand}</p>
+        {markName ? (
+          <BrandMark
+            name={markName}
+            height={10}
+            label={brand}
+            className="text-muted"
+          />
+        ) : (
+          <p className="t-label text-muted">{brand}</p>
+        )}
 
         <h3 className="t-display t-h3">
           <Link href={href} className="transition hover:opacity-60">

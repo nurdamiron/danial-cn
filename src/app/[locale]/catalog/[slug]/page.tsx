@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
+import { BrandMark, brandMarkName } from "@/components/ui/BrandMark";
 import { ProductConfigurator } from "@/components/product/ProductConfigurator";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SizeCompare } from "@/components/product/SizeCompare";
@@ -41,7 +42,7 @@ export async function generateMetadata({
     description,
     alternates: { canonical: `/${locale}/catalog/${slug}` },
     openGraph: {
-      title: `${name} — ${t("brand.name")}`,
+      title: `${name}, ${t("brand.name")}`,
       description,
       images: cover ? [{ url: cover }] : undefined,
     },
@@ -65,11 +66,12 @@ export default async function ProductPage({
   const { getSiteConfig } = await import("@/lib/settings");
   const config = await getSiteConfig();
   const wa = config.whatsappE164;
+  const brandMark = brandMarkName(product.brand);
   const disclaimerText =
     (locale === "kk" ? config.disclaimerKk : config.disclaimerRu) ||
     t("product.replicaNotice");
   const kaspiNote = locale === "kk" ? config.kaspiNoteKk : config.kaspiNoteRu;
-  const deliveryNote = `${t("delivery.cargo")} · ${t("delivery.avia")} · ${t("delivery.express")} — ${t("home.trustDelivery")}`;
+  const deliveryNote = `${t("delivery.cargo")}, ${t("delivery.avia")}, ${t("delivery.express")}. ${t("home.trustDelivery")}.`;
   const dimensions = formatDimensions(product, locale);
 
   const related = (
@@ -184,12 +186,21 @@ export default async function ProductPage({
         </nav>
 
         <div className="mb-8 lg:mb-10">
-          <p className="t-label text-muted">
-            {localizedBrand(
-              product as { brand: string; brandRu?: string; brandKk?: string },
-              locale,
-            )}
-          </p>
+          {brandMark ? (
+            <Link
+              href={`/catalog?brand=${product.brand}`}
+              className="inline-flex text-muted transition hover:text-ink"
+            >
+              <BrandMark name={brandMark} height={13} label={product.brand} />
+            </Link>
+          ) : (
+            <p className="t-label text-muted">
+              {localizedBrand(
+                product as { brand: string; brandRu?: string; brandKk?: string },
+                locale,
+              )}
+            </p>
+          )}
           <h1 className="t-display t-h1 mt-2.5">
             {localizedName(product, locale)}
           </h1>

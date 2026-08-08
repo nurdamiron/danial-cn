@@ -35,7 +35,7 @@ export function HomeHero({
     <section className="on-dark relative isolate overflow-hidden bg-ink text-paper">
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/products/hero/hero-main.jpg"
+          src="/editorial/hero-terminal.jpg"
           alt=""
           fill
           priority
