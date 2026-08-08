@@ -29,7 +29,8 @@ export default async function AdminUsersPage() {
       <div className="mb-6">
         <h1 className="text-xl font-light">Пользователи</h1>
         <p className="mt-1 text-sm text-muted">
-          Регистрация создаёт роль USER. Admin — только один.
+          Новая регистрация — обычный покупатель. Администратор может быть
+          только один.
         </p>
       </div>
       <UsersAdmin

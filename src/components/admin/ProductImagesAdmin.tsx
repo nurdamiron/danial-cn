@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 type Img = {
   id: string;
@@ -174,7 +175,7 @@ export function ProductImagesAdmin({
                 disabled={i === 0}
                 onClick={() => move(img.id, -1)}
               >
-                ←
+                <ArrowRightIcon className="h-4 w-4 rotate-180" />
               </button>
               <button
                 type="button"
@@ -182,7 +183,7 @@ export function ProductImagesAdmin({
                 disabled={i === images.length - 1}
                 onClick={() => move(img.id, 1)}
               >
-                →
+                <ArrowRightIcon className="h-4 w-4" />
               </button>
               <button
                 type="button"

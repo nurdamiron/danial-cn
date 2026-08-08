@@ -95,6 +95,22 @@ export default async function ContactsPage({
             {t("contacts.openInstagram")}
           </a>
         </div>
+
+        <div className="mt-14">
+          <p className="t-label text-muted">{t("contacts.helpTitle")}</p>
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            {(["help1", "help2", "help3"] as const).map((key) => (
+              <div key={key} className="card p-5">
+                <p className="text-sm font-medium">
+                  {t(`contacts.${key}Title`)}
+                </p>
+                <p className="t-micro mt-1.5 text-muted">
+                  {t(`contacts.${key}Text`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </Container>
     </div>
   );

@@ -29,6 +29,8 @@ export default async function FaqPage({
     ["q2", "a2"],
     ["q3", "a3"],
     ["q4", "a4"],
+    ["q5", "a5"],
+    ["q6", "a6"],
   ] as const;
 
   return (

@@ -23,16 +23,16 @@ export default async function AdminProductsPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-light">Товары — полный CRUD</h1>
+          <h1 className="text-xl font-light">Товары</h1>
           <p className="mt-1 text-xs text-muted">
-            Create · Read · Update · Delete · фильтры · статус · featured
+            Добавление, редактирование, статус, фильтры, удаление
           </p>
         </div>
         <Link
           href="/admin/products/new"
           className="inline-flex h-10 items-center justify-center bg-ink px-4 text-xs text-paper"
         >
-          + Create product
+          + Новый товар
         </Link>
       </div>
       <ProductsList

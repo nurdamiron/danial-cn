@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatKzt } from "@/lib/money";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 export type ProductRow = {
   id: string;
@@ -192,7 +193,10 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
                 className="underline disabled:opacity-50"
                 onClick={() => toggleStatus(p)}
               >
-                {p.status === "active" ? "→ draft" : "→ active"}
+                <span className="inline-flex items-center gap-1">
+                  <ArrowRightIcon className="h-3.5 w-3.5" />
+                  {p.status === "active" ? "draft" : "active"}
+                </span>
               </button>
               <button
                 type="button"

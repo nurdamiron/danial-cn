@@ -3,7 +3,7 @@
 import { Link, usePathname } from "@/i18n/navigation";
 
 type Item = {
-  href: "/catalog" | "/delivery" | "/about" | "/faq" | "/contacts";
+  href: "/catalog" | "/reviews" | "/delivery" | "/about" | "/faq" | "/contacts";
   label: string;
 };
 
@@ -11,7 +11,7 @@ export function NavLinks({ items }: { items: readonly Item[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden items-center gap-8 text-sm md:flex">
+    <nav className="hidden items-center gap-6 text-sm md:flex lg:gap-8">
       {items.map((item) => {
         const active =
           pathname === item.href || pathname.startsWith(`${item.href}/`);

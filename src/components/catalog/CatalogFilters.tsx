@@ -165,17 +165,17 @@ export function CatalogFilters({
                 title={c.label}
                 aria-pressed={on}
                 onClick={() => go({ color: on ? null : c.key })}
-                className="group flex w-14 flex-col items-center gap-1.5"
+                className="group flex w-14 shrink-0 flex-col items-center gap-1.5"
               >
                 <span
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  className={`relative flex aspect-square h-10 w-10 shrink-0 items-center justify-center rounded-full transition ${
                     on
                       ? "ring-2 ring-ink ring-offset-2 ring-offset-sand"
                       : "ring-1 ring-line group-hover:ring-line-strong"
                   }`}
                 >
                   <span
-                    className="h-full w-full rounded-full ring-1 ring-black/10 ring-inset"
+                    className="aspect-square h-full w-full shrink-0 rounded-full ring-1 ring-black/10 ring-inset"
                     style={{ backgroundColor: c.hex || "#ccc" }}
                   />
                   {on ? (

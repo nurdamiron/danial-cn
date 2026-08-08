@@ -41,16 +41,14 @@ export default async function AdminHomePage() {
               Пользователи
             </p>
             <p className="mt-3 text-sm text-muted">
-              Аккаунты в базе — создание, роли, пароли. Работает и на проде.
+              Покупатели с личным кабинетом: имя, телефон, роль.
             </p>
           </Link>
         ) : (
           <div className="border border-line bg-paper p-5">
             <p className="text-sm text-muted">
-              База данных не подключена. Добавьте{" "}
-              <code className="text-ink">TURSO_DATABASE_URL</code> и{" "}
-              <code className="text-ink">TURSO_AUTH_TOKEN</code>, чтобы вход и
-              аккаунты работали.
+              Личные кабинеты покупателей сейчас недоступны. Напишите
+              разработчику, чтобы их включить.
             </p>
           </div>
         )}
@@ -58,9 +56,8 @@ export default async function AdminHomePage() {
         <div className="border border-line bg-paper p-5">
           <p className="text-sm font-medium">Каталог</p>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Витрина читает static JSON, поэтому товары и настройки правятся
-            локально: <code className="text-ink">npm run dev</code> → правки →{" "}
-            <code className="text-ink">npm run export:static</code> → коммит.
+            Товары, цены и фото обновляет разработчик. Если нужно что-то
+            поменять в каталоге, напишите ему.
           </p>
           <Link href="/ru" className="mt-3 inline-block text-sm underline">
             Открыть сайт
@@ -87,18 +84,18 @@ export default async function AdminHomePage() {
 
   const crudLinks = [
     {
-      title: "Products",
-      desc: "C create · R list/filter · U status/fields · D delete + variants + photos",
+      title: "Товары",
+      desc: "Добавление, редактирование, статус, фото и варианты, удаление.",
       href: "/admin/products",
     },
     {
-      title: "Users",
-      desc: "C create · R list · U name/phone/role/password · D delete",
+      title: "Пользователи",
+      desc: "Список, роли, пароли, удаление.",
       href: "/admin/users",
     },
     {
-      title: "Settings",
-      desc: "R read · U update WhatsApp, delivery, Kaspi texts",
+      title: "Настройки",
+      desc: "WhatsApp, доставка, тексты про Kaspi.",
       href: "/admin/settings",
     },
   ];
@@ -145,27 +142,27 @@ export default async function AdminHomePage() {
           href="/admin/products/new"
           className="inline-flex h-11 items-center justify-center bg-ink px-6 text-sm text-paper"
         >
-          + Create product
+          + Новый товар
         </Link>
         <Link
           href="/admin/users"
           className="inline-flex h-11 items-center justify-center border border-ink px-6 text-sm"
         >
-          Users CRUD
+          Пользователи
         </Link>
         <Link
           href="/admin/settings"
           className="inline-flex h-11 items-center justify-center border border-line px-6 text-sm"
         >
-          Settings
+          Настройки
         </Link>
       </div>
 
       <div className="border border-line bg-paper p-4 sm:p-6">
-        <h2 className="text-sm font-medium">Публикация на Vercel</h2>
+        <h2 className="text-sm font-medium">Обновление сайта</h2>
         <p className="mt-1 text-xs text-muted">
-          Локально правите БД → Export static JSON → commit + deploy. На Vercel
-          витрина читает static JSON.
+          После правок в товарах нажмите кнопку — она подготовит каталог для
+          сайта.
         </p>
         <div className="mt-4">
           <ExportCatalogButton />

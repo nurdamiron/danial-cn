@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import {
   InstagramIcon,
   ShellMark,
+  TruckIcon,
   WhatsAppIcon,
 } from "@/components/ui/icons";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
@@ -20,6 +21,7 @@ export async function SiteFooter() {
 
   const menu = [
     { href: "/catalog", label: t("nav.catalog") },
+    { href: "/reviews", label: t("nav.reviews") },
     { href: "/delivery", label: t("nav.delivery") },
     { href: "/faq", label: t("nav.faq") },
     { href: "/about", label: t("nav.about") },
@@ -36,15 +38,16 @@ export async function SiteFooter() {
   return (
     <footer className="on-dark mt-auto bg-graphite text-paper">
       <div className="flute-edge-dark" aria-hidden="true" />
-      <Container className="grid gap-12 py-14 md:grid-cols-12 md:gap-8 md:py-20">
-        <div className="md:col-span-5">
+      <Container className="grid gap-12 py-14 md:grid-cols-12 md:gap-x-10 md:gap-y-0 md:py-20">
+        <div className="md:col-span-4">
           <div className="flex items-center gap-2.5">
-            <ShellMark className="h-6 w-6" />
+            <ShellMark className="h-7 w-7" />
             <span className="t-display text-base font-medium tracking-[0.3em] uppercase">
               {t("brand.name")}
             </span>
           </div>
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-paper/60">
+          <p className="t-label mt-3 text-alu">{t("footer.tagline")}</p>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-paper/60">
             {t("footer.rights")}
           </p>
 
@@ -69,7 +72,10 @@ export async function SiteFooter() {
           </div>
         </div>
 
-        <nav className="md:col-span-2" aria-label={t("footer.menu")}>
+        <nav
+          className="mt-2 border-t border-white/10 pt-8 md:col-span-2 md:mt-0 md:border-t-0 md:border-l md:pt-0 md:pl-8"
+          aria-label={t("footer.menu")}
+        >
           <p className="t-label text-alu">{t("footer.menu")}</p>
           <ul className="mt-4 space-y-2.5 text-sm">
             {menu.map((i) => (
@@ -85,7 +91,10 @@ export async function SiteFooter() {
           </ul>
         </nav>
 
-        <nav className="md:col-span-2" aria-label={t("profile.cabinet")}>
+        <nav
+          className="border-t border-white/10 pt-8 md:col-span-2 md:mt-0 md:border-t-0 md:border-l md:pt-0 md:pl-8"
+          aria-label={t("profile.cabinet")}
+        >
           <p className="t-label text-alu">{t("profile.cabinet")}</p>
           <ul className="mt-4 space-y-2.5 text-sm">
             {account.map((i) => (
@@ -101,17 +110,20 @@ export async function SiteFooter() {
           </ul>
         </nav>
 
-        <div className="md:col-span-3">
+        <div className="border-t border-white/10 pt-8 md:col-span-4 md:border-t-0 md:border-l md:pt-0 md:pl-8">
           <p className="t-label text-alu">{t("footer.order")}</p>
           <div className="mt-4 space-y-4 text-sm text-paper/70">
             <div className="flex items-start gap-3">
               <KaspiBadge height={22} />
               <p className="leading-relaxed">{kaspiNote}</p>
             </div>
-            <p className="t-label text-alu">
-              {t("delivery.cargo")} · {t("delivery.avia")} ·{" "}
-              {t("delivery.express")}
-            </p>
+            <div className="flex items-start gap-3">
+              <TruckIcon className="mt-0.5 h-[18px] w-[18px] shrink-0 text-alu" />
+              <p className="t-label text-alu">
+                {t("delivery.cargo")} · {t("delivery.avia")} ·{" "}
+                {t("delivery.express")}
+              </p>
+            </div>
           </div>
         </div>
       </Container>

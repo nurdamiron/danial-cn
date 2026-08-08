@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 type Mode = "login" | "register";
 
@@ -141,8 +142,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
               Регистрация
             </Link>
             <br />
-            <a href="/ru/login" className="mt-2 inline-block text-ink underline">
-              Личный кабинет на сайте →
+            <a
+              href="/ru/login"
+              className="mt-2 inline-flex items-center gap-1 text-ink underline"
+            >
+              Личный кабинет на сайте
+              <ArrowRightIcon className="h-3.5 w-3.5" />
             </a>
           </>
         ) : (

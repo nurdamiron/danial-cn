@@ -8,6 +8,7 @@ import { Button, buttonClass } from "@/components/ui/Button";
 import {
   MinusIcon,
   PlusIcon,
+  ShellMark,
   TrashIcon,
   WhatsAppIcon,
 } from "@/components/ui/icons";
@@ -29,6 +30,7 @@ export function CartView({
   const t = useTranslations();
   const locale = useLocale() as "ru" | "kk";
   const [items, setItems] = useState<CartItem[]>([]);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [meta, setMeta] = useState<CartMeta>({
     name: "",
     city: "",
@@ -129,15 +131,24 @@ export function CartView({
           <li key={item.variantId} className="flex gap-3 py-5 sm:gap-5">
             <Link
               href={`/catalog/${item.slug}`}
-              className="media relative h-24 w-20 shrink-0 sm:h-32 sm:w-28"
+              className="media relative flex h-24 w-20 shrink-0 items-center justify-center sm:h-32 sm:w-28"
             >
-              <Image
-                src={item.imageUrl}
-                alt={item.name}
-                fill
-                className="object-contain p-2"
-                sizes="112px"
-              />
+              {brokenImages.has(item.variantId) ? (
+                <ShellMark className="h-8 w-8 text-line-strong" />
+              ) : (
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  className="object-contain p-2"
+                  sizes="112px"
+                  onError={() =>
+                    setBrokenImages((prev) =>
+                      new Set(prev).add(item.variantId),
+                    )
+                  }
+                />
+              )}
             </Link>
 
             <div className="flex min-w-0 flex-1 flex-col">

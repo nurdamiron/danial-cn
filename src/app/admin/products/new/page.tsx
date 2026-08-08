@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { getCurrentUser } from "@/lib/auth";
 import { isStaticCatalog } from "@/lib/static-catalog";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 export default async function NewProductPage() {
   const user = await getCurrentUser();
@@ -13,8 +14,12 @@ export default async function NewProductPage() {
   return (
     <div>
       <div className="mb-6 flex items-center gap-4">
-        <Link href="/admin/products" className="text-xs text-muted underline">
-          ← К списку
+        <Link
+          href="/admin/products"
+          className="inline-flex items-center gap-1 text-xs text-muted underline"
+        >
+          <ArrowRightIcon className="h-3.5 w-3.5 rotate-180" />
+          К списку
         </Link>
         <h1 className="text-xl font-light">Новый товар</h1>
       </div>

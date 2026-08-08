@@ -2,17 +2,13 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/Container";
 import { buttonClass } from "@/components/ui/Button";
-import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { WhatsAppIcon } from "@/components/ui/icons";
 
 type Props = {
-  eyebrow: string;
   title: string;
   lead: string;
-  spec: string;
   catalogLabel: string;
   chatLabel: string;
-  kaspiNote: string;
   whatsappUrl: string;
 };
 
@@ -22,13 +18,10 @@ type Props = {
  * gradient.
  */
 export function HomeHero({
-  eyebrow,
   title,
   lead,
-  spec,
   catalogLabel,
   chatLabel,
-  kaspiNote,
   whatsappUrl,
 }: Props) {
   return (
@@ -50,9 +43,7 @@ export function HomeHero({
       </div>
 
       <Container className="flex min-h-[32rem] flex-col justify-end pt-16 pb-14 sm:min-h-[36rem] sm:pt-24 sm:pb-16 lg:min-h-[41rem]">
-        <p className="rise rise-1 t-label text-alu">{eyebrow}</p>
-
-        <h1 className="rise rise-2 t-display t-hero mt-5 max-w-[16ch] text-balance">
+        <h1 className="rise rise-2 t-display t-hero max-w-[16ch] text-balance">
           {title}
         </h1>
 
@@ -71,16 +62,6 @@ export function HomeHero({
             <WhatsAppIcon className="h-[18px] w-[18px]" />
             {chatLabel}
           </a>
-        </div>
-
-        <div className="rise rise-4 mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/12 pt-6">
-          <p className="t-label text-alu">{spec}</p>
-          <span className="flex items-center gap-2.5">
-            <KaspiBadge height={20} />
-            <span className="max-w-xs text-[0.8125rem] leading-snug text-paper/60">
-              {kaspiNote}
-            </span>
-          </span>
         </div>
       </Container>
 

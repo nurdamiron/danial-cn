@@ -41,10 +41,8 @@ function fromEnv(): SiteConfig {
     deliveryAviaKk: "Әуе — каргодан жылдамырақ",
     deliveryExpressRu: "Экспресс — самый быстрый вариант",
     deliveryExpressKk: "Экспресс — ең жылдам нұсқа",
-    kaspiNoteRu:
-      "Оплата через Kaspi после подтверждения заказа в WhatsApp",
-    kaspiNoteKk:
-      "Тапсырыс WhatsApp-та расталғаннан кейін Kaspi арқылы төлем",
+    kaspiNoteRu: "Оплата после подтверждения заказа",
+    kaspiNoteKk: "Тапсырыс расталғаннан кейін төлем",
     disclaimerRu:
       "Премиум-багаж. Уточняйте наличие и сроки у менеджера.",
     disclaimerKk:

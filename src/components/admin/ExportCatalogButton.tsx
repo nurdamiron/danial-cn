@@ -19,7 +19,7 @@ export function ExportCatalogButton() {
         return;
       }
       setMsg(
-        `Экспорт: ${data.products} товаров + settings. npm run export:static · commit · deploy`,
+        `Готово: ${data.products} товаров. Отправьте изменения, чтобы они появились на сайте.`,
       );
     } finally {
       setBusy(false);
@@ -32,9 +32,9 @@ export function ExportCatalogButton() {
         type="button"
         disabled={busy}
         onClick={onExport}
-        className="h-11 w-full border border-ink px-6 text-sm disabled:opacity-50 sm:w-auto"
+        className="inline-flex h-11 w-full items-center justify-center gap-1.5 border border-ink px-6 text-sm disabled:opacity-50 sm:w-auto"
       >
-        {busy ? "Экспорт…" : "Export → static (Vercel)"}
+        {busy ? "Готовим…" : "Подготовить каталог для сайта"}
       </button>
       {msg ? <p className="text-xs text-green-700">{msg}</p> : null}
       {err ? <p className="text-xs text-red-600">{err}</p> : null}

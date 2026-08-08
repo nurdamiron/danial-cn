@@ -211,7 +211,7 @@ export function VariantsAdmin({
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-start gap-3">
                 <span
-                  className="mt-0.5 h-6 w-6 shrink-0 rounded-full border border-line"
+                  className="mt-0.5 aspect-square h-6 w-6 shrink-0 rounded-full border border-line"
                   style={{
                     backgroundColor:
                       v.colorHex || defaultColorHex(v.colorKey),

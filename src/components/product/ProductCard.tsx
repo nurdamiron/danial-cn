@@ -103,7 +103,7 @@ export function ProductCard({
               <span
                 key={`${c.hex}-${i}`}
                 title={c.label}
-                className="h-3 w-3 shrink-0 rounded-full ring-1 ring-black/12 ring-inset"
+                className="aspect-square h-3 w-3 shrink-0 rounded-full ring-1 ring-black/12 ring-inset"
                 style={{ backgroundColor: c.hex }}
               />
             ))}

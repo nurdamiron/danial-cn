@@ -13,6 +13,7 @@ import { loadOrders } from "@/store/orders";
 import { loadFavorites } from "@/store/favorites";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { buttonClass } from "@/components/ui/Button";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 type SessionUser = {
   id: string;
@@ -420,7 +421,7 @@ export function ProfileView() {
                 </RowIcon>
                 <span className="text-sm">{t("openAdmin")}</span>
               </div>
-              <span className="text-muted">→</span>
+              <ArrowRightIcon className="h-4 w-4 shrink-0 text-muted" />
             </a>
           ) : null}
         </div>
@@ -456,12 +457,7 @@ function SettingsRow({
       </div>
       <div className="flex shrink-0 items-center gap-2.5">
         {extra}
-        <span
-          aria-hidden="true"
-          className="text-muted transition-transform duration-300 group-hover:translate-x-0.5"
-        >
-          →
-        </span>
+        <ArrowRightIcon className="h-4 w-4 shrink-0 text-muted transition-transform duration-300 group-hover:translate-x-0.5" />
       </div>
     </Link>
   );

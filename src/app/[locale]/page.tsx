@@ -7,9 +7,14 @@ import { Reveal } from "@/components/ui/Reveal";
 import { buttonClass } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { HomeHero } from "@/components/home/HomeHero";
-import { SizeGuide } from "@/components/home/SizeGuide";
+import { Reviews } from "@/components/home/Reviews";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
-import { ChatIcon, TruckIcon, WhatsAppIcon } from "@/components/ui/icons";
+import {
+  ArrowRightIcon,
+  ChatIcon,
+  TruckIcon,
+  WhatsAppIcon,
+} from "@/components/ui/icons";
 import { getSiteConfig, siteUrls } from "@/lib/settings";
 import { formatSpecLine } from "@/lib/specs";
 import {
@@ -50,32 +55,36 @@ export default async function HomePage({
   const t = await getTranslations();
   const config = await getSiteConfig();
   const urls = siteUrls(config);
-  const kaspiNote = locale === "kk" ? config.kaspiNoteKk : config.kaspiNoteRu;
 
+  const SHELF_LIMIT = 4;
   const allProducts = await listActiveProducts();
-  let featured = await listFeaturedProducts(8);
-  if (featured.length === 0) featured = allProducts.slice(0, 8);
+  let featured = await listFeaturedProducts(SHELF_LIMIT);
+  if (featured.length === 0) featured = allProducts.slice(0, SHELF_LIMIT);
 
   const categories = [
     {
       key: "cabin" as const,
       href: "/catalog?category=cabin",
-      image: "/editorial/cat-cabin.jpg",
+      image: "/products/aluma-cabin-55/silver-1.jpg",
+      focus: "object-center",
     },
     {
       key: "checkin" as const,
       href: "/catalog?category=checkin",
       image: "/editorial/cat-checkin.jpg",
+      focus: "object-[65%_50%]",
     },
     {
       key: "set" as const,
       href: "/catalog?category=set",
       image: "/editorial/cat-set.jpg",
+      focus: "object-[60%_75%]",
     },
     {
       key: "bag" as const,
       href: "/catalog?category=bag",
       image: "/editorial/cat-bag.jpg",
+      focus: "object-center",
     },
   ];
 
@@ -89,13 +98,10 @@ export default async function HomePage({
   return (
     <div>
       <HomeHero
-        eyebrow={t("home.heroEyebrow")}
         title={t("home.hero")}
         lead={t("home.heroLead")}
-        spec={t("home.heroSpec")}
         catalogLabel={t("cta.viewCatalog")}
         chatLabel={t("nav.chat")}
-        kaspiNote={kaspiNote}
         whatsappUrl={urls.whatsappUrl}
       />
 
@@ -130,8 +136,6 @@ export default async function HomePage({
         </Container>
       </section>
 
-      <SizeGuide />
-
       {/* Categories */}
       <section className="border-t border-line bg-sand py-14 sm:py-20">
         <Container>
@@ -143,8 +147,12 @@ export default async function HomePage({
                   {t("home.materialsTitle")}
                 </h2>
               </div>
-              <Link href="/catalog" className="link-quiet t-micro shrink-0">
-                {t("cta.viewCatalog")} →
+              <Link
+                href="/catalog"
+                className="link-quiet t-micro inline-flex shrink-0 items-center gap-1"
+              >
+                {t("cta.viewCatalog")}
+                <ArrowRightIcon className="h-3.5 w-3.5" />
               </Link>
             </div>
 
@@ -153,27 +161,33 @@ export default async function HomePage({
                 <Link
                   key={c.key}
                   href={c.href}
-                  className="media lift group flex flex-col"
+                  className="media lift group relative flex aspect-[3/4] flex-col overflow-hidden"
                 >
-                  <div className="relative aspect-[5/4]">
-                    <Image
-                      src={c.image}
-                      alt=""
-                      fill
-                      quality={95}
-                      className="object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
-                      sizes="(max-width:640px) 50vw, 25vw"
-                    />
-                  </div>
-                  <p className="flex items-center justify-between border-t border-line px-4 py-3 text-sm">
-                    {t(`category.${c.key}`)}
-                    <span
-                      aria-hidden="true"
-                      className="text-muted transition-transform duration-300 group-hover:translate-x-1"
-                    >
-                      →
+                  <Image
+                    src={c.image}
+                    alt=""
+                    fill
+                    quality={95}
+                    className={`object-cover transition duration-700 ease-out group-hover:scale-[1.05] ${c.focus}`}
+                    sizes="(max-width:640px) 50vw, 25vw"
+                  />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/5 to-transparent"
+                    aria-hidden="true"
+                  />
+                  <div className="relative mt-auto flex items-end justify-between gap-2 p-4 sm:p-5">
+                    <div className="min-w-0">
+                      <p className="t-display text-lg text-paper sm:text-xl">
+                        {t(`category.${c.key}`)}
+                      </p>
+                      <p className="t-micro mt-1 text-paper/70">
+                        {t(`category.${c.key}Hint`)}
+                      </p>
+                    </div>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper/15 text-paper backdrop-blur transition-colors duration-300 group-hover:bg-paper group-hover:text-ink">
+                      <ArrowRightIcon className="h-4 w-4" />
                     </span>
-                  </p>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -190,8 +204,12 @@ export default async function HomePage({
                 <p className="t-label text-muted">{t("home.shop")}</p>
                 <h2 className="t-display t-h2 mt-2">{t("home.bestsellers")}</h2>
               </div>
-              <Link href="/catalog" className="link-quiet t-micro shrink-0">
-                {t("cta.viewCatalog")} →
+              <Link
+                href="/catalog"
+                className="link-quiet t-micro inline-flex shrink-0 items-center gap-1"
+              >
+                {t("cta.viewCatalog")}
+                <ArrowRightIcon className="h-3.5 w-3.5" />
               </Link>
             </div>
 
@@ -265,6 +283,8 @@ export default async function HomePage({
           </Reveal>
         </Container>
       </section>
+
+      <Reviews locale={locale} />
 
       {/* Close: one action, one number */}
       <section className="border-t border-line bg-sand py-14 sm:py-20">

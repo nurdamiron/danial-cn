@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { AdminLogout } from "@/components/admin/AdminLogout";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 type NavItem = { href: string; label: string; adminOnly?: boolean };
 
@@ -43,8 +44,12 @@ export function AdminShell({
             >
               Danial CN Admin
             </Link>
-            <a href={storeHref} className="text-xs text-muted">
-              ← Сайт
+            <a
+              href={storeHref}
+              className="inline-flex items-center gap-1 text-xs text-muted"
+            >
+              <ArrowRightIcon className="h-3.5 w-3.5 rotate-180" />
+              Сайт
             </a>
           </div>
         </header>

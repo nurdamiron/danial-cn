@@ -45,4 +45,4 @@ export function tursoConfig(): { url: string; authToken?: string } | null {
 
 /** Message shown when a request needs accounts and none are configured. */
 export const NO_DATABASE_ERROR =
-  "База данных не настроена. Добавьте TURSO_DATABASE_URL и TURSO_AUTH_TOKEN.";
+  "Сервис временно недоступен. Попробуйте позже.";

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 export type AdminUserRow = {
   id: string;
@@ -341,7 +342,10 @@ export function UsersAdmin({
                     className="underline disabled:opacity-50"
                     onClick={() => setRole(u.id, "ADMIN")}
                   >
-                    → admin
+                    <span className="inline-flex items-center gap-1">
+                      <ArrowRightIcon className="h-3.5 w-3.5" />
+                      admin
+                    </span>
                   </button>
                 ) : (
                   <button
@@ -350,7 +354,10 @@ export function UsersAdmin({
                     className="underline disabled:opacity-50"
                     onClick={() => setRole(u.id, "USER")}
                   >
-                    → user
+                    <span className="inline-flex items-center gap-1">
+                      <ArrowRightIcon className="h-3.5 w-3.5" />
+                      user
+                    </span>
                   </button>
                 )}
                 {u.id !== currentUserId ? (
@@ -464,7 +471,10 @@ export function UsersAdmin({
                           className="text-left underline disabled:opacity-50"
                           onClick={() => setRole(u.id, "ADMIN")}
                         >
-                          → admin
+                          <span className="inline-flex items-center gap-1">
+                            <ArrowRightIcon className="h-3.5 w-3.5" />
+                            admin
+                          </span>
                         </button>
                       ) : (
                         <button
@@ -473,7 +483,10 @@ export function UsersAdmin({
                           className="text-left underline disabled:opacity-50"
                           onClick={() => setRole(u.id, "USER")}
                         >
-                          → user
+                          <span className="inline-flex items-center gap-1">
+                            <ArrowRightIcon className="h-3.5 w-3.5" />
+                            user
+                          </span>
                         </button>
                       )}
                       {u.id !== currentUserId ? (

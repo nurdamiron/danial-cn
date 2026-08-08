@@ -176,6 +176,14 @@ export function ArrowRightIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
   );
 }
 
+export function MenuIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Svg>
+  );
+}
+
 export function ChevronDownIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
   return (
     <Svg className={className}>
@@ -205,11 +213,48 @@ export function TruckIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
   );
 }
 
+export function PlaneIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M3 11.5 21 3l-6.5 18-3-8.5L3 11.5Z" />
+      <path d="m11.5 12.5 3-3" />
+    </Svg>
+  );
+}
+
+export function BoltIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
+    </Svg>
+  );
+}
+
 export function ChatIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
   return (
     <Svg className={className}>
       <path d="M20 12.5c0 3.6-3.6 6.5-8 6.5-1 0-2-.15-2.9-.43L4 20l1.35-3.6C4.5 15.3 4 13.95 4 12.5 4 8.9 7.6 6 12 6s8 2.9 8 6.5Z" />
     </Svg>
+  );
+}
+
+export function StarIcon({
+  className = "h-[18px] w-[18px]",
+  filled = false,
+}: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={S}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m12 4 2.47 5.27 5.53.65-4.13 3.86 1.13 5.72L12 16.6l-4.99 2.9 1.13-5.72-4.13-3.86 5.53-.65Z" />
+    </svg>
   );
 }
 

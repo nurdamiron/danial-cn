@@ -210,14 +210,14 @@ export function ProductConfigurator({
                   aria-label={label}
                   aria-pressed={active}
                   onClick={() => setColorKey(c.colorKey)}
-                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${
+                  className={`relative flex aspect-square h-11 w-11 shrink-0 items-center justify-center rounded-full transition ${
                     active
                       ? "ring-2 ring-ink ring-offset-2 ring-offset-paper"
                       : "ring-1 ring-line hover:ring-line-strong"
                   }`}
                 >
                   <span
-                    className="h-full w-full rounded-full ring-1 ring-black/10 ring-inset"
+                    className="aspect-square h-full w-full shrink-0 rounded-full ring-1 ring-black/10 ring-inset"
                     style={{ backgroundColor: c.hex || "#ccc" }}
                   />
                   {active ? (
