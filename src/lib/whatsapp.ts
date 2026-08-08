@@ -42,7 +42,7 @@ export function buildOrderMessage(input: {
     const lineTotal = item.unitPriceKzt * item.qty;
     total += lineTotal;
     lines.push(
-      `${index + 1}) ${item.brand} — ${item.name}`,
+      `${index + 1}) ${item.brand} ${item.name}`,
       `   ${item.colorLabel} | ${item.sizeLabel} | ${item.material}`,
       `   x${item.qty} | ${formatKzt(lineTotal)}`,
       `   ${labels.replicaLine}`,
@@ -75,8 +75,8 @@ export function buildSingleItemMessage(input: {
   return buildOrderMessage({
     locale: input.locale,
     meta: {
-      name: input.meta?.name ?? "—",
-      city: input.meta?.city ?? "—",
+      name: input.meta?.name ?? "",
+      city: input.meta?.city ?? "",
       phone: input.meta?.phone,
       delivery: input.meta?.delivery ?? "express",
       comment: input.meta?.comment,

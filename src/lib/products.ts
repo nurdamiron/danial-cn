@@ -1,5 +1,6 @@
 import { canPublishProduct } from "@/lib/publish";
 import {
+  SIZE_ORDER,
   getStaticFeatured,
   getStaticProductBySlug,
   getStaticProducts,
@@ -7,6 +8,7 @@ import {
 } from "@/lib/static-catalog";
 
 export { canPublishProduct } from "@/lib/publish";
+export { getBrand, getBrands } from "@/lib/static-catalog";
 
 export type ProductListFilters = {
   brand?: string;
@@ -43,12 +45,7 @@ export async function listActiveProducts(filters: ProductListFilters = {}) {
       products = products.filter((p) => p.category === filters.category);
     }
     if (filters.brand) {
-      products = products.filter(
-        (p) =>
-          p.brand === filters.brand ||
-          (p as { brandRu?: string }).brandRu === filters.brand ||
-          (p as { brandKk?: string }).brandKk === filters.brand,
-      );
+      products = products.filter((p) => p.brandKey === filters.brand);
     }
     if (filters.colorKey) {
       products = products.filter((p) =>
@@ -97,21 +94,29 @@ export async function listActiveProducts(filters: ProductListFilters = {}) {
 
 export function getCatalogFilterOptions(locale: string) {
   const products = getStaticProducts();
-  const brands = new Map<string, string>();
+  const brands = new Map<
+    string,
+    { key: string; label: string; logo: string; hint: string }
+  >();
   const colors = new Map<
     string,
     { key: string; label: string; hex: string }
   >();
   const sizes = new Map<string, { key: string; label: string }>();
+  const categories = new Map<string, number>();
   let minPrice = Infinity;
   let maxPrice = 0;
 
   for (const p of products) {
-    const brandLabel =
-      locale === "kk" && (p as { brandKk?: string }).brandKk
-        ? (p as { brandKk?: string }).brandKk!
-        : (p as { brandRu?: string }).brandRu || p.brand;
-    brands.set(p.brand, brandLabel);
+    if (!brands.has(p.brandKey)) {
+      brands.set(p.brandKey, {
+        key: p.brandKey,
+        label: p.brand,
+        logo: `/brand/${p.brandKey}.svg`,
+        hint: locale === "kk" ? p.brandTaglineKk : p.brandTaglineRu,
+      });
+    }
+    categories.set(p.category, (categories.get(p.category) ?? 0) + 1);
 
     for (const v of p.variants) {
       const price = v.priceKzt ?? p.basePriceKzt;
@@ -122,7 +127,7 @@ export function getCatalogFilterOptions(locale: string) {
         colors.set(v.colorKey, {
           key: v.colorKey,
           label: locale === "kk" ? v.colorLabelKk : v.colorLabelRu,
-          hex: (v as { colorHex?: string }).colorHex || "#ccc",
+          hex: v.colorHex || "#cccccc",
         });
       }
       if (!sizes.has(v.sizeKey)) {
@@ -134,13 +139,13 @@ export function getCatalogFilterOptions(locale: string) {
     }
   }
 
-  const sizeOrder = ["55", "65", "75"];
   return {
-    brands: [...brands.entries()].map(([key, label]) => ({ key, label })),
+    brands: [...brands.values()],
     colors: [...colors.values()],
     sizes: [...sizes.values()].sort(
-      (a, b) => sizeOrder.indexOf(a.key) - sizeOrder.indexOf(b.key),
+      (a, b) => SIZE_ORDER.indexOf(a.key) - SIZE_ORDER.indexOf(b.key),
     ),
+    categories: Object.fromEntries(categories),
     minPrice: Number.isFinite(minPrice) ? minPrice : 0,
     maxPrice: maxPrice || 0,
   };
@@ -152,7 +157,7 @@ async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
     where: {
       status: "active",
       images: { some: {} },
-      ...(filters.brand ? { brand: filters.brand } : {}),
+      ...(filters.brand ? { brandKey: filters.brand } : {}),
       ...(filters.category ? { category: filters.category } : {}),
       ...(filters.minPrice != null || filters.maxPrice != null
         ? {
@@ -252,15 +257,6 @@ export function localizedName(
   return locale === "kk" ? product.nameKk : product.nameRu;
 }
 
-export function localizedBrand(
-  product: { brand: string; brandRu?: string; brandKk?: string },
-  locale: string,
-) {
-  if (locale === "kk" && product.brandKk) return product.brandKk;
-  if (product.brandRu) return product.brandRu;
-  return product.brand;
-}
-
 export function localizedDescription(
   product: { descriptionRu: string; descriptionKk: string },
   locale: string,
@@ -275,6 +271,20 @@ export function localizedMaterial(
   return locale === "kk" ? product.materialKk : product.materialRu;
 }
 
+export function localizedWheels(
+  product: { wheelsRu: string; wheelsKk: string },
+  locale: string,
+) {
+  return locale === "kk" ? product.wheelsKk : product.wheelsRu;
+}
+
+export function localizedLock(
+  product: { lockRu: string; lockKk: string },
+  locale: string,
+) {
+  return locale === "kk" ? product.lockKk : product.lockRu;
+}
+
 export function uniqueSizes(
   variants: { sizeKey: string; sizeLabelRu: string; sizeLabelKk: string }[],
   locale: string,
@@ -285,7 +295,9 @@ export function uniqueSizes(
       seen.set(v.sizeKey, locale === "kk" ? v.sizeLabelKk : v.sizeLabelRu);
     }
   }
-  return [...seen.entries()].map(([key, label]) => ({ key, label }));
+  return [...seen.entries()]
+    .map(([key, label]) => ({ key, label }))
+    .sort((a, b) => SIZE_ORDER.indexOf(a.key) - SIZE_ORDER.indexOf(b.key));
 }
 
 export function uniqueColorDots(

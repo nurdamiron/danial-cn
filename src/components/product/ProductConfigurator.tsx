@@ -145,14 +145,14 @@ export function ProductConfigurator({
 
   function labels() {
     return {
-      title: locale === "kk" ? "Danial CN — тапсырыс" : "Danial CN — заказ",
+      title: locale === "kk" ? "Danial CN, тапсырыс" : "Danial CN, заказ",
       delivery: {
         cargo: t("delivery.cargo"),
         avia: t("delivery.avia"),
         express: t("delivery.express"),
       },
       replicaLine:
-        locale === "kk" ? "Danial CN · премиум багаж" : "Danial CN · премиум-багаж",
+        locale === "kk" ? "Danial CN, премиум багаж" : "Danial CN, премиум багаж",
       paymentNote: t("payment.kaspiNote"),
       fields: {
         name: t("cart.name"),
@@ -169,7 +169,7 @@ export function ProductConfigurator({
       <ProductGallery
         key={colorKey}
         images={galleryImages}
-        alt={`${name} — ${colorLabel ?? ""}`}
+        alt={`${name}, ${colorLabel ?? ""}`}
       />
 
       <div className="space-y-7">
@@ -255,7 +255,7 @@ export function ProductConfigurator({
           </p>
           {selected ? (
             <p className="mt-1 text-xs text-muted">
-              {t("product.article")} {selected.id.toUpperCase()} ·{" "}
+              {t("product.article")} {selected.id.toUpperCase()},{" "}
               {selected.stock > 0
                 ? t("product.inStockLabel")
                 : t("product.outOfStock")}
@@ -291,7 +291,7 @@ export function ProductConfigurator({
       <QuickOrderModal
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
-        itemSummary={`${name} — ${colorLabel ?? ""} · ${sizeLabel ?? ""} · ${formatKzt(price)}`}
+        itemSummary={`${name}, ${colorLabel ?? ""}, ${sizeLabel ?? ""}, ${formatKzt(price)}`}
         onConfirm={(meta: CartMeta) => {
           const item = toCartItem(1);
           if (!item) return;

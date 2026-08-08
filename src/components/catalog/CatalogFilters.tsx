@@ -4,8 +4,15 @@ import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { BrandMark } from "@/components/ui/BrandMark";
 
-export type FilterOption = { key: string; label: string; hex?: string };
+export type FilterOption = {
+  key: string;
+  label: string;
+  hex?: string;
+  logo?: string;
+  hint?: string;
+};
 
 type Props = {
   brands: FilterOption[];
@@ -141,25 +148,37 @@ export function CatalogFilters({
         </div>
       </FilterGroup>
 
-      {/* Material / brand */}
-      <FilterGroup title={t("material")}>
-        <div className="flex flex-wrap gap-2">
-          <Chip
-            active={!active.brand}
-            onClick={() => go({ brand: null })}
-            label={t("all")}
-          />
-          {brands.map((b) => (
-            <Chip
-              key={b.key}
-              active={active.brand === b.key}
-              onClick={() =>
-                go({ brand: active.brand === b.key ? null : b.key })
-              }
-              label={b.label}
-            />
-          ))}
+      {/* House lines, picked by their own logo rather than by name */}
+      <FilterGroup title={t("brand")}>
+        <div className="grid grid-cols-2 gap-2">
+          {brands.map((b) => {
+            const on = active.brand === b.key;
+            return (
+              <button
+                key={b.key}
+                type="button"
+                title={b.hint}
+                onClick={() => go({ brand: on ? null : b.key })}
+                className={`flex h-14 items-center justify-center border px-3 transition ${
+                  on
+                    ? "border-ink bg-ink text-paper"
+                    : "border-line text-ink hover:border-ink"
+                }`}
+              >
+                <BrandMark name={b.key} height={11} label={b.label} />
+              </button>
+            );
+          })}
         </div>
+        {active.brand ? (
+          <button
+            type="button"
+            onClick={() => go({ brand: null })}
+            className="mt-2 text-xs text-muted underline-offset-2 hover:underline"
+          >
+            {t("all")}
+          </button>
+        ) : null}
       </FilterGroup>
 
       {/* Size */}

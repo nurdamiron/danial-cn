@@ -3,7 +3,10 @@
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 
-type Item = { href: "/catalog" | "/delivery" | "/about" | "/faq" | "/contacts"; label: string };
+type Item = {
+  href: "/catalog" | "/brands" | "/delivery" | "/about" | "/faq" | "/contacts";
+  label: string;
+};
 
 export function NavLinks({ items }: { items: readonly Item[] }) {
   const pathname = usePathname();

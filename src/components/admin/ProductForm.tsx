@@ -20,8 +20,11 @@ type ProductInput = {
   depthCm?: number | null;
   volumeL?: number | null;
   weightKg?: number | null;
-  wheels?: string | null;
-  lockType?: string | null;
+  brandKey: string;
+  wheelsRu?: string;
+  wheelsKk?: string;
+  lockRu?: string;
+  lockKk?: string;
   status: string;
   featured: boolean;
 };
@@ -29,6 +32,7 @@ type ProductInput = {
 const empty: ProductInput = {
   slug: "",
   brand: "",
+  brandKey: "",
   nameRu: "",
   nameKk: "",
   descriptionRu: "",
@@ -131,6 +135,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
     >
       {field("Slug", "slug")}
       {field("Brand / line", "brand")}
+      {field("Brand key (logo file in public/brand)", "brandKey")}
       {field("Name RU", "nameRu")}
       {field("Name KK", "nameKk")}
       {field("Description RU", "descriptionRu", { textarea: true })}
@@ -156,8 +161,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       {field("Depth cm", "depthCm", { type: "number" })}
       {field("Volume L", "volumeL", { type: "number" })}
       {field("Weight kg", "weightKg", { type: "number" })}
-      {field("Wheels", "wheels")}
-      {field("Lock", "lockType")}
+      {field("Wheels RU", "wheelsRu")}
+      {field("Wheels KK", "wheelsKk")}
+      {field("Lock RU", "lockRu")}
+      {field("Lock KK", "lockKk")}
       <label className="block text-xs">
         Status
         <select

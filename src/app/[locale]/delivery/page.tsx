@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { KaspiBadge } from "@/components/ui/KaspiBadge";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { isStaticCatalog } from "@/lib/static-catalog";
 
 export async function generateMetadata({
@@ -96,7 +96,7 @@ export default async function DeliveryPage({
           ))}
         </div>
         <div className="mt-6 border border-line bg-white p-6">
-          <KaspiBadge className="text-sm" />
+          <BrandMark name="pay-kaspi" height={22} label="Kaspi" colored />
           <p className="mt-3 text-sm leading-relaxed text-muted">{kaspi}</p>
         </div>
       </Container>

@@ -6,28 +6,30 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
+/** Editorial frames, not product packshots. The catalogue does the selling. */
 const SLIDES = [
-  "/products/hero/hero-main.jpg",
-  "/products/alu-cabin-55/silver-front.jpg",
-  "/products/pc-checkin-75/01-front.jpg",
-  "/products/soft-cabin-55/01-front.jpg",
-  "/products/alu-cabin-55/gold-front.jpg",
+  "/editorial/hero-terminal.jpg",
+  "/editorial/hero-lobby.jpg",
+  "/editorial/hero-doorway.jpg",
+  "/editorial/hero-arcade.jpg",
 ];
 
 type Props = {
   brand: string;
   hero: string;
+  lead: string;
   catalogLabel: string;
-  aboutLabel: string;
+  brandsLabel: string;
   videoSrc?: string;
 };
 
 export function HeroCinematic({
   brand,
   hero,
+  lead,
   catalogLabel,
-  aboutLabel,
-  videoSrc = "/products/hero/hero.mp4",
+  brandsLabel,
+  videoSrc = "/editorial/hero.mp4",
 }: Props) {
   const [index, setIndex] = useState(0);
   const [hasVideo, setHasVideo] = useState(false);
@@ -43,12 +45,12 @@ export function HeroCinematic({
     if (hasVideo) return;
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % SLIDES.length);
-    }, 5200);
+    }, 5600);
     return () => window.clearInterval(id);
   }, [hasVideo]);
 
   return (
-    <section className="relative min-h-[92vh] overflow-hidden bg-ink">
+    <section className="relative min-h-[88vh] overflow-hidden bg-ink">
       {hasVideo ? (
         <video
           className="absolute inset-0 h-full w-full object-cover"
@@ -86,23 +88,26 @@ export function HeroCinematic({
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/25" />
-      <div className="absolute inset-0 bg-gradient-to-r from-ink/50 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-ink/55 via-transparent to-transparent" />
 
-      <Container className="relative flex min-h-[92vh] flex-col justify-end pb-16 pt-32 sm:pb-24">
-        <div className="max-w-2xl space-y-7 fade-in text-paper">
+      <Container className="relative flex min-h-[88vh] flex-col justify-end pb-16 pt-32 sm:pb-24">
+        <div className="max-w-2xl space-y-6 fade-in text-paper">
           <p className="text-[11px] tracking-[0.42em] text-paper/65 uppercase">
             {brand}
           </p>
           <h1 className="text-4xl leading-[1.05] font-light tracking-tight sm:text-5xl md:text-6xl lg:text-[4.25rem]">
             {hero}
           </h1>
-          <div className="flex flex-wrap gap-3 pt-1">
+          <p className="max-w-md text-sm leading-relaxed text-paper/70 sm:text-base">
+            {lead}
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
             <Link href="/catalog">
               <Button variant="secondary">{catalogLabel}</Button>
             </Link>
-            <Link href="/about">
-              <Button variant="outlineInverse">{aboutLabel}</Button>
+            <Link href="/brands">
+              <Button variant="outlineInverse">{brandsLabel}</Button>
             </Link>
           </div>
         </div>

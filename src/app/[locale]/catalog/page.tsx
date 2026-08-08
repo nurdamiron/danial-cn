@@ -10,7 +10,6 @@ import {
 import {
   getCatalogFilterOptions,
   listActiveProducts,
-  localizedBrand,
   localizedName,
   pickCoverUrl,
   uniqueColorDots,
@@ -26,7 +25,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale });
   return {
     title: t("catalog.title"),
-    description: t("home.hero"),
+    description: t("home.heroLead"),
     alternates: { canonical: `/${locale}/catalog` },
   };
 }
@@ -43,8 +42,7 @@ export default async function CatalogPage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const category =
-    typeof sp.category === "string" ? sp.category : undefined;
+  const category = typeof sp.category === "string" ? sp.category : undefined;
   const brand = typeof sp.brand === "string" ? sp.brand : undefined;
   const colorKey = typeof sp.color === "string" ? sp.color : undefined;
   const sizeKey = typeof sp.size === "string" ? sp.size : undefined;
@@ -118,40 +116,45 @@ export default async function CatalogPage({
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-5">
-                {products.map((p) => {
+                {products.map((p, i) => {
                   const cover = pickCoverUrl(p.images);
                   if (!cover) return null;
-                  // prefer image matching selected color for cover
+
+                  // Lead with the selected colour so the grid answers the filter.
                   let displayCover = cover;
-                  let hover = p.images.find((i) => i.url !== cover)?.url;
+                  let hover = p.images.find((img) => img.url !== cover)?.url;
                   if (colorKey) {
                     const colorImgs = p.images.filter(
-                      (i) =>
-                        "colorKey" in i &&
-                        (i as { colorKey?: string }).colorKey === colorKey,
+                      (img) => img.colorKey === colorKey,
                     );
                     if (colorImgs[0]) {
                       displayCover = colorImgs[0].url;
                       hover = colorImgs[1]?.url ?? hover;
                     }
                   }
+
+                  const colors = uniqueColorDots(p.variants, locale);
+                  const soldOut = !p.variants.some((v) => v.stock > 0);
                   return (
                     <ProductCard
                       key={p.id}
                       href={`/catalog/${p.slug}`}
-                      brand={localizedBrand(
-                        p as {
-                          brand: string;
-                          brandRu?: string;
-                          brandKk?: string;
-                        },
-                        locale,
-                      )}
+                      brandKey={p.brandKey}
+                      brandName={p.brand}
                       name={localizedName(p, locale)}
                       priceLabel={formatKzt(p.basePriceKzt)}
+                      fromLabel={t("product.priceFrom")}
                       coverUrl={displayCover}
                       hoverUrl={hover}
-                      colors={uniqueColorDots(p.variants, locale)}
+                      colors={colors}
+                      colorsLabel={t("catalog.colorsCount", {
+                        n: colors.length,
+                      })}
+                      tag={t(`category.${p.category}`)}
+                      soldOut={soldOut}
+                      soldOutLabel={t("product.outOfStock")}
+                      viewLabel={t("cta.view")}
+                      priority={i < 3}
                     />
                   );
                 })}

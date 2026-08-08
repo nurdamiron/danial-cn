@@ -11,6 +11,7 @@ model Product {
   id            String           @id @default(cuid())
   slug          String           @unique
   brand         String
+  brandKey      String           @default("")
   nameRu        String
   nameKk        String
   descriptionRu String           @default("")
@@ -24,8 +25,10 @@ model Product {
   depthCm       Float?
   volumeL       Float?
   weightKg      Float?
-  wheels        String?
-  lockType      String?
+  wheelsRu      String           @default("")
+  wheelsKk      String           @default("")
+  lockRu        String           @default("")
+  lockKk        String           @default("")
   isReplica     Boolean          @default(true)
   status        String           @default("draft")
   featured      Boolean          @default(false)
@@ -44,6 +47,7 @@ model ProductVariant {
   colorKey     String
   colorLabelRu String
   colorLabelKk String
+  colorHex     String         @default("#cccccc")
   sizeKey      String
   sizeLabelRu  String
   sizeLabelKk  String
@@ -58,6 +62,7 @@ model ProductImage {
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantId String?
   variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  colorKey  String?
   url       String
   sortOrder Int             @default(0)
   isCover   Boolean         @default(false)
@@ -69,14 +74,14 @@ model ProductImage {
 model SiteSettings {
   id                Int    @id @default(1)
   whatsappE164      String @default("77001234567")
-  deliveryCargoRu   String @default("Карго — экономичная доставка по Казахстану")
-  deliveryCargoKk   String @default("Карго — Қазақстан бойынша үнемді жеткізу")
-  deliveryAviaRu    String @default("Авиа — быстрее карго")
-  deliveryAviaKk    String @default("Әуе — каргодан жылдамырақ")
-  deliveryExpressRu String @default("Экспресс — самый быстрый вариант")
-  deliveryExpressKk String @default("Экспресс — ең жылдам нұсқа")
+  deliveryCargoRu   String @default("Карго, экономичная доставка по Казахстану")
+  deliveryCargoKk   String @default("Карго, Қазақстан бойынша үнемді жеткізу")
+  deliveryAviaRu    String @default("Авиа, быстрее карго")
+  deliveryAviaKk    String @default("Әуе, каргодан жылдамырақ")
+  deliveryExpressRu String @default("Экспресс, самый быстрый вариант")
+  deliveryExpressKk String @default("Экспресс, ең жылдам нұсқа")
   kaspiNoteRu       String @default("Оплата через Kaspi после подтверждения заказа в WhatsApp")
   kaspiNoteKk       String @default("Тапсырыс WhatsApp-та расталғаннан кейін Kaspi арқылы төлем")
-  disclaimerRu      String @default("Все товары — копии 1:1 (реплики), не оригинальные бренды.")
-  disclaimerKk      String @default("Барлық тауарлар — 1:1 көшірмелер (реплика), түпнұсқа бренд емес.")
+  disclaimerRu      String @default("Все товары это копии 1 в 1 (реплики), не оригинальные бренды.")
+  disclaimerKk      String @default("Барлық тауарлар 1 ге 1 көшірмелер (реплика), түпнұсқа бренд емес.")
 }

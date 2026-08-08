@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { WhatsAppIcon } from "@/components/ui/icons";
-import { KaspiBadge } from "@/components/ui/KaspiBadge";
+import { BrandMark } from "@/components/ui/BrandMark";
 import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
@@ -63,14 +63,14 @@ export function CartView({ waE164 }: { waE164: string }) {
       items,
       labels: {
         title:
-          locale === "kk" ? "Danial CN — жаңа тапсырыс" : "Danial CN — новый заказ",
+          locale === "kk" ? "Danial CN, жаңа тапсырыс" : "Danial CN, новый заказ",
         delivery: {
           cargo: t("delivery.cargo"),
           avia: t("delivery.avia"),
           express: t("delivery.express"),
         },
         replicaLine:
-          locale === "kk" ? "Danial CN · премиум багаж" : "Danial CN · премиум-багаж",
+          locale === "kk" ? "Danial CN, премиум багаж" : "Danial CN, премиум багаж",
         paymentNote: t("payment.kaspiNote"),
         fields: {
           name: t("cart.name"),
@@ -109,7 +109,7 @@ export function CartView({ waE164 }: { waE164: string }) {
                   </p>
                   <p className="text-sm">{item.name}</p>
                   <p className="text-xs text-muted">
-                    {item.colorLabel} · {item.sizeLabel} · {item.material}
+                    {item.colorLabel}, {item.sizeLabel}, {item.material}
                   </p>
                 </div>
               </div>
@@ -196,7 +196,7 @@ export function CartView({ waE164 }: { waE164: string }) {
           />
         </label>
         <p className="flex flex-wrap items-center gap-1.5 text-sm text-muted">
-          <KaspiBadge />
+          <BrandMark name="pay-kaspi" height={18} label="Kaspi" colored />
           {t("payment.kaspiNote")}
         </p>
         <div className="flex items-center justify-between border-t border-line pt-4">
