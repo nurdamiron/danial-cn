@@ -94,11 +94,17 @@ export function toSessionUser(user: {
 }
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
+  // cookies() comes first on purpose: it is what marks the request dynamic.
+  // Returning early on hasDatabase() left /api/auth/me and every page that
+  // calls this with no dynamic API at all, so a build that ran without the
+  // database baked "logged out" into the CDN — the cookie was then never read
+  // again, even once the database was configured.
+  const jar = await cookies();
+
   // Accounts need a durable store. The catalogue may still be static JSON —
   // these two are independent, so this checks the database, not the platform.
   if (!hasDatabase()) return null;
 
-  const jar = await cookies();
   const parsed = parseSessionToken(jar.get(SESSION_COOKIE)?.value);
   if (!parsed) return null;
 

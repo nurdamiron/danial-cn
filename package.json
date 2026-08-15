@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:push": "prisma db push",
+    "db:push:turso": "tsx scripts/push-schema-turso.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:generate": "prisma generate",
     "export:static": "tsx scripts/export-static.ts",

@@ -89,9 +89,14 @@ account once:
 ```bash
 export TURSO_DATABASE_URL="libsql://..."
 export TURSO_AUTH_TOKEN="ey..."
-npm run db:push
+npm run db:push:turso    # creates the tables over libSQL
 npm run db:seed          # prints which database it wrote to
 ```
+
+`db:push` is the local-file command — the Prisma schema engine only speaks
+`file:`, so pointing it at a `libsql://` URL writes to `prisma/dev.db` and
+leaves production without tables. `db:push:turso` generates the same SQL and
+runs it over the libSQL connection instead.
 
 Without these variables the storefront still runs; sign-in returns a 503 that
 says the database is missing.
