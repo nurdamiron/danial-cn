@@ -9,18 +9,34 @@
 import "dotenv/config";
 import path from "path";
 import fs from "fs/promises";
+import { randomInt } from "crypto";
 import { cliPrisma, cliTarget } from "../scripts/prisma-cli-client";
 import catalog from "../src/data/static-products.json";
 
 const prisma = cliPrisma();
 console.log("seeding →", cliTarget());
 
+function randomPassword(): string {
+  const alphabet =
+    "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < 20; i++) {
+    out += alphabet[randomInt(alphabet.length)];
+  }
+  return out;
+}
+
 async function ensureAdmin() {
   const { hashPassword } = await import("../src/lib/password");
   const email = (
     process.env.ADMIN_EMAIL || "admin@danial.cn"
   ).trim().toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || "danial-admin";
+  // No constant fallback. The previous one was "danial-admin", the same value
+  // .env.example carries, and .env.example is in a public repository — so the
+  // live admin panel was open to anyone who read it. An unset variable now
+  // produces a random password that is printed once, here.
+  const generated = !process.env.ADMIN_PASSWORD?.trim();
+  const password = process.env.ADMIN_PASSWORD?.trim() || randomPassword();
   const name = process.env.ADMIN_NAME || "Admin";
 
   const existingAdmin = await prisma.user.findFirst({
@@ -52,6 +68,13 @@ async function ensureAdmin() {
     },
   });
   console.log("seeded admin:", email);
+  if (generated) {
+    console.log("");
+    console.log("  ADMIN_PASSWORD was not set, so one was generated:");
+    console.log(`  ${password}`);
+    console.log("  Save it now. It is not stored anywhere in plain text.");
+    console.log("");
+  }
 }
 
 async function assertPhotoExists(url: string) {
