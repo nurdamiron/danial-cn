@@ -31,12 +31,15 @@ export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const adminMode = isAdminHost(host);
 
+  // Assets are not localized, on either host. /icon and /apple-icon carry no
+  // file extension, so the matcher does not exclude them and next-intl was
+  // sending the favicon to /ru/icon, which is a 404 on every page of the site.
+  if (isAssetPath(pathname)) {
+    return NextResponse.next();
+  }
+
   // ——— Admin host (admin-danial-cn.vercel.app / admin.localhost) ———
   if (adminMode) {
-    if (isAssetPath(pathname)) {
-      return NextResponse.next();
-    }
-
     // / → /admin
     if (pathname === "/" || pathname === "") {
       return NextResponse.redirect(new URL("/admin", req.url));
