@@ -10,6 +10,16 @@ import {
 } from "@/lib/auth";
 import { loginSchema } from "@/lib/auth-validation";
 import { hasDatabase, NO_DATABASE_ERROR } from "@/lib/db-config";
+import {
+  checkLoginThrottle,
+  clearFailures,
+  clientIp,
+  recordAttempt,
+  TOO_MANY_ATTEMPTS_ERROR,
+} from "@/lib/rate-limit";
+
+const INVALID = "Неверный email или пароль";
+const BLOCKED = "Аккаунт заблокирован. Обратитесь к администратору.";
 
 export async function POST(req: Request) {
   if (!hasDatabase()) {
@@ -25,25 +35,79 @@ export async function POST(req: Request) {
 
   const parsed = loginSchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Неверный email или пароль" }, { status: 400 });
+    return NextResponse.json({ error: INVALID }, { status: 400 });
   }
 
   const email = parsed.data.email.trim().toLowerCase();
+  const ip = clientIp(req);
+
+  const throttle = await checkLoginThrottle({ email, ip });
+  if (throttle.blocked) {
+    await recordAttempt({
+      action: "login",
+      email,
+      ip,
+      success: false,
+      reason: "rate_limited",
+    });
+    return NextResponse.json(
+      { error: TOO_MANY_ATTEMPTS_ERROR },
+      {
+        status: 429,
+        headers: { "Retry-After": String(throttle.retryAfterSeconds) },
+      },
+    );
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    return NextResponse.json(
-      { error: "Неверный email или пароль" },
-      { status: 401 },
-    );
+    await recordAttempt({
+      action: "login",
+      email,
+      ip,
+      success: false,
+      reason: "no_user",
+    });
+    return NextResponse.json({ error: INVALID }, { status: 401 });
+  }
+
+  // Checked before the password so a blocked account cannot be used to tell
+  // a right password from a wrong one.
+  if (user.blockedAt) {
+    await recordAttempt({
+      action: "login",
+      email,
+      ip,
+      success: false,
+      reason: "blocked",
+    });
+    return NextResponse.json({ error: BLOCKED }, { status: 403 });
   }
 
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!ok) {
-    return NextResponse.json(
-      { error: "Неверный email или пароль" },
-      { status: 401 },
-    );
+    await recordAttempt({
+      action: "login",
+      email,
+      ip,
+      success: false,
+      reason: "bad_password",
+    });
+    return NextResponse.json({ error: INVALID }, { status: 401 });
   }
+
+  await clearFailures(email);
+  await recordAttempt({
+    action: "login",
+    email,
+    ip,
+    success: true,
+    reason: "ok",
+  });
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  });
 
   const sessionUser = toSessionUser(user);
   const res = NextResponse.json({ user: publicUser(sessionUser) });

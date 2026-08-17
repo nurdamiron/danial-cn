@@ -5,9 +5,56 @@ import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
 import { isStaticCatalog } from "@/lib/static-catalog";
 
-async function countUsers(): Promise<number> {
+const DAY_MS = 86_400_000;
+
+/**
+ * What the panel can still act on when the catalogue is a static export:
+ * accounts, and who has been trying to get into them.
+ */
+async function accountStats() {
   const { prisma } = await import("@/lib/prisma");
-  return prisma.user.count();
+  const since24h = new Date(Date.now() - DAY_MS);
+  const since7d = new Date(Date.now() - 7 * DAY_MS);
+
+  const [users, newUsers7d, blocked, ok24h, failed24h] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { createdAt: { gte: since7d } } }),
+    prisma.user.count({ where: { blockedAt: { not: null } } }),
+    prisma.loginAttempt.count({
+      where: { action: "login", success: true, createdAt: { gte: since24h } },
+    }),
+    prisma.loginAttempt.count({
+      where: { action: "login", success: false, createdAt: { gte: since24h } },
+    }),
+  ]);
+
+  return { users, newUsers7d, blocked, ok24h, failed24h };
+}
+
+function StatCard({
+  href,
+  value,
+  label,
+  alarm = false,
+}: {
+  href: string;
+  value: number;
+  label: string;
+  alarm?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className="block border border-line bg-paper p-4 transition hover:border-ink"
+    >
+      <p className={`text-2xl font-light ${alarm ? "text-red-600" : ""}`}>
+        {value}
+      </p>
+      <p className="mt-1 text-[11px] tracking-[0.16em] text-muted uppercase">
+        {label}
+      </p>
+    </Link>
+  );
 }
 
 export default async function AdminHomePage() {
@@ -20,7 +67,7 @@ export default async function AdminHomePage() {
   // stay editable here.
   if (isStaticCatalog()) {
     const accountsAvailable = hasDatabase();
-    const userCount = accountsAvailable ? await countUsers() : 0;
+    const stats = accountsAvailable ? await accountStats() : null;
 
     return (
       <div className="space-y-6">
@@ -31,19 +78,41 @@ export default async function AdminHomePage() {
           </p>
         </div>
 
-        {accountsAvailable ? (
-          <Link
-            href="/admin/users"
-            className="block border border-line bg-paper p-5 transition hover:border-ink"
-          >
-            <p className="text-2xl font-light">{userCount}</p>
-            <p className="mt-1 text-[11px] tracking-[0.16em] text-muted uppercase">
-              Пользователи
-            </p>
-            <p className="mt-3 text-sm text-muted">
-              Покупатели с личным кабинетом: имя, телефон, роль.
-            </p>
-          </Link>
+        {stats ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatCard
+                href="/admin/users"
+                value={stats.users}
+                label="Покупателей"
+              />
+              <StatCard
+                href="/admin/users"
+                value={stats.newUsers7d}
+                label="Новых за неделю"
+              />
+              <StatCard
+                href="/admin/security"
+                value={stats.ok24h}
+                label="Входов за сутки"
+              />
+              <StatCard
+                href="/admin/security"
+                value={stats.failed24h}
+                label="Неудачных за сутки"
+                alarm={stats.failed24h >= 8}
+              />
+            </div>
+
+            {stats.blocked > 0 ? (
+              <p className="border border-line bg-paper px-4 py-3 text-sm text-muted">
+                Заблокированных аккаунтов: {stats.blocked}.{" "}
+                <Link href="/admin/users" className="underline">
+                  Посмотреть
+                </Link>
+              </p>
+            ) : null}
+          </div>
         ) : (
           <div className="border border-line bg-paper p-5">
             <p className="text-sm text-muted">

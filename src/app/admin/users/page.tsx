@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { UsersAdmin } from "@/components/admin/UsersAdmin";
 import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
+import { ADMIN_USER_SELECT } from "@/lib/admin-users";
 
 export default async function AdminUsersPage() {
   const user = await getCurrentUser();
@@ -13,15 +14,9 @@ export default async function AdminUsersPage() {
 
   const { prisma } = await import("@/lib/prisma");
   const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-    },
+    select: ADMIN_USER_SELECT,
     orderBy: { createdAt: "desc" },
+    take: 200,
   });
 
   return (
@@ -37,7 +32,10 @@ export default async function AdminUsersPage() {
         currentUserId={user.id}
         users={users.map((u) => ({
           ...u,
+          blockedAt: u.blockedAt ? u.blockedAt.toISOString() : null,
+          lastLoginAt: u.lastLoginAt ? u.lastLoginAt.toISOString() : null,
           createdAt: u.createdAt.toISOString(),
+          updatedAt: u.updatedAt.toISOString(),
         }))}
       />
     </div>

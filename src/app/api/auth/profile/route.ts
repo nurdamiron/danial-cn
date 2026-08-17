@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
+  createSessionToken,
   getCurrentUser,
   hashPassword,
   publicUser,
+  sessionCookieOptions,
+  SESSION_COOKIE,
   toSessionUser,
   verifyPassword,
 } from "@/lib/auth";
@@ -33,6 +36,7 @@ export async function PATCH(req: Request) {
     name?: string;
     phone?: string;
     passwordHash?: string;
+    sessionVersion?: { increment: number };
   } = {};
 
   if (data.name !== undefined) update.name = data.name.trim();
@@ -59,6 +63,9 @@ export async function PATCH(req: Request) {
       );
     }
     update.passwordHash = await hashPassword(data.password);
+    // A new password ends every session opened with the old one. This browser
+    // gets a fresh cookie below, so the person changing it stays signed in.
+    update.sessionVersion = { increment: 1 };
   }
 
   const user = await prisma.user.update({
@@ -66,5 +73,14 @@ export async function PATCH(req: Request) {
     data: update,
   });
 
-  return NextResponse.json({ user: publicUser(toSessionUser(user)) });
+  const sessionUser = toSessionUser(user);
+  const res = NextResponse.json({ user: publicUser(sessionUser) });
+  if (update.sessionVersion) {
+    res.cookies.set(
+      SESSION_COOKIE,
+      createSessionToken(sessionUser),
+      sessionCookieOptions(),
+    );
+  }
+  return res;
 }

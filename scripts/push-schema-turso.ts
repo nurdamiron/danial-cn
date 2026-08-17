@@ -1,5 +1,5 @@
 /**
- * Creates the tables in Turso.
+ * Creates and updates the tables in Turso.
  *
  * `prisma db push` cannot do this: prisma.config.ts hands the schema engine a
  * `DATABASE_URL`, and the engine's sqlite connector only speaks `file:` — it
@@ -10,15 +10,19 @@
  * So the SQL is generated from the same datamodel (`prisma migrate diff`) and
  * executed over the libSQL protocol, the way the app itself connects.
  *
- * Idempotent for missing tables and indexes; it does not alter tables that
- * already exist. A column change still needs a real migration.
+ * Handles a fresh database (creates everything) and an existing one (adds
+ * tables, indexes and columns that the datamodel gained since). It never drops
+ * or retypes anything: a renamed or narrowed column still needs a hand-written
+ * migration, and this script will leave the old one in place rather than guess.
  */
 import "dotenv/config";
 import { execFileSync } from "child_process";
-import { createClient } from "@libsql/client";
+import { createClient, type Client } from "@libsql/client";
+
+type TableDef = { name: string; columns: { name: string; def: string }[] };
 
 function schemaSql(): string {
-  const sql = execFileSync(
+  return execFileSync(
     "npx",
     [
       "prisma",
@@ -31,12 +35,39 @@ function schemaSql(): string {
     ],
     { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] },
   );
+}
 
-  // The generated script assumes an empty database. Re-running it on a partly
-  // seeded one should top up what is missing, not abort on the first table.
+/** Statements, comments stripped, in the order the generator emitted them. */
+function statements(sql: string): string[] {
   return sql
-    .replace(/CREATE TABLE "/g, 'CREATE TABLE IF NOT EXISTS "')
-    .replace(/CREATE (UNIQUE )?INDEX "/g, "CREATE $1INDEX IF NOT EXISTS \"");
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n")
+    .split(";")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Pulls the column list back out of a generated CREATE TABLE so missing ones
+ * can be added to a table that already exists.
+ */
+function parseTable(statement: string): TableDef | null {
+  const match = statement.match(/^CREATE TABLE "([^"]+)" \(([\s\S]*)\)$/);
+  if (!match) return null;
+
+  const columns = match[2]
+    .split("\n")
+    .map((line) => line.trim().replace(/,$/, ""))
+    .filter((line) => line.startsWith('"'))
+    .map((def) => ({ name: def.slice(1, def.indexOf('"', 1)), def }));
+
+  return { name: match[1], columns };
+}
+
+async function liveColumns(client: Client, table: string): Promise<string[]> {
+  const info = await client.execute(`PRAGMA table_info("${table}")`);
+  return info.rows.map((r) => String(r.name));
 }
 
 async function main() {
@@ -53,28 +84,46 @@ async function main() {
     authToken: process.env.TURSO_AUTH_TOKEN?.trim() || undefined,
   });
 
-  // Comments go first: every statement is preceded by a `-- CreateTable`
-  // line, so splitting before stripping them leaves each chunk starting with
-  // a comment.
-  const statements = schemaSql()
-    .split("\n")
-    .filter((line) => !line.trim().startsWith("--"))
-    .join("\n")
-    .split(";")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const sql = schemaSql();
+  const created: string[] = [];
+  const added: string[] = [];
 
-  for (const statement of statements) {
-    await client.execute(statement);
+  for (const statement of statements(sql)) {
+    const table = parseTable(statement);
+
+    if (!table) {
+      // Indexes and anything else the generator emits.
+      await client.execute(
+        statement.replace(/^CREATE (UNIQUE )?INDEX "/, 'CREATE $1INDEX IF NOT EXISTS "'),
+      );
+      continue;
+    }
+
+    const existing = await liveColumns(client, table.name);
+    if (existing.length === 0) {
+      await client.execute(statement);
+      created.push(table.name);
+      continue;
+    }
+
+    // SQLite can only append columns, which is all a Prisma field addition
+    // needs. NOT NULL without a default would be rejected — and would mean the
+    // datamodel changed in a way that needs a real migration anyway.
+    for (const column of table.columns) {
+      if (existing.includes(column.name)) continue;
+      await client.execute(
+        `ALTER TABLE "${table.name}" ADD COLUMN ${column.def}`,
+      );
+      added.push(`${table.name}.${column.name}`);
+    }
   }
 
   const tables = await client.execute(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
   );
-  console.log(
-    "tables:",
-    tables.rows.map((r) => r.name).join(", "),
-  );
+  console.log("tables:", tables.rows.map((r) => r.name).join(", "));
+  console.log("created:", created.length ? created.join(", ") : "nothing new");
+  console.log("columns added:", added.length ? added.join(", ") : "none");
   client.close();
 }
 

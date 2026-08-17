@@ -13,6 +13,7 @@ const NAV: NavItem[] = [
   { href: "/admin", label: "Обзор" },
   { href: "/admin/products", label: "Товары", adminOnly: true },
   { href: "/admin/users", label: "Пользователи", adminOnly: true },
+  { href: "/admin/security", label: "Безопасность", adminOnly: true },
   { href: "/admin/settings", label: "Настройки", adminOnly: true },
   { href: "/admin/account", label: "Профиль" },
 ];

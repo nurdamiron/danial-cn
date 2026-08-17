@@ -7,6 +7,7 @@ import {
   ROLES,
   type Role,
 } from "@/lib/auth";
+import { ADMIN_USER_SELECT } from "@/lib/admin-users";
 
 const createUserSchema = z.object({
   email: z.string().email(),
@@ -16,22 +17,25 @@ const createUserSchema = z.object({
   role: z.enum(["USER", "ADMIN"]).optional().default("USER"),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const q = new URL(req.url).searchParams.get("q")?.trim() ?? "";
   const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    where: q
+      ? {
+          OR: [
+            { email: { contains: q } },
+            { name: { contains: q } },
+            { phone: { contains: q } },
+          ],
+        }
+      : undefined,
+    select: ADMIN_USER_SELECT,
     orderBy: { createdAt: "desc" },
+    take: 200,
   });
 
   return NextResponse.json({ users });
@@ -89,15 +93,7 @@ export async function POST(req: Request) {
         phone: (parsed.data.phone ?? "").trim(),
         role,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: ADMIN_USER_SELECT,
     });
   });
 

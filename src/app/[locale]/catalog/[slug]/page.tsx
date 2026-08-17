@@ -10,7 +10,8 @@ import { SizeCompare } from "@/components/product/SizeCompare";
 import { formatKzt } from "@/lib/money";
 import { formatDimensions, formatSpecLine } from "@/lib/specs";
 import { SITE } from "@/lib/site";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { getStaticProducts } from "@/lib/static-catalog";
+import { routing } from "@/i18n/routing";
 import {
   getProductBySlug,
   listActiveProducts,
@@ -22,6 +23,18 @@ import {
   uniqueColorDots,
   uniqueSizes,
 } from "@/lib/products";
+
+/**
+ * The catalogue on the deployed site is an exported JSON file that only
+ * changes when a new build ships, so every product page can be built once and
+ * served from the CDN. Without this each view ran a function to render the
+ * same bytes again.
+ */
+export function generateStaticParams() {
+  return getStaticProducts().flatMap((product) =>
+    routing.locales.map((locale) => ({ locale, slug: product.slug })),
+  );
+}
 
 export async function generateMetadata({
   params,

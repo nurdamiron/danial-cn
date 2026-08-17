@@ -27,4 +27,8 @@ export const adminUserUpdateSchema = z.object({
   phone: z.string().max(32).optional(),
   role: z.enum(["USER", "ADMIN"]).optional(),
   password: z.string().min(8).max(72).optional(),
+  /** Refuse sign-in without deleting the account. */
+  blocked: z.boolean().optional(),
+  /** Invalidate every session already issued to this account. */
+  signOutEverywhere: z.boolean().optional(),
 });

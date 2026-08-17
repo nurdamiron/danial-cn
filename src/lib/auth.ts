@@ -20,16 +20,30 @@ export type SessionUser = {
   name: string;
   phone: string;
   role: Role;
+  sessionVersion: number;
 };
 
 const SESSION_DAYS = 14;
 
-function authSecret() {
-  return (
-    process.env.AUTH_SECRET ||
-    process.env.ADMIN_PASSWORD ||
-    "danial-cn-dev-secret-change-me"
-  );
+/**
+ * Bumped when the payload layout changes. Cookies in the old shape stop
+ * parsing rather than being read with the fields in the wrong slots.
+ */
+const TOKEN_VERSION = "v2";
+
+function authSecret(): string {
+  const secret = process.env.AUTH_SECRET?.trim();
+  if (secret) return secret;
+
+  // No silent fallback. Signing with a constant that lives in the repository
+  // would let anyone mint an admin cookie, and the site would look healthy
+  // the whole time — worse than refusing to serve.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "AUTH_SECRET is not set. Sessions cannot be signed in production.",
+    );
+  }
+  return "danial-cn-dev-secret-change-me";
 }
 
 function sign(payload: string) {
@@ -39,15 +53,27 @@ function sign(payload: string) {
 export function createSessionToken(user: {
   id: string;
   role: string;
+  sessionVersion: number;
 }): string {
   const exp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
-  const payload = `${user.id}:${user.role}:${exp}`;
+  const payload = [
+    TOKEN_VERSION,
+    user.id,
+    user.role,
+    String(user.sessionVersion),
+    String(exp),
+  ].join(":");
   return `${payload}.${sign(payload)}`;
 }
 
 export function parseSessionToken(
   token: string | undefined,
-): { userId: string; role: string; exp: number } | null {
+): {
+  userId: string;
+  role: string;
+  sessionVersion: number;
+  exp: number;
+} | null {
   if (!token) return null;
   const [payload, sig] = token.split(".");
   if (!payload || !sig) return null;
@@ -59,12 +85,21 @@ export function parseSessionToken(
   } catch {
     return null;
   }
-  const [userId, role, expStr] = payload.split(":");
+  const [version, userId, role, versionStr, expStr] = payload.split(":");
+  if (version !== TOKEN_VERSION) return null;
+
   const exp = Number(expStr);
-  if (!userId || !role || !Number.isFinite(exp) || Date.now() > exp) {
+  const sessionVersion = Number(versionStr);
+  if (
+    !userId ||
+    !role ||
+    !Number.isFinite(sessionVersion) ||
+    !Number.isFinite(exp) ||
+    Date.now() > exp
+  ) {
     return null;
   }
-  return { userId, role, exp };
+  return { userId, role, sessionVersion, exp };
 }
 
 export function sessionCookieOptions(maxAgeSeconds = SESSION_DAYS * 86400) {
@@ -83,6 +118,7 @@ export function toSessionUser(user: {
   name: string;
   phone: string;
   role: string;
+  sessionVersion?: number;
 }): SessionUser {
   return {
     id: user.id,
@@ -90,6 +126,7 @@ export function toSessionUser(user: {
     name: user.name,
     phone: user.phone,
     role: user.role === ROLES.ADMIN ? ROLES.ADMIN : ROLES.USER,
+    sessionVersion: user.sessionVersion ?? 0,
   };
 }
 
@@ -117,9 +154,20 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
         name: true,
         phone: true,
         role: true,
+        blockedAt: true,
+        sessionVersion: true,
       },
     });
     if (!user) return null;
+
+    // A blocked account keeps its history but stops being a way in.
+    if (user.blockedAt) return null;
+
+    // The cookie carries the version it was issued under. Changing a password
+    // or signing out everywhere bumps the stored one, and every cookie printed
+    // before that stops matching.
+    if (user.sessionVersion !== parsed.sessionVersion) return null;
+
     return toSessionUser(user);
   } catch {
     return null;

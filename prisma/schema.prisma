@@ -92,6 +92,31 @@ model User {
   name         String
   phone        String   @default("")
   role         String   @default("USER")
+  /// Set to refuse sign-in without deleting the account and its history.
+  blockedAt    DateTime?
+  /// Bumped to invalidate every session already issued to this user. The
+  /// number is signed into the cookie, so a password change or a "sign out
+  /// everywhere" takes effect immediately instead of waiting out the 14 days.
+  sessionVersion Int    @default(0)
+  lastLoginAt  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+/// One row per sign-in attempt. Read for rate limiting on the way in, and by
+/// the admin security log to show who has been knocking.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  /// login or register.
+  action    String   @default("login")
+  email     String
+  ip        String   @default("")
+  success   Boolean  @default(false)
+  /// Why it failed: no_user, bad_password, blocked, rate_limited.
+  reason    String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+  @@index([createdAt])
 }

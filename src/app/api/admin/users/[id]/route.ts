@@ -9,6 +9,7 @@ import {
   type Role,
 } from "@/lib/auth";
 import { adminUserUpdateSchema } from "@/lib/auth-validation";
+import { ADMIN_USER_SELECT } from "@/lib/admin-users";
 
 export async function GET(
   _req: Request,
@@ -20,15 +21,7 @@ export async function GET(
   const { id } = await ctx.params;
   const user = await prisma.user.findUnique({
     where: { id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: ADMIN_USER_SELECT,
   });
   if (!user) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -78,12 +71,45 @@ export async function PATCH(
     phone?: string;
     role?: string;
     passwordHash?: string;
+    blockedAt?: Date | null;
+    sessionVersion?: { increment: number };
   } = {};
   if (parsed.data.name !== undefined) data.name = parsed.data.name.trim();
   if (parsed.data.phone !== undefined) data.phone = parsed.data.phone.trim();
   if (parsed.data.role !== undefined) data.role = parsed.data.role;
   if (parsed.data.password) {
     data.passwordHash = await hashPassword(parsed.data.password);
+  }
+  if (parsed.data.blocked !== undefined) {
+    data.blockedAt = parsed.data.blocked ? new Date() : null;
+  }
+
+  // Anything that takes access away should take it away now, not in fourteen
+  // days when the cookie expires on its own.
+  if (
+    parsed.data.password ||
+    parsed.data.signOutEverywhere ||
+    parsed.data.blocked === true ||
+    parsed.data.role === ROLES.USER
+  ) {
+    data.sessionVersion = { increment: 1 };
+  }
+
+  // Blocking yourself or dropping your own admin rights locks the last way in.
+  const me = await getCurrentUser();
+  if (me?.id === id) {
+    if (parsed.data.blocked === true) {
+      return NextResponse.json(
+        { error: "Нельзя заблокировать свой аккаунт" },
+        { status: 400 },
+      );
+    }
+    if (parsed.data.role === ROLES.USER) {
+      return NextResponse.json(
+        { error: "Нельзя снять роль с себя. Сначала назначьте другого admin." },
+        { status: 400 },
+      );
+    }
   }
 
   // Transfer admin: promote target, demote previous admin in one transaction
@@ -96,15 +122,7 @@ export async function PATCH(
       return tx.user.update({
         where: { id },
         data,
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          phone: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: ADMIN_USER_SELECT,
       });
     });
     return NextResponse.json({ user });
@@ -113,15 +131,7 @@ export async function PATCH(
   const user = await prisma.user.update({
     where: { id },
     data,
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: ADMIN_USER_SELECT,
   });
 
   return NextResponse.json({ user });
