@@ -9,10 +9,22 @@
 import { prisma } from "@/lib/prisma";
 
 export const LOGIN_WINDOW_MINUTES = 15;
-/** Failures against one address before that account stops answering. */
-export const MAX_FAILURES_PER_EMAIL = 8;
-/** Failures from one address before it stops being served at all. */
+/**
+ * Failures from one caller against one account.
+ *
+ * Deliberately keyed on the pair rather than on the address alone: a plain
+ * per-account lock lets anyone who knows the admin's address keep the owner
+ * locked out from their own machine by failing on purpose.
+ */
+export const MAX_FAILURES_PER_EMAIL_IP = 8;
+/** Failures from one caller across every account it tries. */
 export const MAX_FAILURES_PER_IP = 25;
+/**
+ * Backstop for a spread-out attack, where no single caller trips the limits
+ * above. This many misses on one account inside the window is nobody's typo,
+ * and the lockout it costs the owner is worth stopping it.
+ */
+export const MAX_FAILURES_PER_EMAIL = 100;
 export const REGISTER_WINDOW_MINUTES = 60;
 export const MAX_REGISTRATIONS_PER_IP = 10;
 const RETENTION_DAYS = 30;
@@ -65,14 +77,29 @@ export async function checkLoginThrottle(input: {
   email: string;
   ip: string;
 }): Promise<ThrottleResult> {
-  const [byEmail, byIp] = await Promise.all([
-    oldestFailure({ email: input.email }, LOGIN_WINDOW_MINUTES, MAX_FAILURES_PER_EMAIL),
+  const [byPair, byIp, byEmail] = await Promise.all([
+    input.ip
+      ? oldestFailure(
+          { email: input.email, ip: input.ip },
+          LOGIN_WINDOW_MINUTES,
+          MAX_FAILURES_PER_EMAIL_IP,
+        )
+      : oldestFailure(
+          { email: input.email },
+          LOGIN_WINDOW_MINUTES,
+          MAX_FAILURES_PER_EMAIL_IP,
+        ),
     input.ip
       ? oldestFailure({ ip: input.ip }, LOGIN_WINDOW_MINUTES, MAX_FAILURES_PER_IP)
       : Promise.resolve(null),
+    oldestFailure(
+      { email: input.email },
+      LOGIN_WINDOW_MINUTES,
+      MAX_FAILURES_PER_EMAIL,
+    ),
   ]);
 
-  const oldest = byEmail ?? byIp;
+  const oldest = byPair ?? byIp ?? byEmail;
   if (!oldest) return { blocked: false };
   return {
     blocked: true,

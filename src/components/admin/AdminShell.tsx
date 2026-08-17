@@ -7,22 +7,30 @@ import type { SessionUser } from "@/lib/auth";
 import { AdminLogout } from "@/components/admin/AdminLogout";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
-type NavItem = { href: string; label: string; adminOnly?: boolean };
+type NavItem = {
+  href: string;
+  label: string;
+  adminOnly?: boolean;
+  /** Hidden where the catalogue is an export and these pages redirect away. */
+  catalogOnly?: boolean;
+};
 
 const NAV: NavItem[] = [
   { href: "/admin", label: "Обзор" },
-  { href: "/admin/products", label: "Товары", adminOnly: true },
+  { href: "/admin/products", label: "Товары", adminOnly: true, catalogOnly: true },
   { href: "/admin/users", label: "Пользователи", adminOnly: true },
   { href: "/admin/security", label: "Безопасность", adminOnly: true },
-  { href: "/admin/settings", label: "Настройки", adminOnly: true },
+  { href: "/admin/settings", label: "Настройки", adminOnly: true, catalogOnly: true },
   { href: "/admin/account", label: "Профиль" },
 ];
 
 export function AdminShell({
   user,
+  catalogEditable,
   children,
 }: {
   user: SessionUser | null;
+  catalogEditable: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -60,7 +68,9 @@ export function AdminShell({
   }
 
   const isAdmin = user.role === "ADMIN";
-  const items = NAV.filter((n) => !n.adminOnly || isAdmin);
+  const items = NAV.filter(
+    (n) => (!n.adminOnly || isAdmin) && (!n.catalogOnly || catalogEditable),
+  );
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";

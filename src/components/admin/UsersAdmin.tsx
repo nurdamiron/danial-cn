@@ -301,6 +301,7 @@ export function UsersAdmin({
         />
         <input
           type="password"
+          autoComplete="new-password"
           className="w-full border border-line px-2 py-1.5 text-sm"
           value={editForm.password}
           onChange={(e) =>
@@ -376,6 +377,7 @@ export function UsersAdmin({
             type="password"
             required
             minLength={8}
+            autoComplete="new-password"
             className="mt-1 w-full border border-line px-3 py-2 text-sm"
             value={createForm.password}
             onChange={(e) =>
