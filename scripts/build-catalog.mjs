@@ -108,7 +108,7 @@ const PRODUCTS = [
     lockRu: "Рамочный замок",
     lockKk: "Рамалық құлып",
     dims: { heightCm: 75, widthCm: 52, depthCm: 30, volumeL: 96, weightKg: 6.1 },
-    colors: ["silver", "champagne", "graphite"],
+    colors: ["graphite", "champagne"],
     sizes: [
       ["65", 259000],
       ["75", 289000],
@@ -132,7 +132,7 @@ const PRODUCTS = [
     lockRu: "Кодовый замок",
     lockKk: "Кодты құлып",
     dims: { heightCm: 55, widthCm: 38, depthCm: 22, volumeL: 36, weightKg: 2.9 },
-    colors: ["amber", "black", "navy", "blush", "crimson", "azure", "sky", "forest", "lavender", "olive", "graphite"],
+    colors: ["amber", "black", "navy", "blush", "crimson", "azure", "sky", "forest", "lavender", "graphite"],
     sizes: [
       ["55", 99000],
       ["65", 129000],
@@ -314,7 +314,7 @@ const PRODUCTS = [
     lockRu: "Кодовый замок",
     lockKk: "Кодты құлып",
     dims: { heightCm: 55, widthCm: 39, depthCm: 23, volumeL: 37, weightKg: 4.4 },
-    colors: ["graphite", "azure"],
+    colors: ["graphite", "silver"],
     sizes: [
       ["55", 149000],
       ["65", 179000],
