@@ -145,7 +145,18 @@ export function CustomerAuthForm({ mode }: { mode: Mode }) {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-[0.8125rem] text-muted">
+      {mode === "login" ? (
+        <p className="mt-6 text-center text-[0.8125rem]">
+          <Link
+            href="/forgot"
+            className="text-muted underline-offset-4 hover:text-ink hover:underline"
+          >
+            {t("forgotLink")}
+          </Link>
+        </p>
+      ) : null}
+
+      <p className="mt-3 text-center text-[0.8125rem] text-muted">
         {mode === "login" ? (
           <>
             {t("noAccount")}{" "}

@@ -100,6 +100,7 @@ model User {
   sessionVersion Int    @default(0)
   lastLoginAt  DateTime?
   orders       Order[]
+  resets       PasswordReset[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -155,6 +156,23 @@ model OrderItem {
   imageUrl     String @default("")
 
   @@index([orderId])
+}
+
+/// A pending password reset. The link carries a random token; only its hash is
+/// stored, so a leak of this table cannot be used to take an account over.
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  /// Set when an admin generated the link by hand, to send over WhatsApp.
+  issuedBy  String    @default("self")
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 /// One row per sign-in attempt. Read for rate limiting on the way in, and by

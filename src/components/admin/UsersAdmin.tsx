@@ -47,6 +47,9 @@ export function UsersAdmin({
     phone: "",
     password: "",
   });
+  const [resetLink, setResetLink] = useState<{ email: string; url: string } | null>(
+    null,
+  );
 
   // The list is capped server side, so filtering has to happen in the query,
   // not in the browser — otherwise search silently misses anyone past the cap.
@@ -197,6 +200,25 @@ export function UsersAdmin({
     await patchUser(u.id, { signOutEverywhere: true }, "Все сеансы закрыты");
   }
 
+  async function makeResetLink(u: AdminUserRow) {
+    setBusyId(u.id);
+    setError("");
+    setMessage("");
+    try {
+      const res = await fetch(`/api/admin/users/${u.id}/reset-link`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Ошибка");
+        return;
+      }
+      setResetLink({ email: data.email, url: data.url });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function remove(id: string) {
     if (!confirm("Удалить пользователя?")) return;
     setBusyId(id);
@@ -263,6 +285,14 @@ export function UsersAdmin({
           onClick={() => signOutEverywhere(u)}
         >
           Закрыть сеансы
+        </button>
+        <button
+          type="button"
+          disabled={busyId === u.id}
+          className="underline disabled:opacity-50"
+          onClick={() => makeResetLink(u)}
+        >
+          Ссылка на сброс
         </button>
         {self ? (
           <span className="text-muted">это вы</span>
@@ -334,6 +364,37 @@ export function UsersAdmin({
       ) : null}
       {message ? (
         <p className="border border-line bg-stone px-3 py-2 text-xs">{message}</p>
+      ) : null}
+
+      {resetLink ? (
+        <div className="border border-ink bg-paper p-4">
+          <p className="text-xs tracking-wide text-muted uppercase">
+            Ссылка для {resetLink.email}
+          </p>
+          <p className="mt-2 text-xs break-all">{resetLink.url}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+            <button
+              type="button"
+              className="bg-ink px-3 py-1.5 text-paper"
+              onClick={() => {
+                void navigator.clipboard?.writeText(resetLink.url);
+                setMessage("Ссылка скопирована");
+              }}
+            >
+              Скопировать
+            </button>
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setResetLink(null)}
+            >
+              Скрыть
+            </button>
+            <span className="text-muted">
+              Действует час, срабатывает один раз. Отправьте её в WhatsApp.
+            </span>
+          </div>
+        </div>
       ) : null}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
