@@ -83,6 +83,8 @@ const SYMBOLS = {
   nomad: `<path d="M50 6l44 44-44 44L6 50z"/><path d="M50 30l20 20-20 20-20-20z"/>`,
   // meridian globe
   atlas: `<circle cx="50" cy="50" r="42"/><ellipse cx="50" cy="50" rx="18" ry="42"/><path d="M9 36h82M9 64h82"/>`,
+  // repeating diamond, the monogram pattern in outline
+  mono: `<path d="M50 10l18 18-18 18-18-18zM50 46l18 18-18 18-18-18z"/><path d="M14 28l14 14-14 14zM86 28L72 42l14 14z"/>`,
   // ribbed case, the house mark
   house: `<rect x="10" y="16" width="80" height="68" rx="10"/><path d="M30 16v68M50 16v68M70 16v68"/><path d="M38 16V8h24v8"/>`,
 };
@@ -111,6 +113,7 @@ const FILES = {
   "strata.svg": lockup({ symbol: "strata", word: "STRATA" }),
   "nomad.svg": lockup({ symbol: "nomad", word: "NOMAD" }),
   "atlas.svg": lockup({ symbol: "atlas", word: "ATLAS" }),
+  "mono.svg": lockup({ symbol: "mono", word: "MONO" }),
   // public/brands/pay-kaspi.svg is the payment provider's own official lockup,
   // not generated here. Do not add it to this map or it will be overwritten.
 };

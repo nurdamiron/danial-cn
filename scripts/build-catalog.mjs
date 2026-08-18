@@ -26,6 +26,7 @@ export const BRANDS = [
   { key: "strata", name: "STRATA", taglineRu: "Матовый поликарбонат", taglineKk: "Күңгірт поликарбонат" },
   { key: "nomad", name: "NOMAD", taglineRu: "Мягкий нейлон", taglineKk: "Жұмсақ нейлон" },
   { key: "atlas", name: "ATLAS", taglineRu: "Кожаные дорожные сумки", taglineKk: "Былғары жол сөмкелері" },
+  { key: "mono", name: "MONO", taglineRu: "Монограмма на корпусе", taglineKk: "Корпустағы монограмма" },
 ];
 
 const COLORS = {
@@ -44,6 +45,11 @@ const COLORS = {
   cream: { hex: "#E2D8C6", ru: "Кремовый", kk: "Кілегей" },
   cognac: { hex: "#9A5B31", ru: "Коньяк", kk: "Коньяк" },
   chestnut: { hex: "#7A4A2B", ru: "Каштан", kk: "Каштан" },
+  forest: { hex: "#234B36", ru: "Тёмно зелёный", kk: "Қою жасыл" },
+  lavender: { hex: "#B0A0D8", ru: "Лавандовый", kk: "Лаванда" },
+  sky: { hex: "#8FBEDD", ru: "Небесно голубой", kk: "Ашық көк" },
+  taupe: { hex: "#8B8079", ru: "Мокко", kk: "Мокко" },
+  clear: { hex: "#D7DCE0", ru: "Прозрачный", kk: "Мөлдір" },
 };
 
 const SIZES = {
@@ -102,7 +108,7 @@ const PRODUCTS = [
     lockRu: "Рамочный замок",
     lockKk: "Рамалық құлып",
     dims: { heightCm: 75, widthCm: 52, depthCm: 30, volumeL: 96, weightKg: 6.1 },
-    colors: ["champagne", "graphite"],
+    colors: ["silver", "champagne", "graphite"],
     sizes: [
       ["65", 259000],
       ["75", 289000],
@@ -126,7 +132,7 @@ const PRODUCTS = [
     lockRu: "Кодовый замок",
     lockKk: "Кодты құлып",
     dims: { heightCm: 55, widthCm: 38, depthCm: 22, volumeL: 36, weightKg: 2.9 },
-    colors: ["azure", "crimson", "amber", "black", "olive", "graphite", "blush"],
+    colors: ["amber", "black", "navy", "blush", "crimson", "azure", "sky", "forest", "lavender", "olive", "graphite"],
     sizes: [
       ["55", 99000],
       ["65", 129000],
@@ -289,6 +295,75 @@ const PRODUCTS = [
     dims: { heightCm: 34, widthCm: 58, depthCm: 28, volumeL: 55, weightKg: 2.2 },
     colors: ["chestnut"],
     sizes: [["55l", 94000]],
+  },
+  {
+    slug: "mono-cabin-55",
+    brandKey: "mono",
+    category: "cabin",
+    featured: true,
+    nameRu: "Mono Cabin 55",
+    nameKk: "Mono Cabin 55",
+    descriptionRu:
+      "Жёсткий корпус с повторяющимся рисунком по всей поверхности. Узор напечатан под слоем лака, поэтому он не стирается от ремней и лент в аэропорту. Алюминиевая рамка по периметру держит форму, замок кодовый, колёса поворачиваются на 360 градусов.",
+    descriptionKk:
+      "Бүкіл бетінде қайталанатын өрнегі бар қатты корпус. Өрнек лак қабатының астына басылған, сондықтан әуежайдағы белдіктер мен таспалардан өшпейді. Периметр бойындағы алюминий рама пішінін ұстайды, құлып кодты, дөңгелектер 360 градусқа бұрылады.",
+    materialRu: "Поликарбонат с алюминиевой рамкой",
+    materialKk: "Алюминий рамасы бар поликарбонат",
+    wheelsRu: "4 колеса, поворот 360",
+    wheelsKk: "4 дөңгелек, 360 бұрылыс",
+    lockRu: "Кодовый замок",
+    lockKk: "Кодты құлып",
+    dims: { heightCm: 55, widthCm: 39, depthCm: 23, volumeL: 37, weightKg: 4.4 },
+    colors: ["graphite", "azure"],
+    sizes: [
+      ["55", 149000],
+      ["65", 179000],
+    ],
+  },
+  {
+    slug: "orbit-pocket-55",
+    brandKey: "orbit",
+    category: "cabin",
+    featured: false,
+    nameRu: "Orbit Pocket 55",
+    nameKk: "Orbit Pocket 55",
+    descriptionRu:
+      "Ручная кладь с передним отделением на молнии. Ноутбук и документы достаются в очереди на досмотр, не открывая основной отсек. Внутри два отделения с ремнями, снаружи гладкий поликарбонат, который легко протереть.",
+    descriptionKk:
+      "Алдыңғы бөлімі сыдырмалы қол жүгі. Ноутбук пен құжаттарды тексеру кезегінде негізгі бөлімді ашпай алуға болады. Ішінде белдіктері бар екі бөлім, сыртында оңай сүртілетін тегіс поликарбонат.",
+    materialRu: "Поликарбонат",
+    materialKk: "Поликарбонат",
+    wheelsRu: "4 колеса, поворот 360",
+    wheelsKk: "4 дөңгелек, 360 бұрылыс",
+    lockRu: "Кодовый замок",
+    lockKk: "Кодты құлып",
+    dims: { heightCm: 55, widthCm: 40, depthCm: 23, volumeL: 35, weightKg: 3.4 },
+    colors: ["black", "taupe"],
+    sizes: [
+      ["55", 109000],
+      ["65", 129000],
+    ],
+  },
+  {
+    slug: "orbit-clear-55",
+    brandKey: "orbit",
+    category: "cabin",
+    featured: false,
+    nameRu: "Orbit Clear 55",
+    nameKk: "Orbit Clear 55",
+    descriptionRu:
+      "Прозрачный корпус, в котором видно всё, что вы уложили. Мятные ремни и накладки на углах собраны в один цвет, рамка алюминиевая. Вещь заметная, поэтому её сложно перепутать на ленте выдачи багажа.",
+    descriptionKk:
+      "Салғаныңыздың бәрі көрініп тұратын мөлдір корпус. Жалбыз түсті белдіктер мен бұрыш қаптамалары бір түске жиналған, рамасы алюминий. Көзге түсетін зат, сондықтан багаж таспасында шатастыру қиын.",
+    materialRu: "Прозрачный поликарбонат",
+    materialKk: "Мөлдір поликарбонат",
+    wheelsRu: "4 колеса, поворот 360",
+    wheelsKk: "4 дөңгелек, 360 бұрылыс",
+    lockRu: "Кодовый замок",
+    lockKk: "Кодты құлып",
+    dims: { heightCm: 55, widthCm: 39, depthCm: 22, volumeL: 36, weightKg: 4.1 },
+    colors: ["clear"],
+    sizes: [["55", 129000]],
   },
 ];
 
