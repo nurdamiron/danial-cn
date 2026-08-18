@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { colorLabel } from "@/lib/catalog-presets";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
 type Img = {
@@ -116,14 +117,14 @@ export function ProductImagesAdmin({
             <option value="">Без привязки</option>
             {colorKeys.map((k) => (
               <option key={k} value={k}>
-                {k}
+                {colorLabel(k)}
               </option>
             ))}
           </select>
         </label>
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,image/avif"
           multiple
           disabled={busy}
           className="block w-full text-xs sm:w-auto"
@@ -140,7 +141,7 @@ export function ProductImagesAdmin({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={img.url} alt="" className="h-32 w-full object-contain" />
             <label className="mt-2 block text-[10px] text-muted">
-              colorKey
+              Цвет
               <select
                 className="mt-0.5 w-full border border-line px-1 py-1 text-xs"
                 value={img.colorKey ?? ""}
@@ -149,11 +150,11 @@ export function ProductImagesAdmin({
                 <option value="">—</option>
                 {colorKeys.map((k) => (
                   <option key={k} value={k}>
-                    {k}
+                    {colorLabel(k)}
                   </option>
                 ))}
                 {img.colorKey && !colorKeys.includes(img.colorKey) ? (
-                  <option value={img.colorKey}>{img.colorKey}</option>
+                  <option value={img.colorKey}>{colorLabel(img.colorKey)}</option>
                 ) : null}
               </select>
             </label>

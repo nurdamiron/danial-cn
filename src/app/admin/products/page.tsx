@@ -16,7 +16,7 @@ export default async function AdminProductsPage() {
       images: { orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }] },
       _count: { select: { images: true, variants: true } },
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: [{ sortOrder: "asc" }, { nameRu: "asc" }],
   });
 
   return (
@@ -43,6 +43,7 @@ export default async function AdminProductsPage() {
           slug: p.slug,
           category: p.category,
           status: p.status,
+          sortOrder: p.sortOrder,
           basePriceKzt: p.basePriceKzt,
           featured: p.featured,
           imageUrl: p.images[0]?.url ?? null,

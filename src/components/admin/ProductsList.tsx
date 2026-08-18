@@ -16,6 +16,7 @@ export type ProductRow = {
   basePriceKzt: number;
   featured: boolean;
   imageUrl?: string | null;
+  sortOrder: number;
   imageCount: number;
   variantCount: number;
 };
@@ -85,6 +86,47 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
           x.id === p.id ? { ...x, featured: !p.featured } : x,
         ),
       );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  /**
+   * Moves a product in the catalogue order.
+   *
+   * Swapping the two sortOrder values keeps the rest of the list untouched, so
+   * two people reordering different parts of the catalogue do not fight.
+   */
+  async function move(p: ProductRow, direction: -1 | 1) {
+    const ordered = [...products].sort((a, b) => a.sortOrder - b.sortOrder);
+    const index = ordered.findIndex((x) => x.id === p.id);
+    const other = ordered[index + direction];
+    if (!other) return;
+
+    setBusyId(p.id);
+    try {
+      const [a, b] = [
+        { id: p.id, sortOrder: other.sortOrder },
+        { id: other.id, sortOrder: p.sortOrder },
+      ];
+      for (const row of [a, b]) {
+        const res = await fetch(`/api/admin/products/${row.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sortOrder: row.sortOrder }),
+        });
+        if (!res.ok) return;
+      }
+      setProducts((list) =>
+        list.map((x) =>
+          x.id === a.id
+            ? { ...x, sortOrder: a.sortOrder }
+            : x.id === b.id
+              ? { ...x, sortOrder: b.sortOrder }
+              : x,
+        ),
+      );
+      router.refresh();
     } finally {
       setBusyId(null);
     }
@@ -205,6 +247,24 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
                 onClick={() => toggleFeatured(p)}
               >
                 {p.featured ? "★ featured" : "☆ feature"}
+              </button>
+              <button
+                type="button"
+                disabled={busyId === p.id}
+                className="underline disabled:opacity-30"
+                onClick={() => move(p, -1)}
+                aria-label="Выше в каталоге"
+              >
+                Выше
+              </button>
+              <button
+                type="button"
+                disabled={busyId === p.id}
+                className="underline disabled:opacity-30"
+                onClick={() => move(p, 1)}
+                aria-label="Ниже в каталоге"
+              >
+                Ниже
               </button>
               <button
                 type="button"

@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { defaultColorHex } from "@/lib/color-hex";
+import {
+  buildSku,
+  COLOR_PRESETS,
+  SIZE_PRESETS,
+  colorPreset,
+  sizePreset,
+} from "@/lib/catalog-presets";
 
 export type VariantRow = {
   id: string;
@@ -50,6 +57,30 @@ export function VariantsAdmin({
     value: (typeof form)[K],
   ) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  /** Fills colour key, both labels, the swatch and the SKU from one choice. */
+  function applyColor(key: string) {
+    const preset = colorPreset(key);
+    setForm((f) => ({
+      ...f,
+      colorKey: key,
+      colorLabelRu: preset?.ru ?? f.colorLabelRu,
+      colorLabelKk: preset?.kk ?? f.colorLabelKk,
+      colorHex: preset?.hex ?? f.colorHex,
+      sku: key && f.sizeKey ? buildSku(productSlug, key, f.sizeKey) : f.sku,
+    }));
+  }
+
+  function applySize(key: string) {
+    const preset = sizePreset(key);
+    setForm((f) => ({
+      ...f,
+      sizeKey: key,
+      sizeLabelRu: preset?.ru ?? f.sizeLabelRu,
+      sizeLabelKk: preset?.kk ?? f.sizeLabelKk,
+      sku: f.colorKey && key ? buildSku(productSlug, f.colorKey, key) : f.sku,
+    }));
   }
 
   function startEdit(v: VariantRow) {
@@ -283,6 +314,48 @@ export function VariantsAdmin({
         <div className="sm:col-span-2 text-xs tracking-wide text-muted uppercase">
           {editingId ? "Редактирование варианта" : "Новый вариант"}
         </div>
+
+        {/*
+          Picking a colour and a size fills the eight fields below. They stay
+          visible because a one-off colourway still needs to be typed in, but
+          nobody should have to invent an SKU to add a silver cabin case.
+        */}
+        <label className="block text-xs">
+          Цвет из палитры
+          <select
+            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            value={form.colorKey}
+            onChange={(e) => applyColor(e.target.value)}
+          >
+            <option value="">Выберите цвет</option>
+            {COLOR_PRESETS.map((c) => (
+              <option key={c.key} value={c.key}>
+                {c.ru}
+              </option>
+            ))}
+            {form.colorKey && !colorPreset(form.colorKey) ? (
+              <option value={form.colorKey}>{form.colorKey}, свой</option>
+            ) : null}
+          </select>
+        </label>
+
+        <label className="block text-xs">
+          Размер
+          <select
+            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            value={form.sizeKey}
+            onChange={(e) => applySize(e.target.value)}
+          >
+            {SIZE_PRESETS.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.ru}
+              </option>
+            ))}
+            {form.sizeKey && !sizePreset(form.sizeKey) ? (
+              <option value={form.sizeKey}>{form.sizeKey}, свой</option>
+            ) : null}
+          </select>
+        </label>
 
         <label className="block text-xs sm:col-span-2">
           SKU *
