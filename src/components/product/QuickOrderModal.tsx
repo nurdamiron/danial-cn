@@ -9,7 +9,7 @@ import type { CartMeta, DeliveryMode } from "@/lib/cart-types";
 type Props = {
   open: boolean;
   onClose: () => void;
-  onConfirm: (meta: CartMeta) => void;
+  onConfirm: (meta: CartMeta) => void | Promise<void>;
   itemSummary: string;
 };
 
@@ -45,7 +45,7 @@ export function QuickOrderModal({
 
   function submit() {
     if (!canSubmit) return;
-    onConfirm({
+    void onConfirm({
       name: name.trim(),
       city: city.trim(),
       phone: phone.trim() || undefined,

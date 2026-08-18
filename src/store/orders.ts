@@ -6,6 +6,8 @@ export type LocalOrder = {
   id: string;
   createdAt: string;
   status: "sent_whatsapp" | "pending";
+  /** Code of the order as the shop filed it, absent if filing failed. */
+  number?: string;
   meta: CartMeta;
   items: CartItem[];
   totalKzt: number;

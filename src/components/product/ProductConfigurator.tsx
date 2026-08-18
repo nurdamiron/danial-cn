@@ -10,6 +10,8 @@ import { QuickOrderModal } from "@/components/product/QuickOrderModal";
 import { addItem } from "@/store/cart";
 import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { buildSingleItemMessage, buildWaUrl } from "@/lib/whatsapp";
+import { openLater, recordOrder } from "@/lib/record-order";
+import { saveOrder } from "@/store/orders";
 import { formatKzt } from "@/lib/money";
 import { FavoriteButton } from "@/components/product/FavoriteButton";
 
@@ -354,16 +356,38 @@ export function ProductConfigurator({
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
         itemSummary={`${name} — ${colorLabel ?? ""} · ${sizeLabel ?? ""} · ${formatKzt(price)}`}
-        onConfirm={(meta: CartMeta) => {
+        onConfirm={async (meta: CartMeta) => {
           const item = toCartItem(1);
           if (!item) return;
+
+          // Same handling as the cart: claim the tab inside the click, file
+          // the order, then send the buyer on with its number in the message.
+          // Buying straight from the product page used to leave no record at
+          // all, not even in the buyer's own browser.
+          const tab = openLater();
+          const recorded = await recordOrder({
+            locale,
+            source: "quick",
+            meta,
+            items: [item],
+          });
+
+          saveOrder({
+            status: "sent_whatsapp",
+            number: recorded?.number,
+            meta,
+            items: [item],
+            totalKzt: recorded?.totalKzt ?? item.unitPriceKzt * item.qty,
+          });
+
           const msg = buildSingleItemMessage({
             locale,
             item,
             labels: labels(),
             meta,
+            orderNumber: recorded?.number,
           });
-          window.open(buildWaUrl(waE164, msg), "_blank");
+          tab.go(buildWaUrl(waE164, msg));
           setOrderOpen(false);
         }}
       />

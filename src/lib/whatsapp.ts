@@ -20,13 +20,20 @@ export function buildOrderMessage(input: {
   meta: CartMeta;
   items: CartItem[];
   labels: OrderMessageLabels;
+  /** Code of the saved order, so the chat can be matched to the record. */
+  orderNumber?: string | null;
 }): string {
   const { meta, items, labels } = input;
-  const lines: string[] = [
-    labels.title,
+  const lines: string[] = [labels.title];
+
+  if (input.orderNumber) {
+    lines.push(`№ ${input.orderNumber}`);
+  }
+
+  lines.push(
     `${labels.fields.name}: ${meta.name}`,
     `${labels.fields.city}: ${meta.city}`,
-  ];
+  );
 
   if (meta.phone) {
     lines.push(`${labels.fields.phone}: ${meta.phone}`);
@@ -71,9 +78,11 @@ export function buildSingleItemMessage(input: {
   item: CartItem;
   labels: OrderMessageLabels;
   meta?: Partial<CartMeta>;
+  orderNumber?: string | null;
 }): string {
   return buildOrderMessage({
     locale: input.locale,
+    orderNumber: input.orderNumber,
     meta: {
       name: input.meta?.name ?? "—",
       city: input.meta?.city ?? "—",

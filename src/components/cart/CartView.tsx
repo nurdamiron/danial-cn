@@ -16,6 +16,7 @@ import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
+import { openLater, recordOrder } from "@/lib/record-order";
 import { cartSubtotal, loadCart, removeItem, updateQty } from "@/store/cart";
 import { saveOrder } from "@/store/orders";
 import { loadProfile, saveProfile } from "@/store/profile";
@@ -30,6 +31,7 @@ export function CartView({
   const t = useTranslations();
   const locale = useLocale() as "ru" | "kk";
   const [items, setItems] = useState<CartItem[]>([]);
+  const [sending, setSending] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [meta, setMeta] = useState<CartMeta>({
     name: "",
@@ -70,15 +72,31 @@ export function CartView({
 
   const canSend = Boolean(meta.name.trim() && meta.city.trim());
 
-  function send() {
-    if (!canSend) return;
+  async function send() {
+    if (!canSend || sending) return;
+    setSending(true);
+
+    // Claimed inside the click. The order is filed first so its number can go
+    // into the message, and a tab opened after that await would be blocked.
+    const tab = openLater();
+
+    const cleanMeta = {
+      ...meta,
+      name: meta.name.trim(),
+      city: meta.city.trim(),
+    };
+
+    const recorded = await recordOrder({
+      locale,
+      source: "cart",
+      meta: cleanMeta,
+      items,
+    });
+
     const msg = buildOrderMessage({
       locale,
-      meta: {
-        ...meta,
-        name: meta.name.trim(),
-        city: meta.city.trim(),
-      },
+      orderNumber: recorded?.number,
+      meta: cleanMeta,
       items,
       labels: {
         title:
@@ -104,23 +122,22 @@ export function CartView({
         },
       },
     });
-    const cleanMeta = {
-      ...meta,
-      name: meta.name.trim(),
-      city: meta.city.trim(),
-    };
     saveProfile({
       name: cleanMeta.name,
       phone: cleanMeta.phone ?? "",
       city: cleanMeta.city,
     });
+    // Kept as well as the server copy: it is what the customer sees in their
+    // own order list, and it still works when the order could not be filed.
     saveOrder({
       status: "sent_whatsapp",
+      number: recorded?.number,
       meta: cleanMeta,
       items: [...items],
-      totalKzt: cartSubtotal(items),
+      totalKzt: recorded?.totalKzt ?? cartSubtotal(items),
     });
-    window.open(buildWaUrl(waE164, msg), "_blank");
+    tab.go(buildWaUrl(waE164, msg));
+    setSending(false);
   }
 
   return (
@@ -296,8 +313,8 @@ export function CartView({
             type="button"
             size="lg"
             className="mt-5 w-full"
-            disabled={!canSend}
-            onClick={send}
+            disabled={!canSend || sending}
+            onClick={() => void send()}
           >
             <WhatsAppIcon />
             {t("cta.sendWhatsApp")}

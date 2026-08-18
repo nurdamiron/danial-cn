@@ -17,6 +17,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { href: "/admin", label: "Обзор" },
+  { href: "/admin/orders", label: "Заказы", adminOnly: true },
   { href: "/admin/products", label: "Товары", adminOnly: true, catalogOnly: true },
   { href: "/admin/users", label: "Пользователи", adminOnly: true },
   { href: "/admin/security", label: "Безопасность", adminOnly: true },

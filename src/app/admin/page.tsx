@@ -4,6 +4,7 @@ import { ExportCatalogButton } from "@/components/admin/ExportCatalogButton";
 import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
 import { isStaticCatalog } from "@/lib/static-catalog";
+import { formatKzt } from "@/lib/money";
 
 const DAY_MS = 86_400_000;
 
@@ -16,19 +17,38 @@ async function accountStats() {
   const since24h = new Date(Date.now() - DAY_MS);
   const since7d = new Date(Date.now() - 7 * DAY_MS);
 
-  const [users, newUsers7d, blocked, ok24h, failed24h] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { createdAt: { gte: since7d } } }),
-    prisma.user.count({ where: { blockedAt: { not: null } } }),
-    prisma.loginAttempt.count({
-      where: { action: "login", success: true, createdAt: { gte: since24h } },
-    }),
-    prisma.loginAttempt.count({
-      where: { action: "login", success: false, createdAt: { gte: since24h } },
-    }),
-  ]);
+  const [users, newUsers7d, blocked, ok24h, failed24h, newOrders, orders7d, revenue7d] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.user.count({ where: { blockedAt: { not: null } } }),
+      prisma.loginAttempt.count({
+        where: { action: "login", success: true, createdAt: { gte: since24h } },
+      }),
+      prisma.loginAttempt.count({
+        where: { action: "login", success: false, createdAt: { gte: since24h } },
+      }),
+      prisma.order.count({ where: { status: "new" } }),
+      prisma.order.count({ where: { createdAt: { gte: since7d } } }),
+      prisma.order.aggregate({
+        _sum: { totalKzt: true },
+        where: {
+          createdAt: { gte: since7d },
+          status: { notIn: ["cancelled"] },
+        },
+      }),
+    ]);
 
-  return { users, newUsers7d, blocked, ok24h, failed24h };
+  return {
+    users,
+    newUsers7d,
+    blocked,
+    ok24h,
+    failed24h,
+    newOrders,
+    orders7d,
+    revenue7d: revenue7d._sum.totalKzt ?? 0,
+  };
 }
 
 function StatCard({
@@ -36,18 +56,24 @@ function StatCard({
   value,
   label,
   alarm = false,
+  highlight = false,
 }: {
   href: string;
-  value: number;
+  value: number | string;
   label: string;
   alarm?: boolean;
+  highlight?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="block border border-line bg-paper p-4 transition hover:border-ink"
+      className={`block border bg-paper p-4 transition hover:border-ink ${
+        highlight ? "border-ink" : "border-line"
+      }`}
     >
-      <p className={`text-2xl font-light ${alarm ? "text-red-600" : ""}`}>
+      <p
+        className={`text-2xl font-light ${alarm ? "text-red-600" : ""}`}
+      >
         {value}
       </p>
       <p className="mt-1 text-[11px] tracking-[0.16em] text-muted uppercase">
@@ -82,10 +108,29 @@ export default async function AdminHomePage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <StatCard
+                href="/admin/orders"
+                value={stats.newOrders}
+                label="Новых заказов"
+                highlight={stats.newOrders > 0}
+              />
+              <StatCard
+                href="/admin/orders"
+                value={stats.orders7d}
+                label="Заказов за неделю"
+              />
+              <StatCard
+                href="/admin/orders"
+                value={formatKzt(stats.revenue7d)}
+                label="Сумма за неделю"
+              />
+              <StatCard
                 href="/admin/users"
                 value={stats.users}
                 label="Покупателей"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <StatCard
                 href="/admin/users"
                 value={stats.newUsers7d}

@@ -99,8 +99,62 @@ model User {
   /// everywhere" takes effect immediately instead of waiting out the 14 days.
   sessionVersion Int    @default(0)
   lastLoginAt  DateTime?
+  orders       Order[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+/// An order as the shop recorded it, written before the customer is handed to
+/// WhatsApp. Until now the only trace of a sale was the chat itself and a copy
+/// in the buyer's own browser, so clearing site data erased the history for
+/// both sides.
+model Order {
+  id            String      @id @default(cuid())
+  /// Short human-readable code, repeated in the WhatsApp message so a chat can
+  /// be matched to this row.
+  number        String      @unique
+  /// Set when the buyer was signed in. Orders from guests are kept too.
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName  String
+  customerPhone String      @default("")
+  city          String
+  /// cargo, avia or express.
+  delivery      String
+  comment       String      @default("")
+  /// Recomputed from the catalogue on the server, never taken from the client.
+  totalKzt      Int
+  /// new, confirmed, shipped, done or cancelled.
+  status        String      @default("new")
+  /// cart or quick.
+  source        String      @default("cart")
+  ip            String      @default("")
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model OrderItem {
+  id           String @id @default(cuid())
+  orderId      String
+  order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String
+  slug         String
+  brand        String
+  name         String
+  colorLabel   String @default("")
+  sizeLabel    String @default("")
+  /// Copied at the time of sale. The catalogue price can change later; what
+  /// was agreed should not.
+  unitPriceKzt Int
+  qty          Int
+  imageUrl     String @default("")
+
+  @@index([orderId])
 }
 
 /// One row per sign-in attempt. Read for rate limiting on the way in, and by
