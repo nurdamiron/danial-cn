@@ -60,7 +60,8 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
       const next = { ...base, ...patch };
       // Back to the stored values means it is no longer an edit.
       if (next.priceKzt === v.priceKzt && next.stock === v.stock) {
-        const { [v.id]: _drop, ...rest } = prev;
+        const rest = { ...prev };
+        delete rest[v.id];
         return rest;
       }
       return { ...prev, [v.id]: next };
