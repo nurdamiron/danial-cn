@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { AdminLogout } from "@/components/admin/AdminLogout";
+import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
 type NavItem = {
@@ -14,6 +15,9 @@ type NavItem = {
   /** Hidden where the catalogue is an export and these pages redirect away. */
   catalogOnly?: boolean;
 };
+
+/** Destinations the bottom bar shows, so "Ещё" does not repeat them. */
+const BOTTOM_BAR = ["/admin", "/admin/orders", "/admin/products", "/admin/pricing"];
 
 const NAV: NavItem[] = [
   { href: "/admin", label: "Обзор" },
@@ -29,10 +33,13 @@ const NAV: NavItem[] = [
 export function AdminShell({
   user,
   catalogEditable,
+  newOrders,
   children,
 }: {
   user: SessionUser | null;
   catalogEditable: boolean;
+  /** Badged on the orders tab so a new order is visible from any screen. */
+  newOrders: number;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -84,19 +91,6 @@ export function AdminShell({
       <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center border border-line md:hidden"
-              aria-label={open ? "Закрыть меню" : "Открыть меню"}
-              onClick={() => setOpen((v) => !v)}
-            >
-              <span className="sr-only">Menu</span>
-              <span className="flex flex-col gap-1">
-                <span className="block h-px w-4 bg-ink" />
-                <span className="block h-px w-4 bg-ink" />
-                <span className="block h-px w-4 bg-ink" />
-              </span>
-            </button>
             <Link href="/admin" className="text-xs tracking-[0.25em] uppercase">
               Danial CN
             </Link>
@@ -130,28 +124,53 @@ export function AdminShell({
           </div>
         </div>
 
-        {open ? (
-          <nav className="border-t border-line bg-paper px-4 py-2 md:hidden">
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={`block px-2 py-3 text-sm ${
-                  isActive(item.href) ? "font-medium text-ink" : "text-muted"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="border-t border-line px-2 py-3 text-xs text-muted">
-              {user.email}
-            </div>
-          </nav>
-        ) : null}
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 pb-28 sm:py-8 md:pb-8">
+        {children}
+      </main>
+
+      {/* Everything the bottom bar has no room for. */}
+      {open ? (
+        <>
+          <button
+            type="button"
+            aria-label="Закрыть меню"
+            className="fixed inset-0 z-40 bg-ink/40 md:hidden"
+            onClick={() => setOpen(false)}
+          />
+          <nav
+            className="fixed inset-x-0 bottom-[3.875rem] z-50 border-t border-line bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
+            aria-label="Остальные разделы"
+          >
+            {items
+              .filter((item) => !BOTTOM_BAR.includes(item.href))
+              .map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`block px-5 py-3.5 text-sm ${
+                    isActive(item.href) ? "font-medium text-ink" : "text-muted"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            <div className="flex items-center justify-between border-t border-line px-5 py-3 text-xs text-muted">
+              <span className="truncate">{user.email}</span>
+              <AdminLogout />
+            </div>
+          </nav>
+        </>
+      ) : null}
+
+      <AdminBottomNav
+        newOrders={newOrders}
+        catalogEditable={catalogEditable}
+        moreOpen={open}
+        onMore={() => setOpen((v) => !v)}
+      />
     </div>
   );
 }
