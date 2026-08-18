@@ -12,7 +12,7 @@ import { loginSchema } from "@/lib/auth-validation";
 import { hasDatabase, NO_DATABASE_ERROR } from "@/lib/db-config";
 import {
   checkLoginThrottle,
-  clearFailures,
+  purgeOldAttempts,
   clientIp,
   recordAttempt,
   TOO_MANY_ATTEMPTS_ERROR,
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: INVALID }, { status: 401 });
   }
 
-  await clearFailures(email);
+  await purgeOldAttempts();
   await recordAttempt({
     action: "login",
     email,

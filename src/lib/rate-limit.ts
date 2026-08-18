@@ -62,10 +62,27 @@ async function oldestFailure(
   where: { email?: string; ip?: string },
   windowMinutes: number,
   limit: number,
+  /** Whether a correct password ends the streak for this key. */
+  resetOnSuccess = true,
 ): Promise<Date | null> {
   const since = new Date(Date.now() - windowMinutes * 60_000);
+
+  // A correct password ends the streak, but the misses stay in the table.
+  // Deleting them, as this used to, meant one sign-in by the owner erased the
+  // evidence that somebody had been guessing — and that log is the only
+  // warning the admin gets.
+  let from = since;
+  if (resetOnSuccess) {
+    const lastSuccess = await prisma.loginAttempt.findFirst({
+      where: { ...where, action: "login", success: true, createdAt: { gte: since } },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    if (lastSuccess) from = lastSuccess.createdAt;
+  }
+
   const failures = await prisma.loginAttempt.findMany({
-    where: { ...where, action: "login", success: false, createdAt: { gte: since } },
+    where: { ...where, action: "login", success: false, createdAt: { gt: from } },
     orderBy: { createdAt: "asc" },
     take: limit,
     select: { createdAt: true },
@@ -90,7 +107,12 @@ export async function checkLoginThrottle(input: {
           MAX_FAILURES_PER_EMAIL_IP,
         ),
     input.ip
-      ? oldestFailure({ ip: input.ip }, LOGIN_WINDOW_MINUTES, MAX_FAILURES_PER_IP)
+      ? oldestFailure(
+          { ip: input.ip },
+          LOGIN_WINDOW_MINUTES,
+          MAX_FAILURES_PER_IP,
+          false,
+        )
       : Promise.resolve(null),
     oldestFailure(
       { email: input.email },
@@ -148,19 +170,17 @@ export async function recordAttempt(input: {
 }
 
 /**
- * A correct password clears the account's failure streak, so someone who
- * mistyped a few times and then got it right is not left locked out.
+ * Drops attempts old enough to be of no use to either the throttle or the
+ * security log. Nothing recent is removed: the streak is ended by recording a
+ * success, not by deleting the misses that came before it.
  */
-export async function clearFailures(email: string): Promise<void> {
+export async function purgeOldAttempts(): Promise<void> {
   try {
-    await prisma.loginAttempt.deleteMany({
-      where: { email, action: "login", success: false },
-    });
     await prisma.loginAttempt.deleteMany({
       where: { createdAt: { lt: new Date(Date.now() - RETENTION_DAYS * 86_400_000) } },
     });
   } catch {
-    // Same reasoning as above.
+    // Bookkeeping must never fail a sign-in the user got right.
   }
 }
 
