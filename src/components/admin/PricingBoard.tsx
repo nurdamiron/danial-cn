@@ -150,20 +150,25 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
               return (
                 <div
                   key={v.id}
-                  className={`flex flex-wrap items-center gap-3 px-4 py-2.5 ${
+                  className={`flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-3 ${
                     changed ? "bg-stone" : ""
                   }`}
                 >
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-4 shrink-0 rounded-full border border-line"
-                    style={{ backgroundColor: v.colorHex }}
-                  />
-                  <span className="min-w-0 flex-1 text-xs">
-                    {v.colorLabelRu}
-                    <span className="text-muted">, {v.sizeLabelRu}</span>
-                  </span>
+                  {/* On a phone the name gets its own line: squeezed onto one
+                      row it wrapped to three and collided with the field. */}
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="h-4 w-4 shrink-0 rounded-full border border-line"
+                      style={{ backgroundColor: v.colorHex }}
+                    />
+                    <span className="min-w-0 text-xs">
+                      {v.colorLabelRu}
+                      <span className="text-muted">, {v.sizeLabelRu}</span>
+                    </span>
+                  </div>
 
+                  <div className="flex items-center justify-between gap-3 pl-6 sm:justify-end sm:pl-0">
                   <label className="flex items-center gap-2 text-xs">
                     <span className="text-muted">Цена</span>
                     <input
@@ -197,6 +202,7 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
                       {e.stock > 0 ? "в наличии" : "нет"}
                     </span>
                   </label>
+                  </div>
                 </div>
               );
             })}
