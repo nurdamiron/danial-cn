@@ -4,10 +4,17 @@ import staticSettings from "@/data/static-settings.json";
 export type StaticProduct = (typeof staticProducts)[number];
 export type StaticSettings = typeof staticSettings;
 
+/**
+ * Forces the committed snapshot instead of the database.
+ *
+ * This used to be true on Vercel unconditionally, which is why the catalogue
+ * could only be edited by a developer running the project locally. It is now
+ * an explicit switch: set USE_STATIC_CATALOG=1 to preview exactly what the
+ * snapshot contains, or to keep the shop readable while the database is down.
+ */
 export function isStaticCatalog(): boolean {
   return (
     process.env.USE_STATIC_CATALOG === "1" ||
-    process.env.VERCEL === "1" ||
     process.env.NEXT_PUBLIC_USE_STATIC_CATALOG === "1"
   );
 }

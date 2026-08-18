@@ -1,43 +1,48 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ExportCatalogButton } from "@/components/admin/ExportCatalogButton";
 import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
-import { isStaticCatalog } from "@/lib/static-catalog";
 import { formatKzt } from "@/lib/money";
 
 const DAY_MS = 86_400_000;
 
-/**
- * What the panel can still act on when the catalogue is a static export:
- * accounts, and who has been trying to get into them.
- */
-async function accountStats() {
+async function overview() {
   const { prisma } = await import("@/lib/prisma");
   const since24h = new Date(Date.now() - DAY_MS);
   const since7d = new Date(Date.now() - 7 * DAY_MS);
 
-  const [users, newUsers7d, blocked, ok24h, failed24h, newOrders, orders7d, revenue7d] =
-    await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({ where: { createdAt: { gte: since7d } } }),
-      prisma.user.count({ where: { blockedAt: { not: null } } }),
-      prisma.loginAttempt.count({
-        where: { action: "login", success: true, createdAt: { gte: since24h } },
-      }),
-      prisma.loginAttempt.count({
-        where: { action: "login", success: false, createdAt: { gte: since24h } },
-      }),
-      prisma.order.count({ where: { status: "new" } }),
-      prisma.order.count({ where: { createdAt: { gte: since7d } } }),
-      prisma.order.aggregate({
-        _sum: { totalKzt: true },
-        where: {
-          createdAt: { gte: since7d },
-          status: { notIn: ["cancelled"] },
-        },
-      }),
-    ]);
+  const [
+    users,
+    newUsers7d,
+    blocked,
+    ok24h,
+    failed24h,
+    newOrders,
+    orders7d,
+    revenue7d,
+    products,
+    drafts,
+    outOfStock,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { createdAt: { gte: since7d } } }),
+    prisma.user.count({ where: { blockedAt: { not: null } } }),
+    prisma.loginAttempt.count({
+      where: { action: "login", success: true, createdAt: { gte: since24h } },
+    }),
+    prisma.loginAttempt.count({
+      where: { action: "login", success: false, createdAt: { gte: since24h } },
+    }),
+    prisma.order.count({ where: { status: "new" } }),
+    prisma.order.count({ where: { createdAt: { gte: since7d } } }),
+    prisma.order.aggregate({
+      _sum: { totalKzt: true },
+      where: { createdAt: { gte: since7d }, status: { notIn: ["cancelled"] } },
+    }),
+    prisma.product.count(),
+    prisma.product.count({ where: { status: "draft" } }),
+    prisma.productVariant.count({ where: { stock: { lte: 0 } } }),
+  ]);
 
   return {
     users,
@@ -48,6 +53,9 @@ async function accountStats() {
     newOrders,
     orders7d,
     revenue7d: revenue7d._sum.totalKzt ?? 0,
+    products,
+    drafts,
+    outOfStock,
   };
 }
 
@@ -71,9 +79,7 @@ function StatCard({
         highlight ? "border-ink" : "border-line"
       }`}
     >
-      <p
-        className={`text-2xl font-light ${alarm ? "text-red-600" : ""}`}
-      >
+      <p className={`text-2xl font-light ${alarm ? "text-red-600" : ""}`}>
         {value}
       </p>
       <p className="mt-1 text-[11px] tracking-[0.16em] text-muted uppercase">
@@ -88,13 +94,7 @@ export default async function AdminHomePage() {
   if (!user) redirect("/admin/login");
   if (user.role !== "ADMIN") redirect("/admin/account");
 
-  // Static storefront: the catalogue comes from exported JSON, so product and
-  // settings edits belong to a local run. Accounts live in the database and
-  // stay editable here.
-  if (isStaticCatalog()) {
-    const accountsAvailable = hasDatabase();
-    const stats = accountsAvailable ? await accountStats() : null;
-
+  if (!hasDatabase()) {
     return (
       <div className="space-y-6">
         <div>
@@ -103,183 +103,112 @@ export default async function AdminHomePage() {
             Здравствуйте, {user.name || "Admin"}.
           </p>
         </div>
-
-        {stats ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard
-                href="/admin/orders"
-                value={stats.newOrders}
-                label="Новых заказов"
-                highlight={stats.newOrders > 0}
-              />
-              <StatCard
-                href="/admin/orders"
-                value={stats.orders7d}
-                label="Заказов за неделю"
-              />
-              <StatCard
-                href="/admin/orders"
-                value={formatKzt(stats.revenue7d)}
-                label="Сумма за неделю"
-              />
-              <StatCard
-                href="/admin/users"
-                value={stats.users}
-                label="Покупателей"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard
-                href="/admin/users"
-                value={stats.newUsers7d}
-                label="Новых за неделю"
-              />
-              <StatCard
-                href="/admin/security"
-                value={stats.ok24h}
-                label="Входов за сутки"
-              />
-              <StatCard
-                href="/admin/security"
-                value={stats.failed24h}
-                label="Неудачных за сутки"
-                alarm={stats.failed24h >= 8}
-              />
-            </div>
-
-            {stats.blocked > 0 ? (
-              <p className="border border-line bg-paper px-4 py-3 text-sm text-muted">
-                Заблокированных аккаунтов: {stats.blocked}.{" "}
-                <Link href="/admin/users" className="underline">
-                  Посмотреть
-                </Link>
-              </p>
-            ) : null}
-          </div>
-        ) : (
-          <div className="border border-line bg-paper p-5">
-            <p className="text-sm text-muted">
-              Личные кабинеты покупателей сейчас недоступны. Напишите
-              разработчику, чтобы их включить.
-            </p>
-          </div>
-        )}
-
         <div className="border border-line bg-paper p-5">
-          <p className="text-sm font-medium">Каталог</p>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Товары, цены и фото обновляет разработчик. Если нужно что-то
-            поменять в каталоге, напишите ему.
+          <p className="text-sm text-muted">
+            База данных сейчас недоступна, поэтому заказы, покупатели и каталог
+            не читаются. Сайт продолжает работать на последнем снимке каталога.
           </p>
-          <Link href="/ru" className="mt-3 inline-block text-sm underline">
-            Открыть сайт
-          </Link>
         </div>
       </div>
     );
   }
 
-  const { prisma } = await import("@/lib/prisma");
-  const [productCount, activeCount, userCount, draftCount] = await Promise.all([
-    prisma.product.count(),
-    prisma.product.count({ where: { status: "active" } }),
-    prisma.user.count(),
-    prisma.product.count({ where: { status: "draft" } }),
-  ]);
-
-  const cards = [
-    { label: "Товары", value: productCount, href: "/admin/products" },
-    { label: "Активные", value: activeCount, href: "/admin/products" },
-    { label: "Черновики", value: draftCount, href: "/admin/products" },
-    { label: "Пользователи", value: userCount, href: "/admin/users" },
-  ];
-
-  const crudLinks = [
-    {
-      title: "Товары",
-      desc: "Добавление, редактирование, статус, фото и варианты, удаление.",
-      href: "/admin/products",
-    },
-    {
-      title: "Пользователи",
-      desc: "Список, роли, пароли, удаление.",
-      href: "/admin/users",
-    },
-    {
-      title: "Настройки",
-      desc: "WhatsApp, доставка, тексты про Kaspi.",
-      href: "/admin/settings",
-    },
-  ];
+  const s = await overview();
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-xl font-light sm:text-2xl">Обзор</h1>
         <p className="mt-1 text-sm text-muted">
-          Здравствуйте, {user.name}. Вы администратор.
+          Здравствуйте, {user.name}. Всё, что вы здесь меняете, появляется на
+          сайте через несколько секунд.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {cards.map((c) => (
-          <Link
-            key={c.label}
-            href={c.href}
-            className="border border-line bg-paper p-4 transition hover:border-ink"
-          >
-            <div className="text-2xl font-light">{c.value}</div>
-            <div className="mt-1 text-xs tracking-wide text-muted uppercase">
-              {c.label}
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        {crudLinks.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="border border-line bg-paper p-4 transition hover:border-ink"
-          >
-            <div className="text-sm font-medium">{l.title}</div>
-            <p className="mt-2 text-xs leading-relaxed text-muted">{l.desc}</p>
-          </Link>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <Link
-          href="/admin/products/new"
-          className="inline-flex h-11 items-center justify-center bg-ink px-6 text-sm text-paper"
-        >
-          + Новый товар
-        </Link>
-        <Link
-          href="/admin/users"
-          className="inline-flex h-11 items-center justify-center border border-ink px-6 text-sm"
-        >
-          Пользователи
-        </Link>
-        <Link
-          href="/admin/settings"
-          className="inline-flex h-11 items-center justify-center border border-line px-6 text-sm"
-        >
-          Настройки
-        </Link>
-      </div>
-
-      <div className="border border-line bg-paper p-4 sm:p-6">
-        <h2 className="text-sm font-medium">Обновление сайта</h2>
-        <p className="mt-1 text-xs text-muted">
-          После правок в товарах нажмите кнопку — она подготовит каталог для
-          сайта.
+      <div>
+        <p className="mb-3 text-[11px] tracking-[0.16em] text-muted uppercase">
+          Продажи
         </p>
-        <div className="mt-4">
-          <ExportCatalogButton />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            href="/admin/orders"
+            value={s.newOrders}
+            label="Новых заказов"
+            highlight={s.newOrders > 0}
+          />
+          <StatCard
+            href="/admin/orders"
+            value={s.orders7d}
+            label="Заказов за неделю"
+          />
+          <StatCard
+            href="/admin/orders"
+            value={formatKzt(s.revenue7d)}
+            label="Сумма за неделю"
+          />
+          <StatCard href="/admin/users" value={s.users} label="Покупателей" />
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-3 text-[11px] tracking-[0.16em] text-muted uppercase">
+          Каталог
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            href="/admin/products"
+            value={s.products}
+            label="Товаров"
+          />
+          <StatCard
+            href="/admin/products"
+            value={s.drafts}
+            label="Черновиков"
+            highlight={s.drafts > 0}
+          />
+          <StatCard
+            href="/admin/pricing"
+            value={s.outOfStock}
+            label="Позиций нет в наличии"
+            alarm={s.outOfStock > 0}
+          />
+          <StatCard
+            href="/admin/pricing"
+            value="Цены"
+            label="Цены и наличие"
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-3 text-[11px] tracking-[0.16em] text-muted uppercase">
+          Доступ
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            href="/admin/users"
+            value={s.newUsers7d}
+            label="Новых за неделю"
+          />
+          <StatCard
+            href="/admin/security"
+            value={s.ok24h}
+            label="Входов за сутки"
+          />
+          <StatCard
+            href="/admin/security"
+            value={s.failed24h}
+            label="Неудачных за сутки"
+            alarm={s.failed24h >= 8}
+          />
+          {s.blocked > 0 ? (
+            <StatCard
+              href="/admin/users"
+              value={s.blocked}
+              label="Заблокировано"
+              alarm
+            />
+          ) : null}
         </div>
       </div>
     </div>

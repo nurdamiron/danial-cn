@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { getCurrentUser } from "@/lib/auth";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { hasDatabase } from "@/lib/db-config";
 
 export const metadata: Metadata = {
   title: "Кабинет | Danial CN",
@@ -20,7 +20,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <AdminShell user={user} catalogEditable={!isStaticCatalog()}>
+    <AdminShell user={user} catalogEditable={hasDatabase()}>
       {children}
     </AdminShell>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { revalidateSettings } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
 
 const settingsSchema = z.object({
@@ -60,5 +61,6 @@ export async function PUT(req: Request) {
     create: { id: 1, ...data },
   });
 
+  revalidateSettings();
   return NextResponse.json({ settings });
 }

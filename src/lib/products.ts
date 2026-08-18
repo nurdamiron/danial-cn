@@ -1,4 +1,5 @@
 import { canPublishProduct } from "@/lib/publish";
+import { hasDatabase, NO_DATABASE_ERROR } from "@/lib/db-config";
 import {
   getStaticFeatured,
   getStaticProductBySlug,
@@ -19,14 +20,39 @@ export type ProductListFilters = {
   sort?: "new" | "price_asc" | "price_desc";
 };
 
+/**
+ * Reads the catalogue, preferring the database.
+ *
+ * The database is the source of truth so an edit in /admin shows up on the
+ * site within seconds. src/data/static-products.json is the snapshot taken at
+ * the last build: if the database cannot be reached, the shop keeps selling
+ * from it instead of showing an empty catalogue. USE_STATIC_CATALOG=1 forces
+ * the snapshot outright.
+ */
+async function readCatalog<T>(
+  fromDatabase: () => Promise<T>,
+  fromSnapshot: () => T,
+): Promise<T> {
+  if (isStaticCatalog() || !hasDatabase()) return fromSnapshot();
+  try {
+    return await fromDatabase();
+  } catch (error) {
+    console.error(
+      "catalogue: database unreachable, serving the last snapshot",
+      error,
+    );
+    return fromSnapshot();
+  }
+}
+
 async function getPrisma() {
   const { prisma } = await import("@/lib/prisma");
   return prisma;
 }
 
 export async function assertPublishable(productId: string): Promise<void> {
-  if (isStaticCatalog()) {
-    throw new Error("Admin writes disabled in static/Vercel catalog mode");
+  if (!hasDatabase()) {
+    throw new Error(NO_DATABASE_ERROR);
   }
   const prisma = await getPrisma();
   const imageCount = await prisma.productImage.count({ where: { productId } });
@@ -36,63 +62,68 @@ export async function assertPublishable(productId: string): Promise<void> {
   }
 }
 
-export async function listActiveProducts(filters: ProductListFilters = {}) {
-  if (isStaticCatalog()) {
-    let products = getStaticProducts();
-    if (filters.category) {
-      products = products.filter((p) => p.category === filters.category);
-    }
-    if (filters.brand) {
-      products = products.filter(
-        (p) =>
-          p.brand === filters.brand ||
-          (p as { brandRu?: string }).brandRu === filters.brand ||
-          (p as { brandKk?: string }).brandKk === filters.brand,
-      );
-    }
-    if (filters.colorKey) {
-      products = products.filter((p) =>
-        p.variants.some((v) => v.colorKey === filters.colorKey && v.stock > 0),
-      );
-    }
-    if (filters.sizeKey) {
-      products = products.filter((p) =>
-        p.variants.some((v) => v.sizeKey === filters.sizeKey && v.stock > 0),
-      );
-    }
-    if (filters.inStock) {
-      products = products.filter((p) =>
-        p.variants.some((v) => v.stock > 0),
-      );
-    }
-    if (filters.minPrice != null) {
-      products = products.filter((p) => {
-        const prices = p.variants
-          .map((v) => v.priceKzt ?? p.basePriceKzt)
-          .filter((n): n is number => n != null);
-        const min = Math.min(...prices, p.basePriceKzt);
-        return min >= filters.minPrice!;
-      });
-    }
-    if (filters.maxPrice != null) {
-      products = products.filter((p) => {
-        const prices = p.variants
-          .map((v) => v.priceKzt ?? p.basePriceKzt)
-          .filter((n): n is number => n != null);
-        const min = Math.min(...prices, p.basePriceKzt);
-        return min <= filters.maxPrice!;
-      });
-    }
-    if (filters.sort === "price_asc") {
-      products = [...products].sort((a, b) => a.basePriceKzt - b.basePriceKzt);
-    } else if (filters.sort === "price_desc") {
-      products = [...products].sort((a, b) => b.basePriceKzt - a.basePriceKzt);
-    }
-    return products as unknown as Awaited<
-      ReturnType<typeof listActiveProductsFromDb>
-    >;
+/** The same narrowing as the database query, over the committed snapshot. */
+function filterSnapshot(filters: ProductListFilters) {
+  let products = getStaticProducts();
+  if (filters.category) {
+    products = products.filter((p) => p.category === filters.category);
   }
-  return listActiveProductsFromDb(filters);
+  if (filters.brand) {
+    products = products.filter(
+      (p) =>
+        p.brand === filters.brand ||
+        (p as { brandRu?: string }).brandRu === filters.brand ||
+        (p as { brandKk?: string }).brandKk === filters.brand,
+    );
+  }
+  if (filters.colorKey) {
+    products = products.filter((p) =>
+      p.variants.some((v) => v.colorKey === filters.colorKey && v.stock > 0),
+    );
+  }
+  if (filters.sizeKey) {
+    products = products.filter((p) =>
+      p.variants.some((v) => v.sizeKey === filters.sizeKey && v.stock > 0),
+    );
+  }
+  if (filters.inStock) {
+    products = products.filter((p) => p.variants.some((v) => v.stock > 0));
+  }
+  if (filters.minPrice != null) {
+    products = products.filter(
+      (p) => cheapest(p) >= (filters.minPrice as number),
+    );
+  }
+  if (filters.maxPrice != null) {
+    products = products.filter(
+      (p) => cheapest(p) <= (filters.maxPrice as number),
+    );
+  }
+  if (filters.sort === "price_asc") {
+    products = [...products].sort((a, b) => a.basePriceKzt - b.basePriceKzt);
+  } else if (filters.sort === "price_desc") {
+    products = [...products].sort((a, b) => b.basePriceKzt - a.basePriceKzt);
+  }
+  return products;
+}
+
+function cheapest(p: {
+  basePriceKzt: number;
+  variants: { priceKzt: number | null }[];
+}): number {
+  const prices = p.variants
+    .map((v) => v.priceKzt ?? p.basePriceKzt)
+    .filter((n): n is number => n != null);
+  return Math.min(...prices, p.basePriceKzt);
+}
+
+type DbProducts = Awaited<ReturnType<typeof listActiveProductsFromDb>>;
+
+export async function listActiveProducts(filters: ProductListFilters = {}) {
+  return readCatalog(
+    () => listActiveProductsFromDb(filters),
+    () => filterSnapshot(filters) as unknown as DbProducts,
+  );
 }
 
 type FilterProduct = {
@@ -174,11 +205,14 @@ export function getCatalogFilterOptions(locale: string) {
 
 /** Prefer this: works with DB locally and static on Vercel */
 export async function getCatalogFilterOptionsAsync(locale: string) {
-  if (isStaticCatalog()) {
-    return buildFilterOptions(locale, getStaticProducts() as FilterProduct[]);
-  }
-  const products = await listActiveProductsFromDb({});
-  return buildFilterOptions(locale, products as FilterProduct[]);
+  return readCatalog(
+    async () =>
+      buildFilterOptions(
+        locale,
+        (await listActiveProductsFromDb({})) as FilterProduct[],
+      ),
+    () => buildFilterOptions(locale, getStaticProducts() as FilterProduct[]),
+  );
 }
 
 async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
@@ -222,13 +256,13 @@ async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
   });
 }
 
+type DbProduct = Awaited<ReturnType<typeof getProductBySlugFromDb>>;
+
 export async function getProductBySlug(slug: string) {
-  if (isStaticCatalog()) {
-    return getStaticProductBySlug(slug) as unknown as Awaited<
-      ReturnType<typeof getProductBySlugFromDb>
-    > | null;
-  }
-  return getProductBySlugFromDb(slug);
+  return readCatalog(
+    () => getProductBySlugFromDb(slug),
+    () => getStaticProductBySlug(slug) as unknown as DbProduct,
+  );
 }
 
 async function getProductBySlugFromDb(slug: string) {
@@ -246,13 +280,33 @@ async function getProductBySlugFromDb(slug: string) {
   });
 }
 
+/**
+ * Slugs to prerender at build time. Reads the database so a product added in
+ * /admin gets a built page on the next deploy; falls back to the snapshot so a
+ * database outage cannot fail the build. Unknown slugs still render on demand.
+ */
+export async function listCatalogSlugs(): Promise<string[]> {
+  return readCatalog(
+    async () => {
+      const prisma = await getPrisma();
+      const rows = await prisma.product.findMany({
+        where: { status: "active", images: { some: {} } },
+        select: { slug: true },
+      });
+      return rows.map((r) => r.slug);
+    },
+    () => getStaticProducts().map((p) => p.slug),
+  );
+}
+
 export async function listFeaturedProducts(limit = 8) {
-  if (isStaticCatalog()) {
-    return getStaticFeatured(limit) as unknown as Awaited<
-      ReturnType<typeof listFeaturedProductsFromDb>
-    >;
-  }
-  return listFeaturedProductsFromDb(limit);
+  return readCatalog(
+    () => listFeaturedProductsFromDb(limit),
+    () =>
+      getStaticFeatured(limit) as unknown as Awaited<
+        ReturnType<typeof listFeaturedProductsFromDb>
+      >,
+  );
 }
 
 async function listFeaturedProductsFromDb(limit = 8) {

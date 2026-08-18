@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { assertPublishable } from "@/lib/products";
 import { defaultColorHex } from "@/lib/color-hex";
@@ -139,6 +140,7 @@ export async function POST(req: Request) {
     include: { images: true, variants: true },
   });
 
+  revalidateCatalog();
   return NextResponse.json({ product });
 }
 

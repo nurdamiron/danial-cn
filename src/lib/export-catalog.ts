@@ -12,7 +12,9 @@ export async function exportCatalogToStatic(): Promise<{
   settings: boolean;
 }> {
   if (isStaticCatalog()) {
-    throw new Error("Export disabled in static/Vercel mode");
+    throw new Error(
+      "USE_STATIC_CATALOG is on, so the database is not being read and there is nothing new to export",
+    );
   }
 
   const products = await prisma.product.findMany({

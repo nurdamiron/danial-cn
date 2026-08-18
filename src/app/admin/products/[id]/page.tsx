@@ -5,7 +5,7 @@ import { ProductImagesAdmin } from "@/components/admin/ProductImagesAdmin";
 import { ProductDeleteButton } from "@/components/admin/ProductDeleteButton";
 import { VariantsAdmin } from "@/components/admin/VariantsAdmin";
 import { getCurrentUser } from "@/lib/auth";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { hasDatabase } from "@/lib/db-config";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
 export default async function EditProductPage({
@@ -16,7 +16,7 @@ export default async function EditProductPage({
   const user = await getCurrentUser();
   if (!user) redirect("/admin/login");
   if (user.role !== "ADMIN") redirect("/admin/account");
-  if (isStaticCatalog()) redirect("/admin");
+  if (!hasDatabase()) redirect("/admin");
 
   const { id } = await params;
   const { prisma } = await import("@/lib/prisma");

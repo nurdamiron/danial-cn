@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { processAndSaveImage, validateImageFile } from "@/lib/images";
 
@@ -69,6 +70,7 @@ export async function POST(
     orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }],
   });
 
+  revalidateCatalog();
   return NextResponse.json({ created, images });
 }
 
@@ -126,5 +128,6 @@ export async function PATCH(
     where: { productId },
     orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }],
   });
+  revalidateCatalog();
   return NextResponse.json({ images });
 }

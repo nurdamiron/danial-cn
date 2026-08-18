@@ -2,13 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductsList } from "@/components/admin/ProductsList";
 import { getCurrentUser } from "@/lib/auth";
-import { isStaticCatalog } from "@/lib/static-catalog";
+import { hasDatabase } from "@/lib/db-config";
 
 export default async function AdminProductsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/admin/login");
   if (user.role !== "ADMIN") redirect("/admin/account");
-  if (isStaticCatalog()) redirect("/admin");
+  if (!hasDatabase()) redirect("/admin");
 
   const { prisma } = await import("@/lib/prisma");
   const products = await prisma.product.findMany({

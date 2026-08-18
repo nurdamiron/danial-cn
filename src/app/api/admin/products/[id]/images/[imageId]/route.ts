@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { deleteImageFile } from "@/lib/images";
 
@@ -39,5 +40,6 @@ export async function DELETE(
     where: { productId },
     orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }],
   });
+  revalidateCatalog();
   return NextResponse.json({ images });
 }

@@ -10,7 +10,13 @@ datasource db {
 model Product {
   id            String           @id @default(cuid())
   slug          String           @unique
+  /// House line key, e.g. ALUMA. The two labels below are what the storefront
+  /// prints; the key is what filters match on.
   brand         String
+  brandRu       String           @default("")
+  brandKk       String           @default("")
+  taglineRu     String           @default("")
+  taglineKk     String           @default("")
   nameRu        String
   nameKk        String
   descriptionRu String           @default("")

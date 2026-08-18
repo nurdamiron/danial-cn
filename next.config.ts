@@ -17,7 +17,7 @@ const CSP = [
   "script-src 'self' 'unsafe-inline'" +
     (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""),
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://*.public.blob.vercel-storage.com",
   "font-src 'self' data:",
   "connect-src 'self'",
   "frame-ancestors 'none'",
@@ -39,7 +39,11 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [],
+    // Photos uploaded from the admin panel live in Vercel Blob; the ones that
+    // shipped with the repository are still served from /public.
+    remotePatterns: [
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+    ],
     // preserve quality — do not over-compress product photos
     // Next.js 16 requires qualities to be explicitly allow-listed, otherwise
     // quality={95} used across product photography silently falls back to 75.

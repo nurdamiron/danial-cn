@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { assertPublishable } from "@/lib/products";
 
@@ -85,6 +86,7 @@ export async function PATCH(
         variants: true,
       },
     });
+    revalidateCatalog();
     return NextResponse.json({ product });
   } catch {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -101,6 +103,7 @@ export async function DELETE(
   const { id } = await ctx.params;
   try {
     await prisma.product.delete({ where: { id } });
+    revalidateCatalog();
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

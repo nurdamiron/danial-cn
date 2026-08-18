@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { defaultColorHex } from "@/lib/color-hex";
 
@@ -86,6 +87,7 @@ export async function PATCH(
     },
   });
 
+  revalidateCatalog();
   return NextResponse.json({ variant });
 }
 
@@ -114,5 +116,6 @@ export async function DELETE(
   }
 
   await prisma.productVariant.delete({ where: { id: variantId } });
+  revalidateCatalog();
   return NextResponse.json({ ok: true });
 }

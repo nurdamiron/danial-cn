@@ -10,10 +10,10 @@ import { SizeCompare } from "@/components/product/SizeCompare";
 import { formatKzt } from "@/lib/money";
 import { formatDimensions, formatSpecLine } from "@/lib/specs";
 import { SITE } from "@/lib/site";
-import { getStaticProducts } from "@/lib/static-catalog";
 import { routing } from "@/i18n/routing";
 import {
   getProductBySlug,
+  listCatalogSlugs,
   listActiveProducts,
   localizedBrand,
   localizedDescription,
@@ -25,14 +25,14 @@ import {
 } from "@/lib/products";
 
 /**
- * The catalogue on the deployed site is an exported JSON file that only
- * changes when a new build ships, so every product page can be built once and
- * served from the CDN. Without this each view ran a function to render the
- * same bytes again.
+ * Product pages are built once and served from the CDN rather than rendered
+ * per view. Edits in /admin do not wait for a deploy: saving revalidates these
+ * paths, so the page is rebuilt within seconds of the change.
  */
-export function generateStaticParams() {
-  return getStaticProducts().flatMap((product) =>
-    routing.locales.map((locale) => ({ locale, slug: product.slug })),
+export async function generateStaticParams() {
+  const slugs = await listCatalogSlugs();
+  return slugs.flatMap((slug) =>
+    routing.locales.map((locale) => ({ locale, slug })),
   );
 }
 

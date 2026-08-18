@@ -1,3 +1,4 @@
+import { hasDatabase } from "@/lib/db-config";
 import {
   getStaticSettings,
   isStaticCatalog,
@@ -53,7 +54,9 @@ function fromEnv(): SiteConfig {
 export async function getSiteConfig(): Promise<SiteConfig> {
   const env = fromEnv();
 
-  if (isStaticCatalog()) {
+  // Same rule as the catalogue: the database is the truth, the committed file
+  // is the snapshot that keeps the shop readable when it cannot be reached.
+  if (isStaticCatalog() || !hasDatabase()) {
     const s = getStaticSettings();
     if (!s) return env;
     const wa = (s.whatsappE164 || env.whatsappE164).replace(/\D/g, "");
