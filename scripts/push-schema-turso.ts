@@ -73,6 +73,14 @@ async function liveColumns(client: Client, table: string): Promise<string[]> {
 async function main() {
   const url = process.env.TURSO_DATABASE_URL?.trim();
   if (!url) {
+    // The build runs this so a deploy cannot land ahead of the tables it
+    // needs. Local runs and preview builds have no Turso to push to, and
+    // stopping them over that would be wrong — but a hand-run push with the
+    // variables forgotten is a mistake worth hearing about.
+    if (process.argv.includes("--if-configured")) {
+      console.log("no TURSO_DATABASE_URL — nothing to push, skipping");
+      return;
+    }
     throw new Error(
       "TURSO_DATABASE_URL is not set. Export it (and TURSO_AUTH_TOKEN) first.",
     );

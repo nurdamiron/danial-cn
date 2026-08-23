@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button, buttonClass } from "@/components/ui/Button";
@@ -17,6 +17,7 @@ import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
 import { openLater, recordOrder } from "@/lib/record-order";
+import { track } from "@/lib/track";
 import { cartSubtotal, loadCart, removeItem, updateQty } from "@/store/cart";
 import { saveOrder } from "@/store/orders";
 import { loadProfile, saveProfile } from "@/store/profile";
@@ -55,6 +56,15 @@ export function CartView({
     return () => window.removeEventListener("danial-cart-updated", sync);
   }, []);
 
+  // Reaching this screen with something in the cart is the step: the form and
+  // the send button are both here, so there is nothing further to open.
+  const checkoutReported = useRef(false);
+  useEffect(() => {
+    if (checkoutReported.current || items.length === 0) return;
+    checkoutReported.current = true;
+    track("checkout_open");
+  }, [items.length]);
+
   if (items.length === 0) {
     return (
       <div className="card px-6 py-20 text-center">
@@ -75,6 +85,10 @@ export function CartView({
   async function send() {
     if (!canSend || sending) return;
     setSending(true);
+
+    // The last thing this site can see. After the handoff the conversation
+    // continues in WhatsApp, where nothing here can follow it.
+    track("whatsapp_click");
 
     // Claimed inside the click. The order is filed first so its number can go
     // into the message, and a tab opened after that await would be blocked.

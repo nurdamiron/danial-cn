@@ -92,23 +92,23 @@ model SiteSettings {
 
 /// role: USER (default) | ADMIN (exactly one in the system)
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  phone        String   @default("")
-  role         String   @default("USER")
+  id             String          @id @default(cuid())
+  email          String          @unique
+  passwordHash   String
+  name           String
+  phone          String          @default("")
+  role           String          @default("USER")
   /// Set to refuse sign-in without deleting the account and its history.
-  blockedAt    DateTime?
+  blockedAt      DateTime?
   /// Bumped to invalidate every session already issued to this user. The
   /// number is signed into the cookie, so a password change or a "sign out
   /// everywhere" takes effect immediately instead of waiting out the 14 days.
-  sessionVersion Int    @default(0)
-  lastLoginAt  DateTime?
-  orders       Order[]
-  resets       PasswordReset[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  sessionVersion Int             @default(0)
+  lastLoginAt    DateTime?
+  orders         Order[]
+  resets         PasswordReset[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 /// An order as the shop recorded it, written before the customer is handed to
@@ -196,5 +196,38 @@ model LoginAttempt {
 
   @@index([email, createdAt])
   @@index([ip, createdAt])
+  @@index([createdAt])
+}
+
+/// What happened on the storefront, including to the people who did not buy.
+///
+/// The sale itself finishes in WhatsApp, off this site, so the Order table
+/// only ever records the visits that succeeded. Without this one the shop can
+/// see that it sold seven bags and nothing at all about the two hundred
+/// visits that ended somewhere along the way — which is where the money is
+/// actually lost.
+///
+/// Nothing here identifies a person: no account, no address, no IP. `visitId`
+/// is a random string the browser keeps for one visit and then forgets, which
+/// is enough to follow a single path through the shop and nothing more.
+model Event {
+  id      String  @id @default(cuid())
+  /// store_view, product_view, cart_add, checkout_open or whatsapp_click.
+  type    String
+  visitId String
+  locale  String  @default("ru")
+  /// The product this was about, for the events that concern one.
+  slug    String?
+  /// Host the visit arrived from, first touch only — never a full URL, which
+  /// is where search queries and personal parameters tend to hide.
+  source  String  @default("")
+  /// Phone, tablet or desktop, from the viewport at the time.
+  device  String  @default("")
+
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([slug, type, createdAt])
+  @@index([visitId, createdAt])
   @@index([createdAt])
 }
