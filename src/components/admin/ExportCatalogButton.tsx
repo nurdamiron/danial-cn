@@ -36,8 +36,8 @@ export function ExportCatalogButton() {
       >
         {busy ? "Готовим…" : "Подготовить каталог для сайта"}
       </button>
-      {msg ? <p className="text-xs text-green-700">{msg}</p> : null}
-      {err ? <p className="text-xs text-red-600">{err}</p> : null}
+      {msg ? <p className="text-[0.8125rem] text-muted">{msg}</p> : null}
+      {err ? <p className="text-danger text-[0.8125rem]">{err}</p> : null}
     </div>
   );
 }

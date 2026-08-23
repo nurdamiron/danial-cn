@@ -214,19 +214,19 @@ export function VariantsAdmin({
   }
 
   return (
-    <div className="space-y-4 border border-line bg-paper p-4 sm:p-6">
+    <div className="card space-y-5 p-5 sm:p-7">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-sm font-medium">Варианты (цвет × размер)</h3>
-          <p className="text-xs text-muted">
-            Полный CRUD: SKU, цвет, hex, размер, цена, остаток.
+          <h3 className="text-sm font-medium">Варианты, цвет × размер</h3>
+          <p className="text-[0.8125rem] text-muted">
+            Каждое сочетание — своя цена и свой остаток на складе.
           </p>
         </div>
-        <span className="text-xs text-muted">{variants.length} шт.</span>
+        <span className="text-[0.8125rem] text-muted">{variants.length} шт.</span>
       </div>
 
       {error ? (
-        <p className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <p className="alert-error">
           {error}
         </p>
       ) : null}
@@ -253,7 +253,7 @@ export function VariantsAdmin({
                   <div className="text-sm">
                     {v.colorLabelRu} · {v.sizeLabelRu}
                   </div>
-                  <div className="text-[11px] text-muted break-all">
+                  <div className="t-data text-muted break-all">
                     SKU: {v.sku} · {v.colorKey}/{v.sizeKey}
                     {v.priceKzt != null
                       ? ` · ${v.priceKzt.toLocaleString("ru-KZ")} ₸`
@@ -262,12 +262,12 @@ export function VariantsAdmin({
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <label className="flex items-center gap-1 text-xs">
+                <label className="flex items-center gap-1 text-[0.8125rem]">
                   Сток
                   <input
                     type="number"
                     min={0}
-                    className="w-16 border border-line px-2 py-1 text-sm"
+                    className="field tabular w-16 px-2 py-1.5"
                     value={v.stock}
                     onChange={(e) =>
                       setVariants((list) =>
@@ -285,14 +285,14 @@ export function VariantsAdmin({
                 </label>
                 <button
                   type="button"
-                  className="text-xs underline"
+                  className="link-quiet text-[0.8125rem]"
                   onClick={() => startEdit(v)}
                 >
                   Изменить
                 </button>
                 <button
                   type="button"
-                  className="text-xs text-red-600 underline"
+                  className="text-danger text-[0.8125rem] underline-offset-4 hover:underline"
                   disabled={busy}
                   onClick={() => remove(v.id)}
                 >
@@ -311,7 +311,7 @@ export function VariantsAdmin({
         onSubmit={onSubmit}
         className="grid gap-3 border border-line bg-stone/30 p-3 sm:grid-cols-2 sm:p-4"
       >
-        <div className="sm:col-span-2 text-xs tracking-wide text-muted uppercase">
+        <div className="sm:col-span-2 text-[0.8125rem] tracking-wide text-muted uppercase">
           {editingId ? "Редактирование варианта" : "Новый вариант"}
         </div>
 
@@ -320,10 +320,10 @@ export function VariantsAdmin({
           visible because a one-off colourway still needs to be typed in, but
           nobody should have to invent an SKU to add a silver cabin case.
         */}
-        <label className="block text-xs">
+        <label className="block">
           Цвет из палитры
           <select
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.colorKey}
             onChange={(e) => applyColor(e.target.value)}
           >
@@ -339,10 +339,10 @@ export function VariantsAdmin({
           </select>
         </label>
 
-        <label className="block text-xs">
+        <label className="block">
           Размер
           <select
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.sizeKey}
             onChange={(e) => applySize(e.target.value)}
           >
@@ -357,22 +357,22 @@ export function VariantsAdmin({
           </select>
         </label>
 
-        <label className="block text-xs sm:col-span-2">
+        <label className="block text-[0.8125rem] sm:col-span-2">
           SKU *
           <input
             required
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.sku}
             onChange={(e) => setField("sku", e.target.value)}
             placeholder={`${productSlug}-black-55`}
           />
         </label>
 
-        <label className="block text-xs">
+        <label className="block">
           colorKey (en) *
           <input
             required
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.colorKey}
             onChange={(e) => {
               const k = e.target.value;
@@ -382,7 +382,7 @@ export function VariantsAdmin({
             placeholder="black"
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Цвет (hex)
           <div className="mt-1 flex gap-2">
             <input
@@ -394,18 +394,18 @@ export function VariantsAdmin({
               onChange={(e) => setField("colorHex", e.target.value)}
             />
             <input
-              className="w-full border border-line bg-paper px-3 py-2 text-sm"
+              className="field"
               value={form.colorHex}
               onChange={(e) => setField("colorHex", e.target.value)}
               placeholder="#111111"
             />
           </div>
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Цвет RU *
           <input
             required
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.colorLabelRu}
             onChange={(e) => {
               setField("colorLabelRu", e.target.value);
@@ -414,22 +414,22 @@ export function VariantsAdmin({
             placeholder="Чёрный"
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Цвет KK
           <input
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.colorLabelKk}
             onChange={(e) => setField("colorLabelKk", e.target.value)}
             placeholder="Қара"
           />
         </label>
 
-        <label className="block text-xs">
+        <label className="block">
           sizeKey *
           <input
             required
             list="size-keys"
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.sizeKey}
             onChange={(e) => {
               const k = e.target.value;
@@ -447,39 +447,39 @@ export function VariantsAdmin({
             <option value="75" />
           </datalist>
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Размер RU
           <input
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.sizeLabelRu}
             onChange={(e) => setField("sizeLabelRu", e.target.value)}
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Размер KK
           <input
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.sizeLabelKk}
             onChange={(e) => setField("sizeLabelKk", e.target.value)}
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Цена варианта ₸ (пусто = базовая)
           <input
             type="number"
             min={0}
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.priceKzt}
             onChange={(e) => setField("priceKzt", e.target.value)}
             placeholder="опционально"
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Остаток
           <input
             type="number"
             min={0}
-            className="mt-1 w-full border border-line bg-paper px-3 py-2 text-sm"
+            className="field"
             value={form.stock}
             onChange={(e) => setField("stock", Number(e.target.value) || 0)}
           />

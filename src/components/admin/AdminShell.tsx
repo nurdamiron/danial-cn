@@ -58,13 +58,13 @@ export function AdminShell({
           <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
             <Link
               href="/admin/login"
-              className="text-xs tracking-[0.25em] uppercase"
+              className="t-label tracking-[0.25em]"
             >
               Danial CN Admin
             </Link>
             <a
               href={storeHref}
-              className="inline-flex items-center gap-1 text-xs text-muted"
+              className="inline-flex items-center gap-1 text-[0.8125rem] text-muted"
             >
               <ArrowRightIcon className="h-3.5 w-3.5 rotate-180" />
               Сайт
@@ -91,7 +91,7 @@ export function AdminShell({
       <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <Link href="/admin" className="text-xs tracking-[0.25em] uppercase">
+            <Link href="/admin" className="t-label tracking-[0.25em]">
               Danial CN
             </Link>
           </div>
@@ -101,7 +101,7 @@ export function AdminShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-3 py-2 text-xs tracking-wide ${
+                className={`px-3 py-2 text-[0.8125rem] tracking-wide ${
                   isActive(item.href)
                     ? "bg-ink text-paper"
                     : "text-muted hover:text-ink"
@@ -112,10 +112,10 @@ export function AdminShell({
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-3 text-[0.8125rem]">
             <span className="hidden max-w-[140px] truncate text-muted sm:inline">
               {user.name}
-              {isAdmin ? " · admin" : ""}
+              {isAdmin ? " · администратор" : ""}
             </span>
             <a href={storeHref} className="text-muted hover:text-ink">
               Сайт
@@ -123,7 +123,9 @@ export function AdminShell({
             <AdminLogout />
           </div>
         </div>
-
+        {/* The flute: the same rib pattern the aluminium shells carry, so the
+            panel reads as part of the shop rather than a tool bolted to it. */}
+        <div className="flute h-1.5 w-full" aria-hidden="true" />
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 pb-28 sm:py-8 md:pb-8">
@@ -157,7 +159,7 @@ export function AdminShell({
                   {item.label}
                 </Link>
               ))}
-            <div className="flex items-center justify-between border-t border-line px-5 py-3 text-xs text-muted">
+            <div className="flex items-center justify-between border-t border-line px-5 py-3 text-[0.8125rem] text-muted">
               <span className="truncate">{user.email}</span>
               <AdminLogout />
             </div>

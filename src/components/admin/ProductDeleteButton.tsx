@@ -37,7 +37,7 @@ export function ProductDeleteButton({
       type="button"
       disabled={busy}
       onClick={onDelete}
-      className="border border-red-200 px-4 py-2 text-xs text-red-700 disabled:opacity-50"
+      className="btn border-danger/30 text-danger h-10 px-5 text-[0.8125rem] disabled:opacity-50"
     >
       {busy ? "Удаление…" : "Удалить товар"}
     </button>

@@ -16,7 +16,7 @@ export default async function NewProductPage() {
       <div className="mb-6 flex items-center gap-4">
         <Link
           href="/admin/products"
-          className="inline-flex items-center gap-1 text-xs text-muted underline"
+          className="link-quiet inline-flex items-center gap-1 text-[0.8125rem] text-muted"
         >
           <ArrowRightIcon className="h-3.5 w-3.5 rotate-180" />
           К списку

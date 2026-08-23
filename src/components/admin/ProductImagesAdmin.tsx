@@ -100,17 +100,17 @@ export function ProductImagesAdmin({
   }
 
   return (
-    <div className="space-y-4 border border-line bg-paper p-4 sm:p-6">
-      <p className="text-xs text-muted">
+    <div className="card space-y-5 p-5 sm:p-7">
+      <p className="text-[0.8125rem] text-muted">
         C: загрузка · R: галерея · U: обложка / цвет / порядок · D: удалить.
         Привязка к colorKey меняет фото при выборе цвета на витрине.
       </p>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <label className="block flex-1 text-xs">
+        <label className="block flex-1 text-[0.8125rem]">
           Цвет при загрузке
           <select
-            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={uploadColor}
             onChange={(e) => setUploadColor(e.target.value)}
           >
@@ -127,23 +127,23 @@ export function ProductImagesAdmin({
           accept="image/jpeg,image/png,image/webp,image/avif"
           multiple
           disabled={busy}
-          className="block w-full text-xs sm:w-auto"
+          className="block w-full text-[0.8125rem] sm:w-auto"
           onChange={(e) => onUpload(e.target.files)}
         />
       </div>
 
-      {busy ? <p className="text-xs text-muted">Загрузка…</p> : null}
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      {busy ? <p className="text-[0.8125rem] text-muted">Загрузка…</p> : null}
+      {error ? <p className="text-danger text-[0.8125rem]">{error}</p> : null}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {images.map((img, i) => (
           <div key={img.id} className="border border-line p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={img.url} alt="" className="h-32 w-full object-contain" />
-            <label className="mt-2 block text-[10px] text-muted">
+            <label className="t-data mt-2 block text-muted">
               Цвет
               <select
-                className="mt-0.5 w-full border border-line px-1 py-1 text-xs"
+                className="field mt-0.5 px-2 py-1 text-[0.8125rem]"
                 value={img.colorKey ?? ""}
                 onChange={(e) => setColorKey(img.id, e.target.value)}
               >
@@ -158,7 +158,7 @@ export function ProductImagesAdmin({
                 ) : null}
               </select>
             </label>
-            <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
+            <div className="mt-2 flex flex-wrap gap-2">
               {img.isCover ? (
                 <span className="font-medium">ОБЛОЖКА</span>
               ) : (
@@ -188,7 +188,7 @@ export function ProductImagesAdmin({
               </button>
               <button
                 type="button"
-                className="text-red-600 underline"
+                className="text-danger underline-offset-4 hover:underline"
                 onClick={() => remove(img.id)}
               >
                 Delete

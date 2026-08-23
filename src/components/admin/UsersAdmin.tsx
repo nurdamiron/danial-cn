@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminUser } from "@/lib/admin-users";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { formatMoment } from "@/lib/datetime";
+import { Notice } from "@/components/admin/ui/AdminSection";
 
 export type AdminUserRow = AdminUser;
 
@@ -241,7 +242,7 @@ export function UsersAdmin({
   function Actions({ u }: { u: AdminUserRow }) {
     const self = u.id === currentUserId;
     return (
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[0.8125rem]">
         <button type="button" className="underline" onClick={() => startEdit(u)}>
           Изменить
         </button>
@@ -300,7 +301,7 @@ export function UsersAdmin({
           <button
             type="button"
             disabled={busyId === u.id}
-            className="text-red-600 underline disabled:opacity-50"
+            className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
             onClick={() => remove(u.id)}
           >
             Удалить
@@ -314,7 +315,7 @@ export function UsersAdmin({
     return (
       <div className="space-y-2">
         <input
-          className="w-full border border-line px-2 py-1.5 text-sm"
+          className="field px-2.5 py-1.5 text-[0.8125rem]"
           value={editForm.name}
           onChange={(e) =>
             setEditForm((f) => ({ ...f, name: e.target.value }))
@@ -322,7 +323,7 @@ export function UsersAdmin({
           placeholder="Имя"
         />
         <input
-          className="w-full border border-line px-2 py-1.5 text-sm"
+          className="field px-2.5 py-1.5 text-[0.8125rem]"
           value={editForm.phone}
           onChange={(e) =>
             setEditForm((f) => ({ ...f, phone: e.target.value }))
@@ -332,7 +333,7 @@ export function UsersAdmin({
         <input
           type="password"
           autoComplete="new-password"
-          className="w-full border border-line px-2 py-1.5 text-sm"
+          className="field px-2.5 py-1.5 text-[0.8125rem]"
           value={editForm.password}
           onChange={(e) =>
             setEditForm((f) => ({ ...f, password: e.target.value }))
@@ -340,12 +341,12 @@ export function UsersAdmin({
           placeholder="Новый пароль, необязательно"
         />
         <div className="flex gap-2">
-          <button type="submit" className="bg-ink px-3 py-1.5 text-xs text-paper">
+          <button type="submit" className="btn btn-primary h-10 px-5 text-[0.8125rem]">
             Сохранить
           </button>
           <button
             type="button"
-            className="border border-line px-3 py-1.5 text-xs"
+            className="btn btn-outline h-10 px-5 text-[0.8125rem]"
             onClick={() => setEditId(null)}
           >
             Отмена
@@ -358,21 +359,19 @@ export function UsersAdmin({
   return (
     <div className="space-y-6">
       {error ? (
-        <p className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-          {error}
-        </p>
+        <Notice>{error}</Notice>
       ) : null}
       {message ? (
-        <p className="border border-line bg-stone px-3 py-2 text-xs">{message}</p>
+        <Notice tone="quiet">{message}</Notice>
       ) : null}
 
       {resetLink ? (
         <div className="border border-ink bg-paper p-4">
-          <p className="text-xs tracking-wide text-muted uppercase">
+          <p className="t-label text-muted">
             Ссылка для {resetLink.email}
           </p>
-          <p className="mt-2 text-xs break-all">{resetLink.url}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+          <p className="mt-2 text-[0.8125rem] break-all">{resetLink.url}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-[0.8125rem]">
             <button
               type="button"
               className="bg-ink px-3 py-1.5 text-paper"
@@ -399,12 +398,12 @@ export function UsersAdmin({
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <input
-          className="w-full border border-line bg-paper px-3 py-2 text-sm sm:max-w-xs"
+          className="field sm:max-w-xs"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Поиск по имени, почте или телефону"
         />
-        <p className="text-xs text-muted">
+        <p className="text-[0.8125rem] text-muted">
           {searching
             ? "Ищу…"
             : `Найдено ${counts.total}${
@@ -415,62 +414,62 @@ export function UsersAdmin({
 
       <form
         onSubmit={createUser}
-        className="grid gap-3 border border-line bg-paper p-4 sm:grid-cols-2"
+        className="card grid gap-4 p-5 sm:grid-cols-2"
       >
-        <div className="text-xs tracking-wide text-muted uppercase sm:col-span-2">
+        <div className="t-label text-muted sm:col-span-2">
           Новый пользователь
         </div>
-        <label className="block text-xs">
+        <label className="block">
           Почта
           <input
             type="email"
             required
-            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={createForm.email}
             onChange={(e) =>
               setCreateForm((f) => ({ ...f, email: e.target.value }))
             }
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Пароль, минимум 8 символов
           <input
             type="password"
             required
             minLength={8}
             autoComplete="new-password"
-            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={createForm.password}
             onChange={(e) =>
               setCreateForm((f) => ({ ...f, password: e.target.value }))
             }
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Имя
           <input
             required
-            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={createForm.name}
             onChange={(e) =>
               setCreateForm((f) => ({ ...f, name: e.target.value }))
             }
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Телефон
           <input
-            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={createForm.phone}
             onChange={(e) =>
               setCreateForm((f) => ({ ...f, phone: e.target.value }))
             }
           />
         </label>
-        <label className="block text-xs">
+        <label className="block">
           Роль
           <select
-            className="mt-1 w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={createForm.role}
             onChange={(e) =>
               setCreateForm((f) => ({
@@ -496,30 +495,30 @@ export function UsersAdmin({
 
       <div className="space-y-3 md:hidden">
         {users.map((u) => (
-          <div key={u.id} className="border border-line bg-paper p-4">
+          <div key={u.id} className="card p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-sm font-medium">{u.name}</div>
-                <div className="text-xs break-all text-muted">{u.email}</div>
+                <div className="text-[0.8125rem] break-all text-muted">{u.email}</div>
                 {u.phone ? (
-                  <div className="text-xs text-muted">{u.phone}</div>
+                  <div className="text-[0.8125rem] text-muted">{u.phone}</div>
                 ) : null}
-                <div className="mt-1 text-[11px] text-muted">
+                <div className="t-data mt-1 text-muted">
                   Вход {formatMoment(u.lastLoginAt) || "ни разу"}
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span
-                  className={`px-2 py-0.5 text-[10px] tracking-wide uppercase ${
+                  className={`tag ${
                     u.role === "ADMIN"
-                      ? "bg-ink text-paper"
+                      ? "border-ink bg-ink text-paper"
                       : "border border-line text-muted"
                   }`}
                 >
                   {u.role}
                 </span>
                 {u.blockedAt ? (
-                  <span className="bg-red-600 px-2 py-0.5 text-[10px] tracking-wide text-white uppercase">
+                  <span className="tag border-danger/30 bg-[var(--danger-tint)] text-danger">
                     Блок
                   </span>
                 ) : null}
@@ -542,9 +541,9 @@ export function UsersAdmin({
         ))}
       </div>
 
-      <div className="hidden overflow-x-auto border border-line bg-paper md:block">
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-line text-xs tracking-wide text-muted">
+          <thead className="border-b border-line text-[0.8125rem] tracking-wide text-muted">
             <tr>
               <th className="p-3">Имя</th>
               <th className="p-3">Почта</th>
@@ -566,15 +565,15 @@ export function UsersAdmin({
                 ) : (
                   <>
                     <td className="p-3">{u.name}</td>
-                    <td className="p-3 text-xs">{u.email}</td>
-                    <td className="p-3 text-xs">{u.phone || "нет"}</td>
-                    <td className="p-3 text-xs">
+                    <td className="p-3 text-[0.8125rem]">{u.email}</td>
+                    <td className="p-3 text-[0.8125rem]">{u.phone || "нет"}</td>
+                    <td className="p-3 text-[0.8125rem]">
                       <span className="uppercase">{u.role}</span>
                       {u.blockedAt ? (
-                        <span className="ml-2 text-red-600">заблокирован</span>
+                        <span className="ml-2 text-danger">заблокирован</span>
                       ) : null}
                     </td>
-                    <td className="p-3 text-xs text-muted">
+                    <td className="p-3 text-[0.8125rem] text-muted">
                       {formatMoment(u.lastLoginAt) || "ни разу"}
                     </td>
                     <td className="p-3">
@@ -589,10 +588,10 @@ export function UsersAdmin({
       </div>
 
       {users.length === 0 ? (
-        <p className="text-xs text-muted">Никого не нашлось.</p>
+        <p className="text-[0.8125rem] text-muted">Никого не нашлось.</p>
       ) : null}
 
-      <p className="text-xs text-muted">
+      <p className="text-[0.8125rem] text-muted">
         Блокировка закрывает вход, но сохраняет аккаунт и историю. Смена пароля
         и блокировка закрывают все открытые сеансы этого человека сразу.
       </p>

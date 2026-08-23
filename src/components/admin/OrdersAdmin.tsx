@@ -3,20 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import { formatMoment } from "@/lib/datetime";
 import { formatKzt } from "@/lib/money";
+import { DELIVERY_LABEL, type AdminOrder } from "@/lib/admin-orders";
 import {
-  DELIVERY_LABEL,
-  type AdminOrder,
-} from "@/lib/admin-orders";
-import { ORDER_STATUSES, ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/orders";
+  ORDER_STATUSES,
+  ORDER_STATUS_LABEL,
+  type OrderStatus,
+} from "@/lib/orders";
+import { EmptyState, Notice } from "@/components/admin/ui/AdminSection";
+import { StatusTag } from "@/components/admin/ui/StatusTag";
 
-const STATUS_STYLE: Record<string, string> = {
-  new: "bg-ink text-paper",
-  confirmed: "border border-ink text-ink",
-  shipped: "border border-line text-muted",
-  done: "border border-line text-muted",
-  cancelled: "border border-red-300 text-red-700",
-};
-
+/**
+ * The screen the shop opens every morning.
+ *
+ * Ordered around one question — what still needs an answer — so a new order
+ * is legible from across the room and a finished one gets out of the way. The
+ * status control sits on the row rather than behind a click: moving an order
+ * along is the whole job of this page, and a select that needs the card
+ * opened first would put a step in front of the only step that matters.
+ */
 export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
   const [orders, setOrders] = useState(initial);
   const [query, setQuery] = useState("");
@@ -71,24 +75,22 @@ export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
   }
 
   return (
-    <div className="space-y-5">
-      {error ? (
-        <p className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-          {error}
-        </p>
-      ) : null}
+    <div className="space-y-6">
+      <Notice>{error}</Notice>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
-          className="w-full border border-line bg-paper px-3 py-2 text-sm sm:max-w-xs"
+          className="field sm:max-w-xs"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Номер, имя, телефон или город"
+          aria-label="Поиск по заказам"
         />
         <select
-          className="border border-line bg-paper px-3 py-2 text-sm"
+          className="field sm:w-auto"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+          aria-label="Фильтр по статусу"
         >
           <option value="">Все статусы</option>
           {ORDER_STATUSES.map((s) => (
@@ -97,110 +99,119 @@ export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted">
+        <p className="t-data shrink-0 text-muted" aria-live="polite">
           {loading ? "Ищу…" : `Заказов: ${orders.length}`}
         </p>
       </div>
 
       {orders.length === 0 ? (
-        <p className="border border-line bg-paper px-4 py-8 text-center text-sm text-muted">
-          Заказов пока нет.
-        </p>
-      ) : null}
+        <EmptyState>
+          {query || status
+            ? "Под фильтр ничего не подходит."
+            : "Заказов пока нет."}
+        </EmptyState>
+      ) : (
+        <ul className="divide-y divide-line border-y border-line">
+          {orders.map((order) => {
+            const open = openId === order.id;
+            return (
+              <li
+                key={order.id}
+                /* A new order is the only kind that owes the shop something,
+                   so it gets the one piece of emphasis on the list. */
+                className={
+                  order.status === "new" ? "border-l-2 border-l-ink pl-3" : "pl-3"
+                }
+              >
+                <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="t-data text-muted">{order.number}</span>
+                      <StatusTag status={order.status} />
+                      {order.source === "quick" ? (
+                        <span className="tag">быстрый заказ</span>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-sm">
+                      {order.customerName}
+                      {order.customerPhone ? `, ${order.customerPhone}` : ""}
+                    </p>
+                    <p className="mt-0.5 text-[0.8125rem] text-muted">
+                      {order.city},{" "}
+                      {DELIVERY_LABEL[order.delivery] ?? order.delivery}
+                      {" · "}
+                      {formatMoment(order.createdAt)}
+                      {order.user ? ` · ${order.user.email}` : " · гость"}
+                    </p>
+                  </div>
 
-      <div className="space-y-3">
-        {orders.map((order) => {
-          const open = openId === order.id;
-          return (
-            <div key={order.id} className="border border-line bg-paper">
-              <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm">{order.number}</span>
-                    <span
-                      className={`px-2 py-0.5 text-[10px] tracking-wide uppercase ${
-                        STATUS_STYLE[order.status] ?? "border border-line"
-                      }`}
+                  <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                    <p className="t-price tabular text-xl">
+                      {formatKzt(order.totalKzt)}
+                    </p>
+                    <select
+                      className="field w-auto px-2.5 py-1.5 text-[0.8125rem]"
+                      value={order.status}
+                      disabled={busyId === order.id}
+                      aria-label={`Статус заказа ${order.number}`}
+                      onChange={(e) =>
+                        void setOrderStatus(
+                          order.id,
+                          e.target.value as OrderStatus,
+                        )
+                      }
                     >
-                      {ORDER_STATUS_LABEL[order.status as OrderStatus] ??
-                        order.status}
-                    </span>
-                    {order.source === "quick" ? (
-                      <span className="text-[10px] tracking-wide text-muted uppercase">
-                        быстрый заказ
-                      </span>
+                      {ORDER_STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {ORDER_STATUS_LABEL[s]}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="link-quiet text-[0.8125rem]"
+                      aria-expanded={open}
+                      onClick={() => setOpenId(open ? null : order.id)}
+                    >
+                      {open ? "Свернуть" : `Состав, ${order.items.length}`}
+                    </button>
+                  </div>
+                </div>
+
+                {open ? (
+                  <div className="border-t border-line py-3">
+                    <ul className="space-y-2">
+                      {order.items.map((item) => (
+                        <li
+                          key={item.id}
+                          className="flex justify-between gap-3 text-[0.8125rem]"
+                        >
+                          <span>
+                            {item.brand} {item.name}
+                            {item.colorLabel ? `, ${item.colorLabel}` : ""}
+                            {item.sizeLabel ? `, ${item.sizeLabel}` : ""}
+                            {item.qty > 1 ? ` × ${item.qty}` : ""}
+                          </span>
+                          <span className="tabular shrink-0 text-muted">
+                            {formatKzt(item.unitPriceKzt * item.qty)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {order.comment ? (
+                      <p className="mt-3 border-t border-line pt-3 text-[0.8125rem] text-muted">
+                        {order.comment}
+                      </p>
                     ) : null}
                   </div>
-                  <div className="mt-1.5 text-sm">
-                    {order.customerName}
-                    {order.customerPhone ? `, ${order.customerPhone}` : ""}
-                  </div>
-                  <div className="text-xs text-muted">
-                    {order.city}, {DELIVERY_LABEL[order.delivery] ?? order.delivery}
-                    {" · "}
-                    {formatMoment(order.createdAt)}
-                    {order.user ? ` · ${order.user.email}` : " · гость"}
-                  </div>
-                </div>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
-                <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                  <div className="text-lg font-light">
-                    {formatKzt(order.totalKzt)}
-                  </div>
-                  <select
-                    className="border border-line px-2 py-1 text-xs"
-                    value={order.status}
-                    disabled={busyId === order.id}
-                    onChange={(e) =>
-                      void setOrderStatus(order.id, e.target.value as OrderStatus)
-                    }
-                  >
-                    {ORDER_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {ORDER_STATUS_LABEL[s]}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="text-xs underline"
-                    onClick={() => setOpenId(open ? null : order.id)}
-                  >
-                    {open ? "Свернуть" : `Состав, ${order.items.length}`}
-                  </button>
-                </div>
-              </div>
-
-              {open ? (
-                <div className="border-t border-line px-4 py-3">
-                  <ul className="space-y-2">
-                    {order.items.map((item) => (
-                      <li key={item.id} className="flex justify-between gap-3 text-xs">
-                        <span>
-                          {item.brand} {item.name}
-                          {item.colorLabel ? `, ${item.colorLabel}` : ""}
-                          {item.sizeLabel ? `, ${item.sizeLabel}` : ""}
-                          {item.qty > 1 ? ` x${item.qty}` : ""}
-                        </span>
-                        <span className="shrink-0 text-muted">
-                          {formatKzt(item.unitPriceKzt * item.qty)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  {order.comment ? (
-                    <p className="mt-3 border-t border-line pt-3 text-xs text-muted">
-                      {order.comment}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="text-xs text-muted">
+      <p className="text-[0.8125rem] text-muted">
         Заказ записывается в момент отправки в WhatsApp. Номер из карточки
         совпадает с номером в сообщении покупателя. Суммы считает сервер по
         каталогу, а не браузер.
