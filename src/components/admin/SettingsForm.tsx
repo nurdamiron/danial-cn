@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Notice } from "@/components/admin/ui/AdminSection";
 
 export type SettingsInput = {
   whatsappE164: string;
@@ -16,6 +17,13 @@ export type SettingsInput = {
   disclaimerKk: string;
 };
 
+/**
+ * The words the storefront says, in both languages.
+ *
+ * Laid out in pairs on purpose: every line here is shown to a Russian
+ * speaker or a Kazakh one, and editing one of a pair without the other is
+ * the mistake this screen exists to make hard to miss.
+ */
 export function SettingsForm({ initial }: { initial: SettingsInput }) {
   const [form, setForm] = useState(initial);
   const [error, setError] = useState("");
@@ -24,6 +32,8 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
 
   function set<K extends keyof SettingsInput>(key: K, value: SettingsInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    // A stale "saved" under a form the owner has since edited is a small lie.
+    setOk("");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -43,7 +53,7 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
         return;
       }
       setForm(data.settings);
-      setOk("Настройки сохранены");
+      setOk("Сохранено. На сайте появится через несколько секунд.");
     } finally {
       setSaving(false);
     }
@@ -54,18 +64,18 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
     key: keyof SettingsInput,
     opts?: { textarea?: boolean },
   ) => (
-    <label className="block text-xs">
-      {label}
+    <label className="block">
+      <span className="field-label">{label}</span>
       {opts?.textarea ? (
         <textarea
-          className="mt-1 w-full border border-line px-3 py-2 text-sm"
+          className="field"
           rows={2}
           value={form[key]}
           onChange={(e) => set(key, e.target.value)}
         />
       ) : (
         <input
-          className="mt-1 w-full border border-line px-3 py-2 text-sm"
+          className="field"
           value={form[key]}
           onChange={(e) => set(key, e.target.value)}
         />
@@ -73,49 +83,51 @@ export function SettingsForm({ initial }: { initial: SettingsInput }) {
     </label>
   );
 
+  /** A pair of languages saying the same thing. */
+  const pair = (title: string, ru: keyof SettingsInput, kk: keyof SettingsInput) => (
+    <div className="sm:col-span-2">
+      <p className="t-label mb-2 text-muted">{title}</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {field("Русский", ru, { textarea: true })}
+        {field("Қазақша", kk, { textarea: true })}
+      </div>
+    </div>
+  );
+
   return (
-    <form
-      onSubmit={onSubmit}
-      className="grid max-w-3xl gap-4 border border-line bg-paper p-4 sm:grid-cols-2 sm:p-6"
-    >
-      <div className="sm:col-span-2 text-xs tracking-wide text-muted uppercase">
-        Update — настройки сайта (Read + Update)
+    <form onSubmit={onSubmit} className="card max-w-3xl space-y-7 p-5 sm:p-7">
+      <label className="block max-w-xs">
+        <span className="field-label">WhatsApp, только цифры</span>
+        <input
+          className="field tabular"
+          inputMode="numeric"
+          placeholder="77066316449"
+          value={form.whatsappE164}
+          onChange={(e) => set("whatsappE164", e.target.value)}
+        />
+      </label>
+
+      <div className="grid gap-6 border-t border-line pt-6">
+        {pair("Карго", "deliveryCargoRu", "deliveryCargoKk")}
+        {pair("Авиа", "deliveryAviaRu", "deliveryAviaKk")}
+        {pair("Экспресс", "deliveryExpressRu", "deliveryExpressKk")}
       </div>
 
-      {field("WhatsApp (цифры, 7706…)", "whatsappE164")}
-
-      <div className="sm:col-span-2 border-t border-line pt-3 text-xs text-muted">
-        Доставка
+      <div className="grid gap-6 border-t border-line pt-6">
+        {pair("Оплата Kaspi", "kaspiNoteRu", "kaspiNoteKk")}
+        {pair("Предупреждение о репликах", "disclaimerRu", "disclaimerKk")}
       </div>
-      {field("Карго RU", "deliveryCargoRu", { textarea: true })}
-      {field("Карго KK", "deliveryCargoKk", { textarea: true })}
-      {field("Авиа RU", "deliveryAviaRu", { textarea: true })}
-      {field("Авиа KK", "deliveryAviaKk", { textarea: true })}
-      {field("Экспресс RU", "deliveryExpressRu", { textarea: true })}
-      {field("Экспресс KK", "deliveryExpressKk", { textarea: true })}
 
-      <div className="sm:col-span-2 border-t border-line pt-3 text-xs text-muted">
-        Kaspi / дисклеймер
-      </div>
-      {field("Kaspi RU", "kaspiNoteRu", { textarea: true })}
-      {field("Kaspi KK", "kaspiNoteKk", { textarea: true })}
-      {field("Disclaimer RU", "disclaimerRu", { textarea: true })}
-      {field("Disclaimer KK", "disclaimerKk", { textarea: true })}
+      <Notice>{error}</Notice>
+      {ok ? <Notice tone="quiet">{ok}</Notice> : null}
 
-      {error ? (
-        <p className="text-xs text-red-600 sm:col-span-2">{error}</p>
-      ) : null}
-      {ok ? (
-        <p className="text-xs text-green-700 sm:col-span-2">{ok}</p>
-      ) : null}
-
-      <div className="sm:col-span-2">
+      <div className="border-t border-line pt-6">
         <button
           type="submit"
           disabled={saving}
-          className="h-11 w-full bg-ink text-sm text-paper disabled:opacity-50 sm:w-auto sm:px-8"
+          className="btn btn-primary h-12 w-full px-8 text-sm sm:w-auto"
         >
-          {saving ? "…" : "Сохранить настройки"}
+          {saving ? "…" : "Сохранить"}
         </button>
       </div>
     </form>

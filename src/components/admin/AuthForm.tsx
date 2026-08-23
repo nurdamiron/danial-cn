@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRightIcon } from "@/components/ui/icons";
+import { Notice } from "@/components/admin/ui/AdminSection";
 
 type Mode = "login" | "register";
 
@@ -53,8 +54,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <div className="border border-line bg-paper p-6 sm:p-8">
-      <h1 className="mb-2 text-center text-xs tracking-[0.3em] uppercase">
+    <div className="card p-6 sm:p-8">
+      <h1 className="t-label mb-2 text-center tracking-[0.3em]">
         Danial CN
       </h1>
       <p className="mb-6 text-center text-sm text-muted">
@@ -64,20 +65,20 @@ export function AuthForm({ mode }: { mode: Mode }) {
       <form onSubmit={onSubmit} className="space-y-4">
         {mode === "register" ? (
           <>
-            <label className="block text-xs">
+            <label className="block">
               Имя
               <input
                 required
-                className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm"
+                className="field"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="name"
               />
             </label>
-            <label className="block text-xs">
+            <label className="block">
               Телефон
               <input
-                className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm"
+                className="field"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+7 …"
@@ -87,25 +88,25 @@ export function AuthForm({ mode }: { mode: Mode }) {
           </>
         ) : null}
 
-        <label className="block text-xs">
+        <label className="block">
           Email
           <input
             type="email"
             required
-            className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm"
+            className="field"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           />
         </label>
 
-        <label className="block text-xs">
+        <label className="block">
           Пароль
           <input
             type="password"
             required
             minLength={mode === "register" ? 8 : 1}
-            className="mt-1 w-full border border-line bg-paper px-3 py-2.5 text-sm"
+            className="field"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={
@@ -113,18 +114,18 @@ export function AuthForm({ mode }: { mode: Mode }) {
             }
           />
           {mode === "register" ? (
-            <span className="mt-1 block text-[11px] text-muted">
+            <span className="mt-1.5 block text-[0.8125rem] text-muted">
               Минимум 8 символов
             </span>
           ) : null}
         </label>
 
-        {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        <Notice>{error}</Notice>
 
         <button
           type="submit"
           disabled={loading}
-          className="h-11 w-full bg-ink text-sm text-paper disabled:opacity-50"
+          className="btn btn-primary h-12 w-full text-sm"
         >
           {loading
             ? "…"
@@ -134,17 +135,17 @@ export function AuthForm({ mode }: { mode: Mode }) {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-xs text-muted">
+      <p className="mt-6 text-center text-[0.8125rem] text-muted">
         {mode === "login" ? (
           <>
             Нет аккаунта?{" "}
-            <Link href="/admin/register" className="text-ink underline">
+            <Link href="/admin/register" className="link-quiet text-ink">
               Регистрация
             </Link>
             <br />
             <a
               href="/ru/login"
-              className="mt-2 inline-flex items-center gap-1 text-ink underline"
+              className="link-quiet mt-2 inline-flex items-center gap-1 text-ink"
             >
               Личный кабинет на сайте
               <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -153,7 +154,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         ) : (
           <>
             Уже есть аккаунт?{" "}
-            <Link href="/admin/login" className="text-ink underline">
+            <Link href="/admin/login" className="link-quiet text-ink">
               Войти
             </Link>
           </>

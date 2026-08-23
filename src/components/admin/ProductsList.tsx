@@ -5,6 +5,19 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatKzt } from "@/lib/money";
 import { ArrowRightIcon } from "@/components/ui/icons";
+import { EmptyState, Notice } from "@/components/admin/ui/AdminSection";
+
+/**
+ * The two states a product can be in, in the words the shop uses.
+ *
+ * "draft" and "active" are the database's words. The person running this shop
+ * thinks in terms of whether a bag is on the site or not, and the panel used
+ * to make them translate.
+ */
+const STATUS_LABEL: Record<string, string> = {
+  active: "на сайте",
+  draft: "черновик",
+};
 
 export type ProductRow = {
   id: string;
@@ -155,15 +168,15 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="grid gap-2 border border-line bg-paper p-3 sm:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-3">
         <input
-          className="border border-line px-3 py-2 text-sm sm:col-span-1"
+          className="field sm:col-span-1"
           placeholder="Поиск: имя, бренд, slug…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
         <select
-          className="border border-line px-3 py-2 text-sm"
+          className="field"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
         >
@@ -172,7 +185,7 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
           <option value="draft">Черновики</option>
         </select>
         <select
-          className="border border-line px-3 py-2 text-sm"
+          className="field"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
@@ -184,20 +197,16 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
         </select>
       </div>
 
-      <p className="text-xs text-muted">
+      <p className="t-data text-muted">
         Показано {filtered.length} из {products.length}
       </p>
 
-      {error ? (
-        <p className="border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-          {error}
-        </p>
-      ) : null}
+      <Notice>{error}</Notice>
 
       {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
         {filtered.map((p) => (
-          <div key={p.id} className="border border-line bg-paper p-3">
+          <div key={p.id} className="card p-3">
             <div className="flex gap-3">
               <div className="flex h-16 w-14 shrink-0 items-center justify-center bg-stone">
                 {p.imageUrl ? (
@@ -208,50 +217,53 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
                     className="h-full w-full object-contain"
                   />
                 ) : (
-                  <span className="text-[10px] text-muted">нет</span>
+                  <span className="t-data text-muted">нет</span>
                 )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{p.nameRu}</div>
-                <div className="text-xs text-muted">
+                <div className="t-data text-muted">
                   {p.brand} · {p.slug}
                 </div>
-                <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                  <span className="uppercase">{p.status}</span>
-                  <span>{formatKzt(p.basePriceKzt)}</span>
-                  <span className="text-muted">
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <span className="tag">{STATUS_LABEL[p.status] ?? p.status}</span>
+                  {p.featured ? <span className="tag">на главной</span> : null}
+                  <span className="t-price tabular text-sm">
+                    {formatKzt(p.basePriceKzt)}
+                  </span>
+                  <span className="t-data text-muted">
                     {p.imageCount} фото · {p.variantCount} вар.
                   </span>
                 </div>
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs">
-              <Link href={`/admin/products/${p.id}`} className="underline">
-                Открыть / Edit
+            <div className="mt-3 flex flex-wrap gap-3 text-[0.8125rem]">
+              <Link href={`/admin/products/${p.id}`} className="link-quiet">
+                Открыть
               </Link>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="underline disabled:opacity-50"
+                className="link-quiet disabled:opacity-50"
                 onClick={() => toggleStatus(p)}
               >
                 <span className="inline-flex items-center gap-1">
                   <ArrowRightIcon className="h-3.5 w-3.5" />
-                  {p.status === "active" ? "draft" : "active"}
+                  {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
                 </span>
               </button>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="underline disabled:opacity-50"
+                className="link-quiet disabled:opacity-50"
                 onClick={() => toggleFeatured(p)}
               >
-                {p.featured ? "★ featured" : "☆ feature"}
+                {p.featured ? "★ Убрать с главной" : "☆ На главную"}
               </button>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="underline disabled:opacity-30"
+                className="link-quiet disabled:opacity-30"
                 onClick={() => move(p, -1)}
                 aria-label="Выше в каталоге"
               >
@@ -260,7 +272,7 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="underline disabled:opacity-30"
+                className="link-quiet disabled:opacity-30"
                 onClick={() => move(p, 1)}
                 aria-label="Ниже в каталоге"
               >
@@ -269,10 +281,10 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="text-red-600 underline disabled:opacity-50"
+                className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
                 onClick={() => remove(p)}
               >
-                Delete
+                Удалить
               </button>
             </div>
           </div>
@@ -280,21 +292,22 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
       </div>
 
       {/* Desktop table */}
-      <div className="hidden overflow-x-auto border border-line bg-paper md:block">
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-line text-xs tracking-wide text-muted">
-            <tr>
-              <th className="p-3">Фото</th>
-              <th className="p-3">Товар</th>
-              <th className="p-3">Статус</th>
-              <th className="p-3">Цена</th>
-              <th className="p-3">Медиа</th>
-              <th className="p-3">CRUD</th>
+          <thead>
+            <tr className="border-b border-line-strong">
+              {["Фото", "Товар", "Статус", "Цена", "Медиа", "Действия"].map(
+                (h) => (
+                  <th key={h} className="t-label p-3 font-medium text-muted">
+                    {h}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
             {filtered.map((p) => (
-              <tr key={p.id} className="border-b border-line">
+              <tr key={p.id} className="border-b border-line last:border-0">
                 <td className="p-3">
                   {p.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -304,57 +317,61 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
                       className="h-12 w-10 object-contain"
                     />
                   ) : (
-                    <span className="text-xs text-muted">—</span>
+                    <span className="t-data text-muted">—</span>
                   )}
                 </td>
                 <td className="p-3">
-                  <div className="text-xs text-muted">{p.brand}</div>
-                  <div>{p.nameRu}</div>
-                  <div className="text-[11px] text-muted">{p.slug}</div>
+                  <div className="t-label text-muted">{p.brand}</div>
+                  <div className="text-sm">{p.nameRu}</div>
+                  <div className="t-data text-muted">{p.slug}</div>
                 </td>
                 <td className="p-3">
-                  <div className="text-xs uppercase">{p.status}</div>
+                  <span className="tag">
+                    {STATUS_LABEL[p.status] ?? p.status}
+                  </span>
                   {p.featured ? (
-                    <div className="text-[10px] text-muted">featured</div>
+                    <span className="tag mt-1">на главной</span>
                   ) : null}
                 </td>
-                <td className="p-3">{formatKzt(p.basePriceKzt)}</td>
-                <td className="p-3 text-xs text-muted">
+                <td className="t-price tabular p-3 whitespace-nowrap">
+                  {formatKzt(p.basePriceKzt)}
+                </td>
+                <td className="t-data p-3 text-muted">
                   {p.imageCount} фото
                   <br />
                   {p.variantCount} вар.
                 </td>
                 <td className="p-3">
-                  <div className="flex flex-col items-start gap-1 text-xs">
+                  <div className="flex flex-col items-start gap-1 text-[0.8125rem]">
                     <Link
                       href={`/admin/products/${p.id}`}
-                      className="underline"
+                      className="link-quiet"
                     >
-                      Read/Update
+                      Открыть
                     </Link>
                     <button
                       type="button"
                       disabled={busyId === p.id}
-                      className="underline disabled:opacity-50"
+                      className="link-quiet disabled:opacity-50"
                       onClick={() => toggleStatus(p)}
                     >
-                      Toggle status
+                      {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
                     </button>
                     <button
                       type="button"
                       disabled={busyId === p.id}
-                      className="underline disabled:opacity-50"
+                      className="link-quiet disabled:opacity-50"
                       onClick={() => toggleFeatured(p)}
                     >
-                      Toggle featured
+                      {p.featured ? "Убрать с главной" : "На главную"}
                     </button>
                     <button
                       type="button"
                       disabled={busyId === p.id}
-                      className="text-red-600 underline disabled:opacity-50"
+                      className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
                       onClick={() => remove(p)}
                     >
-                      Delete
+                      Удалить
                     </button>
                   </div>
                 </td>
@@ -365,9 +382,7 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
       </div>
 
       {filtered.length === 0 ? (
-        <p className="border border-line bg-paper p-8 text-center text-sm text-muted">
-          Ничего не найдено
-        </p>
+        <EmptyState>Под фильтр ничего не подходит.</EmptyState>
       ) : null}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatMoment } from "@/lib/datetime";
+import { EmptyState } from "@/components/admin/ui/AdminSection";
 
 export type Attempt = {
   id: string;
@@ -27,6 +28,18 @@ const REASON_LABEL: Record<string, string> = {
   rate_limited: "отклонено, слишком много попыток",
 };
 
+/** Enough misses in a day that somebody is trying doors rather than mistyping. */
+const SUSPICIOUS_FAILURES = 8;
+
+/**
+ * Who has been knocking.
+ *
+ * The three figures at the top are not equal: successful sign-ins and new
+ * accounts are the shop's ordinary day, and only the failures can turn into a
+ * question. So only that one changes colour, and only once there are enough
+ * of them to mean something — a red number that is always red teaches the
+ * owner to stop reading it.
+ */
 export function SecurityLog({
   attempts: initialAttempts,
   stats: initialStats,
@@ -39,21 +52,24 @@ export function SecurityLog({
   const [onlyFailures, setOnlyFailures] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async (failures: boolean) => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/admin/security${failures ? "?failures=1" : ""}`,
-      );
-      const data = await res.json();
-      if (res.ok) {
-        setAttempts(data.attempts ?? []);
-        setStats(data.stats ?? initialStats);
+  const load = useCallback(
+    async (failures: boolean) => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/admin/security${failures ? "?failures=1" : ""}`,
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setAttempts(data.attempts ?? []);
+          setStats(data.stats ?? initialStats);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [initialStats]);
+    },
+    [initialStats],
+  );
 
   // The server already rendered the unfiltered list, so the first pass has
   // nothing to fetch. Every later change of the filter does.
@@ -66,25 +82,29 @@ export function SecurityLog({
     void load(onlyFailures);
   }, [onlyFailures, load]);
 
-  const cards = [
-    { label: "Успешных входов за сутки", value: stats.ok24h },
-    { label: "Неудачных попыток за сутки", value: stats.failed24h },
-    { label: "Регистраций за сутки", value: stats.registered24h },
-  ];
+  const alarming = stats.failed24h >= SUSPICIOUS_FAILURES;
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {cards.map((c) => (
-          <div key={c.label} className="border border-line bg-paper p-4">
-            <div className="text-2xl font-light">{c.value}</div>
-            <div className="mt-1 text-xs text-muted">{c.label}</div>
+    <div className="space-y-8">
+      <div className="grid gap-6 sm:grid-cols-3">
+        {[
+          { label: "Входов за сутки", value: stats.ok24h, alarm: false },
+          { label: "Неудачных попыток", value: stats.failed24h, alarm: alarming },
+          { label: "Регистраций", value: stats.registered24h, alarm: false },
+        ].map((c) => (
+          <div key={c.label} className="border-t border-line pt-3">
+            <p className="t-label text-muted">{c.label}</p>
+            <p
+              className={`t-display mt-1 text-3xl ${c.alarm ? "text-danger" : ""}`}
+            >
+              {c.value}
+            </p>
           </div>
         ))}
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <label className="flex items-center gap-2 text-xs">
+        <label className="flex items-center gap-2 text-[0.8125rem]">
           <input
             type="checkbox"
             checked={onlyFailures}
@@ -94,7 +114,7 @@ export function SecurityLog({
         </label>
         <button
           type="button"
-          className="border border-line px-3 py-1.5 text-xs disabled:opacity-50"
+          className="btn btn-outline h-9 px-4 text-[0.8125rem]"
           disabled={loading}
           onClick={() => void load(onlyFailures)}
         >
@@ -102,44 +122,48 @@ export function SecurityLog({
         </button>
       </div>
 
-      <div className="overflow-x-auto border border-line bg-paper">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-line text-xs tracking-wide text-muted">
-            <tr>
-              <th className="p-3">Когда</th>
-              <th className="p-3">Событие</th>
-              <th className="p-3">Почта</th>
-              <th className="p-3">Адрес</th>
-              <th className="p-3">Результат</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attempts.map((a) => (
-              <tr key={a.id} className="border-b border-line">
-                <td className="p-3 text-xs whitespace-nowrap text-muted">
-                  {formatMoment(a.createdAt)}
-                </td>
-                <td className="p-3 text-xs">
-                  {a.action === "register" ? "регистрация" : "вход"}
-                </td>
-                <td className="p-3 text-xs break-all">{a.email}</td>
-                <td className="p-3 text-xs text-muted">{a.ip || "неизвестен"}</td>
-                <td className="p-3 text-xs">
-                  <span className={a.success ? "" : "text-red-600"}>
-                    {REASON_LABEL[a.reason] ?? a.reason}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       {attempts.length === 0 ? (
-        <p className="text-xs text-muted">Записей пока нет.</p>
-      ) : null}
+        <EmptyState>Записей пока нет.</EmptyState>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-line-strong">
+                {["Когда", "Событие", "Почта", "Адрес", "Результат"].map((h) => (
+                  <th key={h} className="t-label pb-2 font-medium text-muted">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {attempts.map((a) => (
+                <tr key={a.id} className="border-b border-line last:border-0">
+                  <td className="t-data py-2.5 pr-3 whitespace-nowrap text-muted">
+                    {formatMoment(a.createdAt)}
+                  </td>
+                  <td className="py-2.5 pr-3 text-[0.8125rem]">
+                    {a.action === "register" ? "регистрация" : "вход"}
+                  </td>
+                  <td className="py-2.5 pr-3 text-[0.8125rem] break-all">
+                    {a.email}
+                  </td>
+                  <td className="t-data py-2.5 pr-3 text-muted">
+                    {a.ip || "неизвестен"}
+                  </td>
+                  <td
+                    className={`py-2.5 text-[0.8125rem] ${a.success ? "" : "text-danger"}`}
+                  >
+                    {REASON_LABEL[a.reason] ?? a.reason}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      <p className="text-xs text-muted">
+      <p className="text-[0.8125rem] text-muted">
         Показаны последние 100 событий. Записи старше 30 дней удаляются
         автоматически. После 8 неудачных попыток с одного адреса вход по этой
         почте закрывается для него на 15 минут, а сам адрес блокируется целиком

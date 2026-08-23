@@ -35,15 +35,16 @@ export default async function EditProductPage({
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/admin/products"
-            className="inline-flex items-center gap-1 text-xs text-muted underline"
+            className="link-quiet inline-flex items-center gap-1 text-[0.8125rem] text-muted"
           >
             <ArrowRightIcon className="h-3.5 w-3.5 rotate-180" />
             К списку
           </Link>
           <div>
-            <h1 className="text-xl font-light">CRUD товара</h1>
-            <p className="text-xs text-muted">
-              {product.brand} · {product.slug} · {product.status}
+            <h1 className="t-display t-h2">{product.nameRu}</h1>
+            <p className="t-data mt-1 text-muted">
+              {product.brand} · {product.slug} ·{" "}
+              {product.status === "active" ? "на сайте" : "черновик"}
             </p>
           </div>
         </div>
@@ -51,16 +52,12 @@ export default async function EditProductPage({
       </div>
 
       <section>
-        <h2 className="mb-4 text-xs tracking-widest text-muted uppercase">
-          1. Данные (Update)
-        </h2>
+        <h2 className="t-label mb-4 text-muted">Описание и цена</h2>
         <ProductForm product={product} />
       </section>
 
       <section>
-        <h2 className="mb-4 text-xs tracking-widest text-muted uppercase">
-          2. Варианты — цвет/размер/сток (CRUD)
-        </h2>
+        <h2 className="t-label mb-4 text-muted">Цвета, размеры и наличие</h2>
         <VariantsAdmin
           productId={product.id}
           productSlug={product.slug}
@@ -69,9 +66,7 @@ export default async function EditProductPage({
       </section>
 
       <section>
-        <h2 className="mb-4 text-xs tracking-widest text-muted uppercase">
-          3. Фотографии (Create / Read / Update cover+color / Delete)
-        </h2>
+        <h2 className="t-label mb-4 text-muted">Фотографии</h2>
         <ProductImagesAdmin
           productId={product.id}
           colorKeys={[...new Set(product.variants.map((v) => v.colorKey))]}

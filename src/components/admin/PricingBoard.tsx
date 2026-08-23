@@ -100,7 +100,7 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
       <div className="sticky top-[57px] z-30 -mx-4 border-b border-line bg-sand/95 px-4 py-3 backdrop-blur">
         <div className="flex flex-wrap items-center gap-3">
           <input
-            className="min-w-0 flex-1 border border-line bg-paper px-3 py-2 text-sm sm:max-w-xs"
+            className="field min-w-0 flex-1 sm:max-w-xs"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Поиск по товару или линейке"
@@ -115,12 +115,12 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
           </button>
         </div>
         {error ? (
-          <p className="mt-2 border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <p className="alert-error mt-2">
             {error}
           </p>
         ) : null}
         {message ? (
-          <p className="mt-2 border border-line bg-paper px-3 py-2 text-xs">
+          <p className="mt-2 border border-line bg-stone px-3.5 py-2.5 text-[0.8125rem]">
             {message}
           </p>
         ) : null}
@@ -130,12 +130,12 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
         <div key={p.id} className="border border-line bg-paper">
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-4 py-3">
             <div>
-              <span className="text-[11px] tracking-[0.16em] text-muted uppercase">
+              <span className="t-label text-muted">
                 {p.brand}
               </span>
               <h2 className="text-sm">{p.nameRu}</h2>
             </div>
-            <div className="flex items-center gap-3 text-xs text-muted">
+            <div className="flex items-center gap-3 text-[0.8125rem] text-muted">
               <span>Базовая {formatKzt(p.basePriceKzt)}</span>
               {p.status !== "active" ? (
                 <span className="border border-line px-2 py-0.5">черновик</span>
@@ -162,21 +162,21 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
                       className="h-4 w-4 shrink-0 rounded-full border border-line"
                       style={{ backgroundColor: v.colorHex }}
                     />
-                    <span className="min-w-0 text-xs">
+                    <span className="min-w-0 text-[0.8125rem]">
                       {v.colorLabelRu}
                       <span className="text-muted">, {v.sizeLabelRu}</span>
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-3 pl-6 sm:justify-end sm:pl-0">
-                  <label className="flex items-center gap-2 text-xs">
+                  <label className="flex items-center gap-2 text-[0.8125rem]">
                     <span className="text-muted">Цена</span>
                     <input
                       type="number"
                       inputMode="numeric"
                       min={0}
                       step={1000}
-                      className="w-28 border border-line px-2 py-1.5 text-right text-sm tabular-nums"
+                      className="field tabular w-28 px-2.5 py-1.5 text-right"
                       value={e.priceKzt ?? ""}
                       placeholder={String(p.basePriceKzt)}
                       onChange={(ev) =>
@@ -190,7 +190,7 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
                     />
                   </label>
 
-                  <label className="flex items-center gap-2 text-xs">
+                  <label className="flex items-center gap-2 text-[0.8125rem]">
                     <input
                       type="checkbox"
                       checked={e.stock > 0}
@@ -198,7 +198,7 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
                         change(v, { stock: ev.target.checked ? 5 : 0 })
                       }
                     />
-                    <span className={e.stock > 0 ? "" : "text-red-600"}>
+                    <span className={e.stock > 0 ? "" : "text-danger"}>
                       {e.stock > 0 ? "в наличии" : "нет"}
                     </span>
                   </label>
@@ -216,7 +216,7 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
         </p>
       ) : null}
 
-      <p className="text-xs text-muted">
+      <p className="text-[0.8125rem] text-muted">
         Пустая цена означает, что берётся базовая цена товара. Снятая галочка
         убирает вариант из выдачи по фильтру наличия и показывает его как
         распроданный.

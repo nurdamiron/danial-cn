@@ -23,14 +23,14 @@ export default async function AdminProductsPage() {
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-light">Товары</h1>
-          <p className="mt-1 text-xs text-muted">
-            Добавление, редактирование, статус, фильтры, удаление
+          <h1 className="t-display t-h2">Товары</h1>
+          <p className="mt-1 text-sm text-muted">
+            Что стоит на сайте, по какой цене и в каком количестве.
           </p>
         </div>
         <Link
           href="/admin/products/new"
-          className="inline-flex h-10 items-center justify-center bg-ink px-4 text-xs text-paper"
+          className="btn btn-primary h-11 px-6 text-sm"
         >
           + Новый товар
         </Link>

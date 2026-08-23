@@ -162,11 +162,11 @@ export function ProductForm({ product }: { product?: ProductInput }) {
     key: keyof ProductInput,
     opts?: { type?: string; textarea?: boolean },
   ) => (
-    <label className="block text-xs">
+    <label className="block">
       {label}
       {opts?.textarea ? (
         <textarea
-          className="mt-1 w-full border border-line px-3 py-2 text-sm"
+          className="field"
           rows={3}
           value={String(form[key] ?? "")}
           onChange={(e) => set(key, e.target.value as never)}
@@ -174,7 +174,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       ) : (
         <input
           type={opts?.type ?? "text"}
-          className="mt-1 w-full border border-line px-3 py-2 text-sm"
+          className="field"
           value={String(form[key] ?? "")}
           onChange={(e) =>
             set(
@@ -192,13 +192,13 @@ export function ProductForm({ product }: { product?: ProductInput }) {
   return (
     <form
       onSubmit={onSubmit}
-      className="grid gap-4 border border-line bg-paper p-4 sm:p-6 md:grid-cols-2"
+      className="card grid gap-5 p-5 sm:p-7 md:grid-cols-2"
     >
-      <label className="block text-xs">
+      <label className="block">
         Slug (URL) *
         <div className="mt-1 flex gap-2">
           <input
-            className="w-full border border-line px-3 py-2 text-sm"
+            className="field"
             value={form.slug}
             onChange={(e) => set("slug", e.target.value)}
             required
@@ -206,7 +206,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           {!product?.id ? (
             <button
               type="button"
-              className="shrink-0 border border-line px-3 text-xs"
+              className="btn btn-outline h-10 shrink-0 px-4 text-[0.8125rem]"
               onClick={autoSlug}
             >
               Auto
@@ -221,10 +221,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       {field("Описание KK", "descriptionKk", { textarea: true })}
       {field("Материал RU", "materialRu")}
       {field("Материал KK", "materialKk")}
-      <label className="block text-xs">
+      <label className="block">
         Категория
         <select
-          className="mt-1 w-full border border-line px-3 py-2 text-sm"
+          className="field"
           value={form.category}
           onChange={(e) => set("category", e.target.value)}
         >
@@ -242,10 +242,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       {field("Вес кг", "weightKg", { type: "number" })}
       {field("Колёса", "wheels")}
       {field("Замок", "lockType")}
-      <label className="block text-xs">
+      <label className="block">
         Статус
         <select
-          className="mt-1 w-full border border-line px-3 py-2 text-sm"
+          className="field"
           value={form.status}
           onChange={(e) => set("status", e.target.value)}
         >
@@ -253,7 +253,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           <option value="active">Активен (нужны фото)</option>
         </select>
       </label>
-      <label className="flex items-center gap-2 text-xs">
+      <label className="flex items-center gap-2 text-[0.8125rem]">
         <input
           type="checkbox"
           checked={form.featured}
@@ -262,13 +262,13 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         На главной
       </label>
       {error ? (
-        <p className="text-xs text-red-600 md:col-span-2">{error}</p>
+        <p className="alert-error md:col-span-2">{error}</p>
       ) : null}
       <div className="md:col-span-2">
         <button
           type="submit"
           disabled={saving}
-          className="h-11 w-full bg-ink px-6 text-sm text-paper disabled:opacity-50 sm:w-auto"
+          className="btn btn-primary h-12 w-full px-8 text-sm sm:w-auto"
         >
           {saving ? "Сохранение…" : "Сохранить"}
         </button>
