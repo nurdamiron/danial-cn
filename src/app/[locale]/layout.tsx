@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { TrackView } from "@/components/analytics/TrackView";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -27,6 +28,8 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages}>
       {/* Bottom padding clears the fixed mobile tab bar — footer included */}
       <div className="flex min-h-screen flex-col pb-[calc(3.875rem+env(safe-area-inset-bottom))] md:pb-0">
+        {/* Top of the funnel: every storefront page, admin excluded. */}
+        <TrackView type="store_view" />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

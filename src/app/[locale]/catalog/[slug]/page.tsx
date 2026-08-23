@@ -7,6 +7,7 @@ import { BrandMark, brandMarkName } from "@/components/ui/BrandMark";
 import { ProductConfigurator } from "@/components/product/ProductConfigurator";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SizeCompare } from "@/components/product/SizeCompare";
+import { TrackView } from "@/components/analytics/TrackView";
 import { formatKzt } from "@/lib/money";
 import { formatDimensions, formatSpecLine } from "@/lib/specs";
 import { SITE } from "@/lib/site";
@@ -171,6 +172,7 @@ export default async function ProductPage({
 
   return (
     <div className="bg-paper">
+      <TrackView type="product_view" slug={product.slug} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

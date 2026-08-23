@@ -11,6 +11,7 @@ import { addItem } from "@/store/cart";
 import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { buildSingleItemMessage, buildWaUrl } from "@/lib/whatsapp";
 import { openLater, recordOrder } from "@/lib/record-order";
+import { track } from "@/lib/track";
 import { saveOrder } from "@/store/orders";
 import { formatKzt } from "@/lib/money";
 import { FavoriteButton } from "@/components/product/FavoriteButton";
@@ -322,7 +323,10 @@ export function ProductConfigurator({
             size="lg"
             className="flex-1 sm:flex-none"
             disabled={!selected || selected.stock <= 0}
-            onClick={() => setOrderOpen(true)}
+            onClick={() => {
+              track("checkout_open", { slug: product.slug });
+              setOrderOpen(true);
+            }}
           >
             <WhatsAppIcon />
             {t("cta.buyWhatsApp")}
@@ -364,6 +368,11 @@ export function ProductConfigurator({
           // the order, then send the buyer on with its number in the message.
           // Buying straight from the product page used to leave no record at
           // all, not even in the buyer's own browser.
+          // The last thing this site can see; after this the conversation is
+          // in WhatsApp. Counted the same way as the cart route, so the two
+          // paths to the same handoff add up instead of hiding one another.
+          track("whatsapp_click", { slug: item.slug });
+
           const tab = openLater();
           const recorded = await recordOrder({
             locale,

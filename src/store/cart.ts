@@ -4,6 +4,7 @@ import {
   CART_STORAGE_KEY,
   type CartItem,
 } from "@/lib/cart-types";
+import { track } from "@/lib/track";
 
 export function loadCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -24,6 +25,11 @@ export function saveCart(items: CartItem[]): void {
 }
 
 export function addItem(item: CartItem): CartItem[] {
+  // Reported here rather than at the buttons: the product page and the
+  // quick-order modal both add through this function, and a funnel that
+  // counted only one of them would misread the other as a drop-off.
+  track("cart_add", { slug: item.slug });
+
   const items = loadCart();
   const idx = items.findIndex((i) => i.variantId === item.variantId);
   if (idx >= 0) {
