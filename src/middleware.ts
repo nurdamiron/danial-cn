@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
 import {
+  canonicalRedirectOrigin,
   getAdminOrigin,
   getStoreOrigin,
   isAdminHost,
@@ -36,6 +37,22 @@ export default function middleware(req: NextRequest) {
   // sending the favicon to /ru/icon, which is a 404 on every page of the site.
   if (isAssetPath(pathname)) {
     return NextResponse.next();
+  }
+
+  // One shop, one address. Everything else this deployment answers on is sent
+  // to the real domain, permanently: two live copies split the search ranking
+  // between them, and split the session cookie too.
+  const canonical = canonicalRedirectOrigin({
+    host,
+    adminHost: adminMode,
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    vercelEnv: process.env.VERCEL_ENV,
+  });
+  if (canonical) {
+    return NextResponse.redirect(
+      new URL(pathname + req.nextUrl.search, canonical),
+      308,
+    );
   }
 
   // ——— Admin host (admin-danial-cn.vercel.app / admin.localhost) ———
