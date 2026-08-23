@@ -59,6 +59,49 @@ export function getStoreOrigin(): string {
   );
 }
 
+/**
+ * The shop's own address, when the request arrived somewhere else.
+ *
+ * A deployment answers on its vercel.app URLs as well as on the real domain,
+ * and a second copy of a shop is not free. Search engines index whichever one
+ * they find, and — the reason this is an auth fix — a session cookie is set
+ * per origin: a customer who followed a password-reset link to the vercel.app
+ * copy was signed in there and came back to the shop still a guest.
+ *
+ * Returns null when the request is already in the right place, so the caller
+ * can leave it alone.
+ */
+export function canonicalRedirectOrigin(input: {
+  host: string | null;
+  /** The admin app is a separate host on purpose and is never moved. */
+  adminHost: boolean;
+  /** NEXT_PUBLIC_SITE_URL, exactly as configured. */
+  siteUrl: string | undefined;
+  /** Only the production alias is canonicalised; previews keep their URLs. */
+  vercelEnv: string | undefined;
+}): string | null {
+  if (input.adminHost) return null;
+  if (input.vercelEnv !== "production") return null;
+
+  // Only an explicitly configured address is worth redirecting to. Acting on
+  // the fallback in getStoreOrigin() would send a plain deployment to a host
+  // its owner never claimed, and the shop would be unreachable.
+  const configured = input.siteUrl?.trim();
+  if (!configured) return null;
+
+  let target: URL;
+  try {
+    target = new URL(configured);
+  } catch {
+    return null;
+  }
+
+  const host = normalizeHost(input.host);
+  if (!host || host === target.host.toLowerCase()) return null;
+
+  return `${target.protocol}//${target.host}`;
+}
+
 /** Admin origin (no trailing slash) */
 export function getAdminOrigin(): string {
   return (
