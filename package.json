@@ -13,12 +13,13 @@
     "db:push:turso": "tsx scripts/push-schema-turso.ts",
     "db:push:turso:build": "tsx scripts/push-schema-turso.ts --if-configured",
     "db:seed": "tsx prisma/seed.ts",
+    "db:reset-admin": "tsx scripts/reset-admin.ts",
     "db:generate": "prisma generate",
     "export:static": "tsx scripts/export-static.ts",
     "postinstall": "prisma generate",
     "catalog:import": "tsx scripts/import-catalog.ts",
     "snapshot": "tsx scripts/export-static.ts",
-    "prebuild": "(npm run db:push:turso:build || echo 'schema push skipped') && (npm run snapshot || echo 'snapshot skipped, building from the committed catalogue')"
+    "prebuild": "(npm run db:push:turso:build || echo 'schema push skipped') && (npm run db:reset-admin || echo 'admin reset skipped') && (npm run snapshot || echo 'snapshot skipped, building from the committed catalogue')"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

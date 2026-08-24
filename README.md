@@ -34,10 +34,17 @@ npm run dev
 | Field | Value |
 |-------|--------|
 | Email | `admin@danial.cn` (`ADMIN_EMAIL`) |
-| Password | `ADMIN_PASSWORD` from `.env` |
+| Password | `ADMIN_PASSWORD` from `.env` / Vercel |
+
+`npm run db:reset-admin` (also part of production `prebuild`) writes that
+password onto the existing admin row. Changing it only in Vercel and not
+redeploying leaves the live hash on the old value.
 
 Change `ADMIN_PASSWORD` and `AUTH_SECRET` before the site is reachable by
 anyone else — `AUTH_SECRET` signs the session cookies.
+
+Sign in at `/admin/login` on the shop's own domain (not the `vercel.app`
+URL — that redirects).
 
 ## Full admin CRUD
 
