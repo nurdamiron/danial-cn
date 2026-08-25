@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminUser } from "@/lib/admin-users";
-import { ArrowRightIcon } from "@/components/ui/icons";
+import { ShieldIcon, UserIcon } from "@/components/ui/icons";
 import { formatMoment } from "@/lib/datetime";
 import { Notice } from "@/components/admin/ui/AdminSection";
 
@@ -254,7 +254,7 @@ export function UsersAdmin({
             onClick={() => setRole(u.id, "ADMIN")}
           >
             <span className="inline-flex items-center gap-1">
-              <ArrowRightIcon className="h-3.5 w-3.5" />
+              <ShieldIcon className="h-3.5 w-3.5" />
               admin
             </span>
           </button>
@@ -266,7 +266,7 @@ export function UsersAdmin({
             onClick={() => setRole(u.id, "USER")}
           >
             <span className="inline-flex items-center gap-1">
-              <ArrowRightIcon className="h-3.5 w-3.5" />
+              <UserIcon className="h-3.5 w-3.5" />
               user
             </span>
           </button>

@@ -4,7 +4,15 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatKzt } from "@/lib/money";
-import { ArrowRightIcon } from "@/components/ui/icons";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  EyeIcon,
+  EyeOffIcon,
+  PencilIcon,
+  StarIcon,
+  TrashIcon,
+} from "@/components/ui/icons";
 import { EmptyState, Notice } from "@/components/admin/ui/AdminSection";
 
 /**
@@ -238,52 +246,62 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
               </div>
             </div>
             <div className="mt-3 flex flex-wrap gap-3 text-[0.8125rem]">
-              <Link href={`/admin/products/${p.id}`} className="link-quiet">
+              <Link
+                href={`/admin/products/${p.id}`}
+                className="link-quiet inline-flex items-center gap-1"
+              >
+                <PencilIcon className="h-3.5 w-3.5" />
                 Открыть
               </Link>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-50"
+                className="link-quiet inline-flex items-center gap-1 disabled:opacity-50"
                 onClick={() => toggleStatus(p)}
               >
-                <span className="inline-flex items-center gap-1">
-                  <ArrowRightIcon className="h-3.5 w-3.5" />
-                  {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
-                </span>
+                {p.status === "active" ? (
+                  <EyeOffIcon className="h-3.5 w-3.5" />
+                ) : (
+                  <EyeIcon className="h-3.5 w-3.5" />
+                )}
+                {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
               </button>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-50"
+                className="link-quiet inline-flex items-center gap-1 disabled:opacity-50"
                 onClick={() => toggleFeatured(p)}
               >
-                {p.featured ? "★ Убрать с главной" : "☆ На главную"}
+                <StarIcon className="h-3.5 w-3.5" filled={p.featured} />
+                {p.featured ? "Убрать с главной" : "На главную"}
               </button>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-30"
+                className="link-quiet inline-flex items-center gap-1 disabled:opacity-30"
                 onClick={() => move(p, -1)}
                 aria-label="Выше в каталоге"
               >
+                <ArrowUpIcon className="h-3.5 w-3.5" />
                 Выше
               </button>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-30"
+                className="link-quiet inline-flex items-center gap-1 disabled:opacity-30"
                 onClick={() => move(p, 1)}
                 aria-label="Ниже в каталоге"
               >
+                <ArrowDownIcon className="h-3.5 w-3.5" />
                 Ниже
               </button>
               <button
                 type="button"
                 disabled={busyId === p.id}
-                className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
+                className="inline-flex items-center gap-1 text-danger underline-offset-4 hover:underline disabled:opacity-50"
                 onClick={() => remove(p)}
               >
+                <TrashIcon className="h-3.5 w-3.5" />
                 Удалить
               </button>
             </div>
@@ -345,32 +363,40 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
                   <div className="flex flex-col items-start gap-1 text-[0.8125rem]">
                     <Link
                       href={`/admin/products/${p.id}`}
-                      className="link-quiet"
+                      className="link-quiet inline-flex items-center gap-1.5"
                     >
+                      <PencilIcon className="h-3.5 w-3.5" />
                       Открыть
                     </Link>
                     <button
                       type="button"
                       disabled={busyId === p.id}
-                      className="link-quiet disabled:opacity-50"
+                      className="link-quiet inline-flex items-center gap-1.5 disabled:opacity-50"
                       onClick={() => toggleStatus(p)}
                     >
+                      {p.status === "active" ? (
+                        <EyeOffIcon className="h-3.5 w-3.5" />
+                      ) : (
+                        <EyeIcon className="h-3.5 w-3.5" />
+                      )}
                       {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
                     </button>
                     <button
                       type="button"
                       disabled={busyId === p.id}
-                      className="link-quiet disabled:opacity-50"
+                      className="link-quiet inline-flex items-center gap-1.5 disabled:opacity-50"
                       onClick={() => toggleFeatured(p)}
                     >
+                      <StarIcon className="h-3.5 w-3.5" filled={p.featured} />
                       {p.featured ? "Убрать с главной" : "На главную"}
                     </button>
                     <button
                       type="button"
                       disabled={busyId === p.id}
-                      className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 text-danger underline-offset-4 hover:underline disabled:opacity-50"
                       onClick={() => remove(p)}
                     >
+                      <TrashIcon className="h-3.5 w-3.5" />
                       Удалить
                     </button>
                   </div>
