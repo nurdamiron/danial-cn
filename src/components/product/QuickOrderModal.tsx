@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { CloseIcon, WhatsAppIcon } from "@/components/ui/icons";
 import type { CartMeta, DeliveryMode } from "@/lib/cart-types";
+import { DeliveryPicker } from "@/components/order/DeliveryPicker";
 
 type Props = {
   open: boolean;
@@ -114,25 +115,11 @@ export function QuickOrderModal({
               onChange={(e) => setPhone(e.target.value)}
             />
           </label>
-          <fieldset>
-            <legend className="field-label">{t("cart.deliveryMethod")}</legend>
-            <div className="flex flex-wrap gap-2">
-              {(["cargo", "avia", "express"] as DeliveryMode[]).map((mode) => (
-                <label key={mode} className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="quick-order-delivery"
-                    className="peer sr-only"
-                    checked={delivery === mode}
-                    onChange={() => setDelivery(mode)}
-                  />
-                  <span className="chip peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-focus-visible:ring-offset-2">
-                    {t(`delivery.${mode}`)}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
+          <DeliveryPicker
+            name="quick-order-delivery"
+            value={delivery}
+            onChange={setDelivery}
+          />
         </div>
 
         <Button

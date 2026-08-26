@@ -13,7 +13,8 @@ import {
   WhatsAppIcon,
 } from "@/components/ui/icons";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
-import type { CartItem, CartMeta, DeliveryMode } from "@/lib/cart-types";
+import { DeliveryPicker } from "@/components/order/DeliveryPicker";
+import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
 import { openLater, recordOrder } from "@/lib/record-order";
@@ -300,27 +301,11 @@ export function CartView({
               />
             </label>
 
-            <fieldset>
-              <legend className="field-label">
-                {t("cart.deliveryMethod")}
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                {(["cargo", "avia", "express"] as DeliveryMode[]).map((mode) => (
-                  <label key={mode} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="delivery"
-                      className="peer sr-only"
-                      checked={meta.delivery === mode}
-                      onChange={() => setMeta({ ...meta, delivery: mode })}
-                    />
-                    <span className="chip peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-focus-visible:ring-offset-2">
-                      {t(`delivery.${mode}`)}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <DeliveryPicker
+              name="delivery"
+              value={meta.delivery}
+              onChange={(mode) => setMeta({ ...meta, delivery: mode })}
+            />
 
             <label className="block">
               <span className="field-label">{t("cart.comment")}</span>
