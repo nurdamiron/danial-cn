@@ -33,6 +33,7 @@ export function CartView({
   const locale = useLocale() as "ru" | "kk";
   const [items, setItems] = useState<CartItem[]>([]);
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [meta, setMeta] = useState<CartMeta>({
     name: "",
@@ -85,6 +86,7 @@ export function CartView({
   async function send() {
     if (!canSend || sending) return;
     setSending(true);
+    setSendError("");
 
     // The last thing this site can see. After the handoff the conversation
     // continues in WhatsApp, where nothing here can follow it.
@@ -100,12 +102,27 @@ export function CartView({
       city: meta.city.trim(),
     };
 
-    const recorded = await recordOrder({
+    const filed = await recordOrder({
       locale,
       source: "cart",
       meta: cleanMeta,
       items,
     });
+
+    // The shop looked at this basket and said no — usually a variant that is
+    // gone or more of it than there is. Handing the customer to WhatsApp now
+    // would send an order nobody can fill, so the tab claimed for it is given
+    // back and the reason is shown where the basket can still be fixed.
+    if (filed.status === "rejected") {
+      tab.cancel();
+      setSendError(filed.error);
+      setSending(false);
+      return;
+    }
+
+    // Still sent when the shop could not answer at all: an outage should cost
+    // the record, not the sale.
+    const recorded = filed.status === "recorded" ? filed.order : null;
 
     const msg = buildOrderMessage({
       locale,
@@ -333,6 +350,12 @@ export function CartView({
             <WhatsAppIcon />
             {t("cta.sendWhatsApp")}
           </Button>
+
+          {sendError ? (
+            <p role="alert" className="alert-error mt-4">
+              {sendError}
+            </p>
+          ) : null}
 
           <p className="mt-4 flex items-start gap-2.5 text-[0.8125rem] leading-relaxed text-muted">
             <KaspiBadge height={18} className="mt-0.5" />
