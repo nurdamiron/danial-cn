@@ -5,12 +5,16 @@ import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { assertPublishable } from "@/lib/products";
 import { defaultColorHex } from "@/lib/color-hex";
+import { productSlugBase, uniqueSlug } from "@/lib/slug";
 
 const productSchema = z.object({
-  slug: z.string().min(1),
+  // Derived from the name when the panel does not send one.
+  slug: z.string().optional(),
   brand: z.string().min(1),
   nameRu: z.string().min(1),
-  nameKk: z.string().min(1),
+  // The shop is run in Russian; a Kazakh field left empty repeats the Russian
+  // one so the /kk storefront still has something to print.
+  nameKk: z.string().optional(),
   descriptionRu: z.string().optional(),
   descriptionKk: z.string().optional(),
   materialRu: z.string().optional(),
@@ -76,6 +80,18 @@ export async function POST(req: Request) {
   }
 
   const data = parsed.data;
+  const nameKk = data.nameKk?.trim() || data.nameRu;
+  const slug =
+    data.slug?.trim() ||
+    (await uniqueSlug(
+      productSlugBase(data.brand, data.nameRu),
+      async (candidate) =>
+        (await prisma.product.findUnique({
+          where: { slug: candidate },
+          select: { id: true },
+        })) !== null,
+    ));
+
   if (data.status === "active") {
     // new product has no images yet
     return NextResponse.json(
@@ -88,7 +104,7 @@ export async function POST(req: Request) {
     ? data.variants
     : [
         {
-          sku: `${data.slug}-default`,
+          sku: `${slug}-default`,
           colorKey: "black",
           colorLabelRu: "Чёрный",
           colorLabelKk: "Қара",
@@ -102,14 +118,14 @@ export async function POST(req: Request) {
 
   const product = await prisma.product.create({
     data: {
-      slug: data.slug,
+      slug,
       brand: data.brand,
       nameRu: data.nameRu,
-      nameKk: data.nameKk,
+      nameKk,
       descriptionRu: data.descriptionRu ?? "",
-      descriptionKk: data.descriptionKk ?? "",
+      descriptionKk: data.descriptionKk?.trim() || data.descriptionRu || "",
       materialRu: data.materialRu ?? "",
-      materialKk: data.materialKk ?? "",
+      materialKk: data.materialKk?.trim() || data.materialRu || "",
       category: data.category,
       basePriceKzt: data.basePriceKzt,
       heightCm: data.heightCm ?? null,

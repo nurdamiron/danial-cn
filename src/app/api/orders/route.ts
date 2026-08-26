@@ -5,26 +5,35 @@ import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
 import { clientIp } from "@/lib/rate-limit";
 import { generateOrderNumber, priceOrder } from "@/lib/orders";
+import { listActiveProducts } from "@/lib/products";
+import type { PricingCatalogProduct } from "@/lib/orders";
 
 const orderSchema = z.object({
   locale: z.enum(["ru", "kk"]).default("ru"),
   source: z.enum(["cart", "quick"]).default("cart"),
   meta: z.object({
-    name: z.string().min(1).max(120),
-    city: z.string().min(1).max(120),
-    phone: z.string().max(40).optional().default(""),
-    delivery: z.enum(["cargo", "avia", "express"]),
-    comment: z.string().max(2000).optional().default(""),
+    name: z.string().min(1, "Укажите имя").max(120, "Имя слишком длинное"),
+    city: z.string().min(1, "Укажите город").max(120, "Название города слишком длинное"),
+    phone: z.string().max(40, "Телефон слишком длинный").optional().default(""),
+    delivery: z.enum(["cargo", "avia", "express"], {
+      message: "Выберите способ доставки",
+    }),
+    comment: z.string().max(2000, "Комментарий слишком длинный").optional().default(""),
   }),
   items: z
     .array(
       z.object({
-        slug: z.string().min(1).max(200),
-        variantId: z.string().max(200).optional(),
-        qty: z.number().int().min(1).max(20),
+        slug: z.string().min(1, "Товар не указан").max(200, "Товар не указан"),
+        variantId: z.string().max(200, "Комплектация не найдена").optional(),
+        qty: z
+          .number("Неверное количество")
+          .int("Неверное количество")
+          .min(1, "Количество должно быть не меньше 1")
+          .max(20, "За один заказ можно взять не больше 20 штук"),
       }),
+      { message: "Корзина пуста" },
     )
-    .min(1),
+    .min(1, "Корзина пуста"),
 });
 
 const MAX_ORDERS_PER_IP_PER_HOUR = 20;
@@ -114,7 +123,13 @@ export async function POST(req: Request) {
     }
   }
 
-  const priced = priceOrder(parsed.data.items, parsed.data.locale);
+  // The live catalogue, so the order is filed at the price the customer was
+  // shown. listActiveProducts falls back to the snapshot by itself when the
+  // database cannot be reached, which is the one case where a stale price
+  // beats refusing the sale.
+  const catalog = (await listActiveProducts()) as unknown as
+    PricingCatalogProduct[];
+  const priced = priceOrder(parsed.data.items, parsed.data.locale, catalog);
   if (!priced.ok) {
     return NextResponse.json({ error: priced.error }, { status: 400 });
   }

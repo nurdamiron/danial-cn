@@ -1,23 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatKzt } from "@/lib/money";
-import { ArrowRightIcon } from "@/components/ui/icons";
 import { EmptyState, Notice } from "@/components/admin/ui/AdminSection";
-
-/**
- * The two states a product can be in, in the words the shop uses.
- *
- * "draft" and "active" are the database's words. The person running this shop
- * thinks in terms of whether a bag is on the site or not, and the panel used
- * to make them translate.
- */
-const STATUS_LABEL: Record<string, string> = {
-  active: "на сайте",
-  draft: "черновик",
-};
+import { ProductCard } from "@/components/admin/ProductCard";
 
 export type ProductRow = {
   id: string;
@@ -203,182 +189,23 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
 
       <Notice>{error}</Notice>
 
-      {/* Mobile cards */}
-      <div className="space-y-3 md:hidden">
+      {/*
+        One card at every width. The phone and the desktop used to render two
+        different components from the same rows, which had already drifted into
+        two different sets of actions — reordering existed only on the phone.
+      */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {filtered.map((p) => (
-          <div key={p.id} className="card p-3">
-            <div className="flex gap-3">
-              <div className="flex h-16 w-14 shrink-0 items-center justify-center bg-stone">
-                {p.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={p.imageUrl}
-                    alt=""
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
-                  <span className="t-data text-muted">нет</span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{p.nameRu}</div>
-                <div className="t-data text-muted">
-                  {p.brand} · {p.slug}
-                </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                  <span className="tag">{STATUS_LABEL[p.status] ?? p.status}</span>
-                  {p.featured ? <span className="tag">на главной</span> : null}
-                  <span className="t-price tabular text-sm">
-                    {formatKzt(p.basePriceKzt)}
-                  </span>
-                  <span className="t-data text-muted">
-                    {p.imageCount} фото · {p.variantCount} вар.
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-[0.8125rem]">
-              <Link href={`/admin/products/${p.id}`} className="link-quiet">
-                Открыть
-              </Link>
-              <button
-                type="button"
-                disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-50"
-                onClick={() => toggleStatus(p)}
-              >
-                <span className="inline-flex items-center gap-1">
-                  <ArrowRightIcon className="h-3.5 w-3.5" />
-                  {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
-                </span>
-              </button>
-              <button
-                type="button"
-                disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-50"
-                onClick={() => toggleFeatured(p)}
-              >
-                {p.featured ? "★ Убрать с главной" : "☆ На главную"}
-              </button>
-              <button
-                type="button"
-                disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-30"
-                onClick={() => move(p, -1)}
-                aria-label="Выше в каталоге"
-              >
-                Выше
-              </button>
-              <button
-                type="button"
-                disabled={busyId === p.id}
-                className="link-quiet disabled:opacity-30"
-                onClick={() => move(p, 1)}
-                aria-label="Ниже в каталоге"
-              >
-                Ниже
-              </button>
-              <button
-                type="button"
-                disabled={busyId === p.id}
-                className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
-                onClick={() => remove(p)}
-              >
-                Удалить
-              </button>
-            </div>
-          </div>
+          <ProductCard
+            key={p.id}
+            product={p}
+            busy={busyId === p.id}
+            onToggleStatus={() => toggleStatus(p)}
+            onToggleFeatured={() => toggleFeatured(p)}
+            onMove={(direction) => move(p, direction)}
+            onRemove={() => remove(p)}
+          />
         ))}
-      </div>
-
-      {/* Desktop table */}
-      <div className="hidden overflow-x-auto md:block">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-line-strong">
-              {["Фото", "Товар", "Статус", "Цена", "Медиа", "Действия"].map(
-                (h) => (
-                  <th key={h} className="t-label p-3 font-medium text-muted">
-                    {h}
-                  </th>
-                ),
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => (
-              <tr key={p.id} className="border-b border-line last:border-0">
-                <td className="p-3">
-                  {p.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.imageUrl}
-                      alt=""
-                      className="h-12 w-10 object-contain"
-                    />
-                  ) : (
-                    <span className="t-data text-muted">—</span>
-                  )}
-                </td>
-                <td className="p-3">
-                  <div className="t-label text-muted">{p.brand}</div>
-                  <div className="text-sm">{p.nameRu}</div>
-                  <div className="t-data text-muted">{p.slug}</div>
-                </td>
-                <td className="p-3">
-                  <span className="tag">
-                    {STATUS_LABEL[p.status] ?? p.status}
-                  </span>
-                  {p.featured ? (
-                    <span className="tag mt-1">на главной</span>
-                  ) : null}
-                </td>
-                <td className="t-price tabular p-3 whitespace-nowrap">
-                  {formatKzt(p.basePriceKzt)}
-                </td>
-                <td className="t-data p-3 text-muted">
-                  {p.imageCount} фото
-                  <br />
-                  {p.variantCount} вар.
-                </td>
-                <td className="p-3">
-                  <div className="flex flex-col items-start gap-1 text-[0.8125rem]">
-                    <Link
-                      href={`/admin/products/${p.id}`}
-                      className="link-quiet"
-                    >
-                      Открыть
-                    </Link>
-                    <button
-                      type="button"
-                      disabled={busyId === p.id}
-                      className="link-quiet disabled:opacity-50"
-                      onClick={() => toggleStatus(p)}
-                    >
-                      {p.status === "active" ? "Снять с сайта" : "Опубликовать"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busyId === p.id}
-                      className="link-quiet disabled:opacity-50"
-                      onClick={() => toggleFeatured(p)}
-                    >
-                      {p.featured ? "Убрать с главной" : "На главную"}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busyId === p.id}
-                      className="text-danger underline-offset-4 hover:underline disabled:opacity-50"
-                      onClick={() => remove(p)}
-                    >
-                      Удалить
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
       {filtered.length === 0 ? (

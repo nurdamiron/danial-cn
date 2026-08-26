@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { colorLabel } from "@/lib/catalog-presets";
-import { ArrowRightIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, ArrowRightIcon, TrashIcon } from "@/components/ui/icons";
 
 type Img = {
   id: string;
@@ -172,26 +172,31 @@ export function ProductImagesAdmin({
               )}
               <button
                 type="button"
-                className="underline disabled:opacity-30"
+                className="disabled:opacity-30"
                 disabled={i === 0}
                 onClick={() => move(img.id, -1)}
+                aria-label="Раньше в галерее"
+                title="Раньше в галерее"
               >
-                <ArrowRightIcon className="h-4 w-4 rotate-180" />
+                <ArrowLeftIcon className="h-4 w-4" />
               </button>
               <button
                 type="button"
-                className="underline disabled:opacity-30"
+                className="disabled:opacity-30"
                 disabled={i === images.length - 1}
                 onClick={() => move(img.id, 1)}
+                aria-label="Позже в галерее"
+                title="Позже в галерее"
               >
                 <ArrowRightIcon className="h-4 w-4" />
               </button>
               <button
                 type="button"
-                className="text-danger underline-offset-4 hover:underline"
+                className="inline-flex items-center gap-1 text-danger underline-offset-4 hover:underline"
                 onClick={() => remove(img.id)}
               >
-                Delete
+                <TrashIcon className="h-4 w-4" />
+                Удалить
               </button>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRightIcon } from "@/components/ui/icons";
+import { ExternalLinkIcon } from "@/components/ui/icons";
 import { Notice } from "@/components/admin/ui/AdminSection";
 
 type Mode = "login" | "register";
@@ -148,7 +148,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
               className="link-quiet mt-2 inline-flex items-center gap-1 text-ink"
             >
               Личный кабинет на сайте
-              <ArrowRightIcon className="h-3.5 w-3.5" />
+              <ExternalLinkIcon className="h-3.5 w-3.5" />
             </a>
           </>
         ) : (

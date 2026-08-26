@@ -5,7 +5,8 @@ import { useState } from "react";
 
 type ProductInput = {
   id?: string;
-  slug: string;
+  /** Absent on create — the server derives it from brand and name. */
+  slug?: string;
   brand: string;
   nameRu: string;
   nameKk: string;
@@ -27,7 +28,6 @@ type ProductInput = {
 };
 
 const empty: ProductInput = {
-  slug: "",
   brand: "",
   nameRu: "",
   nameKk: "",
@@ -42,6 +42,9 @@ const empty: ProductInput = {
 };
 
 export function ProductForm({ product }: { product?: ProductInput }) {
+  // A saved product keeps every field: its URL is public and its Kazakh copy
+  // is worth writing properly. Creating one asks for the short version.
+  const isEdit = Boolean(product?.id);
   const router = useRouter();
   const [form, setForm] = useState<ProductInput>(product ?? empty);
   const [error, setError] = useState("");
@@ -56,7 +59,6 @@ export function ProductForm({ product }: { product?: ProductInput }) {
     setSaving(true);
     setError("");
     try {
-      const isEdit = Boolean(product?.id);
       const res = await fetch(
         isEdit ? `/api/admin/products/${product!.id}` : "/api/admin/products",
         {
@@ -92,69 +94,6 @@ export function ProductForm({ product }: { product?: ProductInput }) {
     } finally {
       setSaving(false);
     }
-  }
-
-  function autoSlug() {
-    if (product?.id) return;
-    const base = form.nameRu || form.brand;
-    if (!base) return;
-    const slug = base
-      .toLowerCase()
-      .replace(/[^a-z0-9а-яёәіңғүұқөһ\s-]/gi, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .slice(0, 60);
-    // translit-lite for common RU letters used in slugs
-    const map: Record<string, string> = {
-      а: "a",
-      б: "b",
-      в: "v",
-      г: "g",
-      д: "d",
-      е: "e",
-      ё: "e",
-      ж: "zh",
-      з: "z",
-      и: "i",
-      й: "y",
-      к: "k",
-      л: "l",
-      м: "m",
-      н: "n",
-      о: "o",
-      п: "p",
-      р: "r",
-      с: "s",
-      т: "t",
-      у: "u",
-      ф: "f",
-      х: "h",
-      ц: "ts",
-      ч: "ch",
-      ш: "sh",
-      щ: "sch",
-      ъ: "",
-      ы: "y",
-      ь: "",
-      э: "e",
-      ю: "yu",
-      я: "ya",
-      ә: "a",
-      і: "i",
-      ң: "n",
-      ғ: "g",
-      ү: "u",
-      ұ: "u",
-      қ: "q",
-      ө: "o",
-      һ: "h",
-    };
-    const latin = slug
-      .split("")
-      .map((c) => map[c] ?? c)
-      .join("")
-      .replace(/[^a-z0-9-]/g, "");
-    if (latin) set("slug", latin);
   }
 
   const field = (
@@ -194,33 +133,26 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       onSubmit={onSubmit}
       className="card grid gap-5 p-5 sm:p-7 md:grid-cols-2"
     >
-      <label className="block">
-        Slug (URL) *
-        <div className="mt-1 flex gap-2">
+      {isEdit ? (
+        <label className="block">
+          Slug (URL) *
           <input
             className="field"
-            value={form.slug}
+            value={form.slug ?? ""}
             onChange={(e) => set("slug", e.target.value)}
             required
           />
-          {!product?.id ? (
-            <button
-              type="button"
-              className="btn btn-outline h-10 shrink-0 px-4 text-[0.8125rem]"
-              onClick={autoSlug}
-            >
-              Auto
-            </button>
-          ) : null}
-        </div>
-      </label>
+        </label>
+      ) : null}
       {field("Бренд / линия", "brand")}
-      {field("Название RU", "nameRu")}
-      {field("Название KK", "nameKk")}
-      {field("Описание RU", "descriptionRu", { textarea: true })}
-      {field("Описание KK", "descriptionKk", { textarea: true })}
-      {field("Материал RU", "materialRu")}
-      {field("Материал KK", "materialKk")}
+      {field(isEdit ? "Название RU" : "Название", "nameRu")}
+      {isEdit ? field("Название KK", "nameKk") : null}
+      {field(isEdit ? "Описание RU" : "Описание", "descriptionRu", {
+        textarea: true,
+      })}
+      {isEdit ? field("Описание KK", "descriptionKk", { textarea: true }) : null}
+      {field(isEdit ? "Материал RU" : "Материал", "materialRu")}
+      {isEdit ? field("Материал KK", "materialKk") : null}
       <label className="block">
         Категория
         <select
@@ -261,6 +193,12 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         />
         На главной
       </label>
+      {!isEdit ? (
+        <p className="text-[0.8125rem] text-muted md:col-span-2">
+          Адрес товара и казахский текст заполнятся сами — их можно поправить
+          после сохранения.
+        </p>
+      ) : null}
       {error ? (
         <p className="alert-error md:col-span-2">{error}</p>
       ) : null}

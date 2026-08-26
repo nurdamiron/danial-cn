@@ -266,3 +266,97 @@ export function ShieldIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
     </Svg>
   );
 }
+
+/** Published: the product is visible in the shop. */
+export function EyeIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </Svg>
+  );
+}
+
+/** Hidden: the product is a draft and the shop does not show it. */
+export function EyeOffIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M9.9 6A9.7 9.7 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17.6 17.6 0 0 1-3.4 4.1" />
+      <path d="M6.5 8.1A17.6 17.6 0 0 0 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.2-1.1" />
+      <path d="m4.5 4.5 15 15" />
+    </Svg>
+  );
+}
+
+/** Edit: open the product and change it. */
+export function PencilIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="m4.5 19.5.9-3.7L15.6 5.6a1.6 1.6 0 0 1 2.3 0l.5.5a1.6 1.6 0 0 1 0 2.3L8.2 18.6l-3.7.9Z" />
+      <path d="m14.5 6.7 2.8 2.8" />
+    </Svg>
+  );
+}
+
+export function ArrowLeftIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M19.5 12h-14M11 6.5 5.5 12l5.5 5.5" />
+    </Svg>
+  );
+}
+
+export function ArrowUpIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M12 19.5v-14M6.5 11 12 5.5 17.5 11" />
+    </Svg>
+  );
+}
+
+export function ArrowDownIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M12 4.5v14M6.5 13l5.5 5.5L17.5 13" />
+    </Svg>
+  );
+}
+
+/** The shop itself, as seen from the panel. */
+export function StoreIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M4.5 10.5V19a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5" />
+      <path d="M3 10.2 4.8 5h14.4L21 10.2a2.5 2.5 0 0 1-4.5 1.4 2.5 2.5 0 0 1-4.5 0 2.5 2.5 0 0 1-4.5 0A2.5 2.5 0 0 1 3 10.2Z" />
+    </Svg>
+  );
+}
+
+/** The link leaves the panel. */
+export function ExternalLinkIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M14 4.5h5.5V10" />
+      <path d="M19.5 4.5 11 13" />
+      <path d="M18 14.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4.5" />
+    </Svg>
+  );
+}
+
+export function LockIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.5" />
+      <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    </Svg>
+  );
+}
+
+export function UnlockIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.5" />
+      <path d="M8 10.5V8a4 4 0 0 1 7.4-2" />
+    </Svg>
+  );
+}
