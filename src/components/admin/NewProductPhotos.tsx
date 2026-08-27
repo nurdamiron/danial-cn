@@ -5,7 +5,8 @@ import {
   ACCEPT_ATTRIBUTE,
   imageFileProblem,
 } from "@/lib/image-rules";
-import { TrashIcon } from "@/components/ui/icons";
+import { GripIcon, StarIcon, TrashIcon } from "@/components/ui/icons";
+import { moveItem } from "@/lib/reorder";
 
 /**
  * Photos chosen before the product exists.
@@ -36,6 +37,9 @@ export function NewProductPhotos({
 }) {
   const [dragOver, setDragOver] = useState(false);
   const [rejected, setRejected] = useState<string[]>([]);
+  /** The photo being dragged, and the one it is currently over. */
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement | null>(null);
 
   // Object URLs stay alive until they are revoked. The ref tracks whatever is
@@ -91,7 +95,8 @@ export function NewProductPhotos({
         onDrop={(e) => {
           e.preventDefault();
           setDragOver(false);
-          add(e.dataTransfer.files);
+          // Reordering drags carry no files; only a drop from the desktop does.
+          if (e.dataTransfer.files?.length) add(e.dataTransfer.files);
         }}
         onClick={() => fileInput.current?.click()}
         className={`flex cursor-pointer flex-col items-center justify-center rounded-[var(--r-lg)] border border-dashed px-6 py-7 text-center transition-colors duration-200 ${
@@ -128,37 +133,100 @@ export function NewProductPhotos({
       {photos.length ? (
         <>
           <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {photos.map((p, i) => (
-              <div
-                key={p.id}
-                className="media relative flex aspect-square items-center justify-center"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.previewUrl}
-                  alt=""
-                  className="h-full w-full object-contain p-1"
-                />
-                {i === 0 ? (
-                  <span className="absolute top-1 left-1 rounded-[var(--r-xs)] bg-ink px-1.5 py-0.5 text-[0.625rem] tracking-[0.08em] text-paper uppercase">
-                    обложка
-                  </span>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={() => remove(p.id)}
-                  disabled={disabled}
-                  aria-label={`Убрать ${p.file.name}`}
-                  title="Убрать"
-                  className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-paper/90 text-danger transition-colors hover:bg-danger-tint"
+            {photos.map((p, i) => {
+              const dragging = dragId === p.id;
+              const target = overId === p.id && dragId !== p.id;
+              return (
+                <div
+                  key={p.id}
+                  draggable={!disabled}
+                  onDragStart={(e) => {
+                    setDragId(p.id);
+                    e.dataTransfer.effectAllowed = "move";
+                    // Firefox starts no drag at all without a payload.
+                    e.dataTransfer.setData("text/plain", p.id);
+                  }}
+                  onDragEnd={() => {
+                    setDragId(null);
+                    setOverId(null);
+                  }}
+                  onDragOver={(e) => {
+                    if (!dragId) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    setOverId(p.id);
+                  }}
+                  onDragLeave={() =>
+                    setOverId((cur) => (cur === p.id ? null : cur))
+                  }
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const from = photos.findIndex((x) => x.id === dragId);
+                    const to = photos.findIndex((x) => x.id === p.id);
+                    setDragId(null);
+                    setOverId(null);
+                    if (from >= 0 && to >= 0 && from !== to) {
+                      onChange(moveItem(photos, from, to));
+                    }
+                  }}
+                  className={`media group relative flex aspect-square cursor-grab items-center justify-center transition-all duration-200 active:cursor-grabbing ${
+                    dragging
+                      ? "border-ink opacity-40"
+                      : target
+                        ? "border-ink ring-2 ring-ink/20"
+                        : ""
+                  }`}
                 >
-                  <TrashIcon className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.previewUrl}
+                    alt=""
+                    draggable={false}
+                    className="h-full w-full object-contain p-1.5"
+                  />
+
+                  <span
+                    className={`absolute top-1 left-1 inline-flex items-center gap-1 rounded-[var(--r-xs)] px-1.5 py-0.5 text-[0.625rem] font-medium tracking-[0.08em] uppercase ${
+                      i === 0 ? "bg-ink text-paper" : "bg-paper/85 text-muted"
+                    }`}
+                  >
+                    {i === 0 ? (
+                      <>
+                        <StarIcon className="h-2.5 w-2.5" filled />
+                        обложка
+                      </>
+                    ) : (
+                      i + 1
+                    )}
+                  </span>
+
+                  <span
+                    className="absolute bottom-1 left-1 text-muted opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-hidden="true"
+                  >
+                    <GripIcon className="h-4 w-4" />
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => remove(p.id)}
+                    disabled={disabled}
+                    aria-label={`Убрать ${p.file.name}`}
+                    title="Убрать"
+                    className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-paper/90 text-danger opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
           <p className="t-micro mt-2 text-muted">
-            Первое фото станет обложкой. Загрузим их сразу после сохранения.
+            {photos.length > 1
+              ? "Перетащите, чтобы поменять порядок. Первое фото станет обложкой."
+              : "Первое фото станет обложкой."}{" "}
+            Загрузим их сразу после сохранения.
           </p>
         </>
       ) : (
