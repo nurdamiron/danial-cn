@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { assertPublishable } from "@/lib/products";
+import { syncProductTranslations } from "@/lib/translation-sync";
 
 const patchSchema = z.object({
   slug: z.string().min(1).optional(),
@@ -77,10 +78,28 @@ export async function PATCH(
     }
   }
 
+  // The panel no longer asks for the Kazakh half of each text, so it is
+  // worked out here — mirrored where it was only ever a copy, left alone
+  // where somebody actually translated it.
+  const stored = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      nameRu: true,
+      nameKk: true,
+      descriptionRu: true,
+      descriptionKk: true,
+      materialRu: true,
+      materialKk: true,
+    },
+  });
+  if (!stored) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   try {
     const product = await prisma.product.update({
       where: { id },
-      data: parsed.data,
+      data: { ...parsed.data, ...syncProductTranslations(stored, parsed.data) },
       include: {
         images: { orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }] },
         variants: true,

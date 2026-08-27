@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { processAndSaveImage, validateImageFile } from "@/lib/images";
+import {
+  blobConfigured,
+  processAndSaveImage,
+  validateImageFile,
+} from "@/lib/images";
 
 export async function POST(
   req: Request,
@@ -16,6 +20,16 @@ export async function POST(
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (!blobConfigured()) {
+    return NextResponse.json(
+      {
+        error:
+          "Хранилище фото не подключено: в настройках проекта нет BLOB_READ_WRITE_TOKEN.",
+      },
+      { status: 503 },
+    );
   }
 
   const form = await req.formData();
@@ -45,24 +59,39 @@ export async function POST(
         { status: 400 },
       );
     }
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const saved = await processAndSaveImage({
-      productId,
-      buffer,
-      originalName: file.name,
-    });
-    const image = await prisma.productImage.create({
-      data: {
+    try {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const saved = await processAndSaveImage({
         productId,
-        url: saved.url,
-        width: saved.width,
-        height: saved.height,
-        sortOrder: existingCount + i,
-        isCover: existingCount === 0 && i === 0,
-        colorKey,
-      },
-    });
-    created.push(image);
+        buffer,
+        originalName: file.name,
+      });
+      const image = await prisma.productImage.create({
+        data: {
+          productId,
+          url: saved.url,
+          width: saved.width,
+          height: saved.height,
+          sortOrder: existingCount + i,
+          isCover: existingCount === 0 && i === 0,
+          colorKey,
+        },
+      });
+      created.push(image);
+    } catch (e) {
+      console.error("image upload failed", file.name, e);
+      // Files earlier in the batch are already saved, so name the one that
+      // stopped it rather than implying nothing landed.
+      return NextResponse.json(
+        {
+          error: `Не удалось сохранить «${file.name}»: ${
+            e instanceof Error ? e.message : "ошибка хранилища"
+          }`,
+          created,
+        },
+        { status: 502 },
+      );
+    }
   }
 
   const images = await prisma.productImage.findMany({

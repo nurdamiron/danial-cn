@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { colorLabel } from "@/lib/catalog-presets";
-import { ArrowLeftIcon, ArrowRightIcon, TrashIcon } from "@/components/ui/icons";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  StarIcon,
+  TrashIcon,
+} from "@/components/ui/icons";
 
 type Img = {
   id: string;
@@ -24,6 +30,10 @@ export function ProductImagesAdmin({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [uploadColor, setUploadColor] = useState(colorKeys[0] ?? "");
+  const [dragOver, setDragOver] = useState(false);
+  /** What the last upload did, so the page confirms it rather than just growing. */
+  const [added, setAdded] = useState(0);
+  const fileInput = useRef<HTMLInputElement | null>(null);
 
   async function onUpload(files: FileList | null) {
     if (!files?.length) return;
@@ -43,8 +53,11 @@ export function ProductImagesAdmin({
         return;
       }
       setImages(data.images);
+      setAdded(data.created?.length ?? files.length);
     } finally {
       setBusy(false);
+      // Without this, choosing the same file again fires no change event.
+      if (fileInput.current) fileInput.current.value = "";
     }
   }
 
@@ -101,39 +114,86 @@ export function ProductImagesAdmin({
 
   return (
     <div className="card space-y-5 p-5 sm:p-7">
-      <p className="text-[0.8125rem] text-muted">
-        C: загрузка · R: галерея · U: обложка / цвет / порядок · D: удалить.
-        Привязка к colorKey меняет фото при выборе цвета на витрине.
-      </p>
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <label className="block flex-1 text-[0.8125rem]">
-          Цвет при загрузке
+      {/*
+        The whole panel used to be explained as "C: загрузка · R: галерея ·
+        U: обложка / цвет / порядок · D: удалить" — the four database verbs,
+        to the person selling bags — and the upload itself was a bare file
+        input, the smallest control a browser draws.
+      */}
+      {colorKeys.length ? (
+        <label className="block text-[0.8125rem]">
+          Для какого цвета эти фото
           <select
             className="field"
             value={uploadColor}
             onChange={(e) => setUploadColor(e.target.value)}
           >
-            <option value="">Без привязки</option>
+            <option value="">Для всех цветов</option>
             {colorKeys.map((k) => (
               <option key={k} value={k}>
                 {colorLabel(k)}
               </option>
             ))}
           </select>
+          <span className="t-micro mt-1 block text-muted">
+            Покупатель выбирает цвет на витрине и видит именно эти снимки.
+          </span>
         </label>
+      ) : null}
+
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          void onUpload(e.dataTransfer.files);
+        }}
+        onClick={() => fileInput.current?.click()}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-[var(--r-lg)] border border-dashed px-6 py-8 text-center transition-colors duration-200 ${
+          dragOver
+            ? "border-ink bg-stone"
+            : "border-line-strong bg-stone/30 hover:border-ink hover:bg-stone"
+        } ${busy ? "pointer-events-none opacity-60" : ""}`}
+      >
         <input
+          ref={fileInput}
           type="file"
           accept="image/jpeg,image/png,image/webp,image/avif"
           multiple
           disabled={busy}
-          className="block w-full text-[0.8125rem] sm:w-auto"
+          className="sr-only"
           onChange={(e) => onUpload(e.target.files)}
         />
+        {busy ? (
+          <p className="text-sm">Загружаем…</p>
+        ) : (
+          <>
+            <p className="text-sm font-medium">
+              Перетащите фото сюда или нажмите, чтобы выбрать
+            </p>
+            <p className="t-micro mt-1 text-muted">
+              Можно несколько сразу · JPEG, PNG, WebP, AVIF · до 12 МБ каждое
+            </p>
+          </>
+        )}
       </div>
 
-      {busy ? <p className="text-[0.8125rem] text-muted">Загрузка…</p> : null}
-      {error ? <p className="text-danger text-[0.8125rem]">{error}</p> : null}
+      <p className="t-micro text-muted">
+        Фото сохраняются сразу — отдельной кнопки нет. Мы уменьшаем их до 2400
+        пикселей, кладём в хранилище магазина и сами обновляем витрину.
+      </p>
+
+      {added > 0 && !busy ? (
+        <p className="inline-flex items-center gap-1.5 text-[0.8125rem]">
+          <CheckIcon className="h-3.5 w-3.5" />
+          Загружено фото: {added}
+        </p>
+      ) : null}
+      {error ? <p className="alert-error">{error}</p> : null}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {images.map((img, i) => (
@@ -160,7 +220,10 @@ export function ProductImagesAdmin({
             </label>
             <div className="mt-2 flex flex-wrap gap-2">
               {img.isCover ? (
-                <span className="font-medium">ОБЛОЖКА</span>
+                <span className="inline-flex items-center gap-1 text-[0.8125rem] font-medium">
+                  <StarIcon className="h-3.5 w-3.5" filled />
+                  Обложка
+                </span>
               ) : (
                 <button
                   type="button"
