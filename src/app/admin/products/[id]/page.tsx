@@ -74,7 +74,7 @@ export default async function EditProductPage({
         <h2 className="t-label mb-4 text-muted">Фотографии</h2>
         {photoError ? (
           <p className="alert-error mb-4">
-            Товар сохранён, но фото загрузить не удалось: {photoError}
+            Товар сохранён, но с фото не всё получилось. {photoError}
           </p>
         ) : null}
         <ProductImagesAdmin

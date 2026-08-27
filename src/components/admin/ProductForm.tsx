@@ -6,6 +6,7 @@ import {
   NewProductPhotos,
   type PendingPhoto,
 } from "@/components/admin/NewProductPhotos";
+import { uploadPhotos } from "@/lib/upload-photos";
 
 type ProductInput = {
   id?: string;
@@ -86,6 +87,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
   const [saving, setSaving] = useState(false);
   /** Chosen before the product exists; uploaded the moment it does. */
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
+  const [uploaded, setUploaded] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
 
   function set<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -126,7 +131,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         // The product is saved by now, so a failed upload must not read as a
         // failed save: it hands over to the edit screen, where the photos can
         // be retried against a product that already exists.
-        const failure = photos.length ? await uploadPhotos(id) : null;
+        const failure = photos.length ? await sendPhotos(id) : null;
         if (failure) {
           router.push(
             `/admin/products/${id}?photos=${encodeURIComponent(failure)}`,
@@ -144,23 +149,18 @@ export function ProductForm({ product }: { product?: ProductInput }) {
     }
   }
 
-  /** Returns null when every photo landed, or why it stopped. */
-  async function uploadPhotos(productId: string): Promise<string | null> {
-    try {
-      const body = new FormData();
-      photos.forEach((p) => body.append("files", p.file));
-      const res = await fetch(`/api/admin/products/${productId}/images`, {
-        method: "POST",
-        body,
-      });
-      if (res.ok) return null;
-      const data = await res.json().catch(() => null);
-      return typeof data?.error === "string"
-        ? data.error
-        : "Товар сохранён, но фото загрузить не удалось.";
-    } catch {
-      return "Товар сохранён, но фото загрузить не удалось.";
-    }
+  /** Returns null when every photo landed, or what went wrong. */
+  async function sendPhotos(productId: string): Promise<string | null> {
+    const outcome = await uploadPhotos({
+      productId,
+      files: photos.map((p) => p.file),
+      onProgress: (done, total) => setUploaded({ done, total }),
+    });
+    if (outcome.status === "done") return null;
+    // Partial success is worth saying plainly: the rest are already filed.
+    return outcome.status === "partial"
+      ? `Загружено фото: ${outcome.added}. ${outcome.error}`
+      : outcome.error;
   }
 
   const field = (
@@ -315,9 +315,11 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           className="btn btn-primary h-12 w-full px-8 text-sm sm:w-auto"
         >
           {saving
-            ? photos.length
-              ? "Сохраняем и грузим фото…"
-              : "Сохранение…"
+            ? uploaded && uploaded.total > 0
+              ? `Загружаем фото ${uploaded.done + 1} из ${uploaded.total}…`
+              : photos.length
+                ? "Сохраняем…"
+                : "Сохранение…"
             : "Сохранить"}
         </button>
       </div>
