@@ -4,6 +4,7 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductImagesAdmin } from "@/components/admin/ProductImagesAdmin";
 import { ProductDeleteButton } from "@/components/admin/ProductDeleteButton";
 import { VariantsAdmin } from "@/components/admin/VariantsAdmin";
+import { ProductTabs } from "@/components/admin/ProductTabs";
 import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
 import { ArrowRightIcon } from "@/components/ui/icons";
@@ -35,7 +36,7 @@ export default async function EditProductPage({
   if (!product) notFound();
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <Link
@@ -46,48 +47,65 @@ export default async function EditProductPage({
             К списку
           </Link>
           <div>
-            <h1 className="t-display t-h2">{product.nameRu}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="t-display t-h2">{product.nameRu}</h1>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase ${
+                  product.status === "active"
+                    ? "border-ink/15 bg-ink text-paper"
+                    : "border-line bg-paper text-muted"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    product.status === "active" ? "bg-paper" : "bg-line-strong"
+                  }`}
+                />
+                {product.status === "active" ? "на сайте" : "черновик"}
+              </span>
+            </div>
             <p className="t-data mt-1 text-muted">
-              {product.brand} · {product.slug} ·{" "}
-              {product.status === "active" ? "на сайте" : "черновик"}
+              {product.brand} · {product.slug}
             </p>
           </div>
         </div>
         <ProductDeleteButton productId={product.id} name={product.nameRu} />
       </div>
 
-      <section>
-        <h2 className="t-label mb-4 text-muted">Описание и цена</h2>
-        <ProductForm product={product} />
-      </section>
-
-      <section>
-        <h2 className="t-label mb-4 text-muted">Цвета, размеры и наличие</h2>
-        <VariantsAdmin
-          productId={product.id}
-          productSlug={product.slug}
-          initialVariants={product.variants}
-        />
-      </section>
-
-      <section>
-        <h2 className="t-label mb-4 text-muted">Фотографии</h2>
-        {photoError ? (
-          <p className="alert-error mb-4">
-            Товар сохранён, но с фото не всё получилось. {photoError}
-          </p>
-        ) : null}
-        <ProductImagesAdmin
-          productId={product.id}
-          colorKeys={[...new Set(product.variants.map((v) => v.colorKey))]}
-          initialImages={product.images.map((i) => ({
-            id: i.id,
-            url: i.url,
-            isCover: i.isCover,
-            colorKey: i.colorKey,
-          }))}
-        />
-      </section>
+      <ProductTabs
+        counts={{
+          variants: product.variants.length,
+          photos: product.images.length,
+        }}
+        openPhotos={Boolean(photoError)}
+        product={<ProductForm product={product} />}
+        variants={
+          <VariantsAdmin
+            productId={product.id}
+            productSlug={product.slug}
+            initialVariants={product.variants}
+          />
+        }
+        photos={
+          <>
+            {photoError ? (
+              <p className="alert-error mb-4">
+                Товар сохранён, но с фото не всё получилось. {photoError}
+              </p>
+            ) : null}
+            <ProductImagesAdmin
+              productId={product.id}
+              colorKeys={[...new Set(product.variants.map((v) => v.colorKey))]}
+              initialImages={product.images.map((i) => ({
+                id: i.id,
+                url: i.url,
+                isCover: i.isCover,
+                colorKey: i.colorKey,
+              }))}
+            />
+          </>
+        }
+      />
     </div>
   );
 }

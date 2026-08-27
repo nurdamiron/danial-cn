@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   NewProductPhotos,
   type PendingPhoto,
 } from "@/components/admin/NewProductPhotos";
 import { uploadPhotos } from "@/lib/upload-photos";
+import { CheckIcon } from "@/components/ui/icons";
 
 type ProductInput = {
   id?: string;
@@ -85,6 +86,11 @@ export function ProductForm({ product }: { product?: ProductInput }) {
   const [form, setForm] = useState<ProductInput>(product ?? empty);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  /** The values as the server last confirmed them, to tell edits from noise. */
+  const [baseline, setBaseline] = useState(() =>
+    JSON.stringify(product ?? empty),
+  );
   /** Chosen before the product exists; uploaded the moment it does. */
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [uploaded, setUploaded] = useState<{
@@ -94,7 +100,21 @@ export function ProductForm({ product }: { product?: ProductInput }) {
 
   function set<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    // A confirmation that outlives the next keystroke is a confirmation of
+    // something that is no longer true.
+    setSaved(false);
   }
+
+  const dirty = JSON.stringify(form) !== baseline;
+
+  // The panel has no autosave, and nothing used to stand between a filled-in
+  // form and a closed tab.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -141,7 +161,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         router.push(`/admin/products/${id}`);
       } else {
         setError("");
-        setForm((f) => ({ ...f, ...data.product }));
+        const next = { ...form, ...data.product };
+        setForm(next);
+        setBaseline(JSON.stringify(next));
+        setSaved(true);
         router.refresh();
       }
     } finally {
@@ -308,10 +331,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
 
       {error ? <p className="alert-error">{error}</p> : null}
 
-      <div className="border-t border-line pt-5">
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || (isEdit && !dirty)}
           className="btn btn-primary h-12 w-full px-8 text-sm sm:w-auto"
         >
           {saving
@@ -320,8 +343,21 @@ export function ProductForm({ product }: { product?: ProductInput }) {
               : photos.length
                 ? "Сохраняем…"
                 : "Сохранение…"
-            : "Сохранить"}
+            : isEdit && !dirty
+              ? "Сохранено"
+              : "Сохранить"}
         </button>
+
+        {saved && !dirty ? (
+          <span className="inline-flex items-center gap-1.5 text-[0.8125rem] text-muted">
+            <CheckIcon className="h-3.5 w-3.5" />
+            Сохранено. На сайте появится через несколько секунд.
+          </span>
+        ) : dirty && isEdit ? (
+          <span className="text-[0.8125rem] text-muted">
+            Есть несохранённые изменения
+          </span>
+        ) : null}
       </div>
     </form>
   );
