@@ -11,6 +11,7 @@ import {
   TrashIcon,
 } from "@/components/ui/icons";
 import { moveItem } from "@/lib/reorder";
+import { uploadPhotos } from "@/lib/upload-photos";
 
 type Img = {
   id: string;
@@ -35,6 +36,10 @@ export function ProductImagesAdmin({
   const [dragOver, setDragOver] = useState(false);
   /** What the last upload did, so the page confirms it rather than just growing. */
   const [added, setAdded] = useState(0);
+  const [progress, setProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
   const fileInput = useRef<HTMLInputElement | null>(null);
   /** The photo being dragged, and the one it is currently over. */
   const [dragId, setDragId] = useState<string | null>(null);
@@ -44,23 +49,28 @@ export function ProductImagesAdmin({
     if (!files?.length) return;
     setBusy(true);
     setError("");
+    setAdded(0);
+    setProgress({ done: 0, total: files.length });
     try {
-      const form = new FormData();
-      Array.from(files).forEach((f) => form.append("files", f));
-      if (uploadColor) form.append("colorKey", uploadColor);
-      const res = await fetch(`/api/admin/products/${productId}/images`, {
-        method: "POST",
-        body: form,
+      const outcome = await uploadPhotos({
+        productId,
+        files: Array.from(files),
+        colorKey: uploadColor || undefined,
+        onProgress: (done, total) => setProgress({ done, total }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Ошибка загрузки");
-        return;
+      if (outcome.status !== "done") setError(outcome.error);
+      if (outcome.status !== "failed") setAdded(outcome.added);
+
+      // Whatever landed is now on the server; ask it what the gallery holds
+      // rather than guessing from a response that may have stopped halfway.
+      const res = await fetch(`/api/admin/products/${productId}/images`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.images)) setImages(data.images);
       }
-      setImages(data.images);
-      setAdded(data.created?.length ?? files.length);
     } finally {
       setBusy(false);
+      setProgress(null);
       // Without this, choosing the same file again fires no change event.
       if (fileInput.current) fileInput.current.value = "";
     }
@@ -204,7 +214,11 @@ export function ProductImagesAdmin({
           onChange={(e) => onUpload(e.target.files)}
         />
         {busy ? (
-          <p className="text-sm">Загружаем…</p>
+          <p className="text-sm">
+            {progress && progress.total > 1
+              ? `Загружаем ${progress.done + 1} из ${progress.total}…`
+              : "Загружаем…"}
+          </p>
         ) : (
           <>
             <p className="text-sm font-medium">

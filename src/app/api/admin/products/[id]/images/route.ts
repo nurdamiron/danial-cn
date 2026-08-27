@@ -8,6 +8,28 @@ import {
   validateImageFile,
 } from "@/lib/images";
 
+/**
+ * What the product's gallery holds right now.
+ *
+ * Photos are uploaded one request per file, so a batch that stops halfway
+ * leaves the panel holding a list it can no longer vouch for. It asks here
+ * instead of guessing from a response that never came.
+ */
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const { id: productId } = await ctx.params;
+  const images = await prisma.productImage.findMany({
+    where: { productId },
+    orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }],
+  });
+  return NextResponse.json({ images });
+}
+
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ id: string }> },
