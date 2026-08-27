@@ -9,22 +9,30 @@
  */
 import { del, put } from "@vercel/blob";
 import sharp from "sharp";
+import { imageFileProblem } from "@/lib/image-rules";
 
 const MAX_EDGE = 2400;
-const MAX_BYTES = 12 * 1024 * 1024;
-const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 export function blobConfigured(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
 }
 
-export function validateImageFile(file: { type: string; size: number }): void {
-  if (!ALLOWED.includes(file.type)) {
-    throw new Error("Поддерживаются JPEG, PNG, WebP и AVIF");
-  }
-  if (file.size > MAX_BYTES) {
-    throw new Error("Файл больше 12 МБ");
-  }
+/**
+ * The limits live in lib/image-rules.ts so the panel can apply them before
+ * uploading. Two copies of this list would drift, and the copy that drifted
+ * would be the one the person picking files is shown.
+ */
+export function validateImageFile(file: {
+  name?: string;
+  type: string;
+  size: number;
+}): void {
+  const problem = imageFileProblem({
+    name: file.name ?? "файл",
+    type: file.type,
+    size: file.size,
+  });
+  if (problem) throw new Error(problem);
 }
 
 export async function processAndSaveImage(params: {

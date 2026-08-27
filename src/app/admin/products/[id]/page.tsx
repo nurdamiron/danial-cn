@@ -10,8 +10,10 @@ import { ArrowRightIcon } from "@/components/ui/icons";
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ photos?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) redirect("/admin/login");
@@ -19,6 +21,9 @@ export default async function EditProductPage({
   if (!hasDatabase()) redirect("/admin");
 
   const { id } = await params;
+  // Set when the product saved but its photos did not: the create screen sends
+  // the reason on rather than losing it behind a redirect.
+  const { photos: photoError } = await searchParams;
   const { prisma } = await import("@/lib/prisma");
   const product = await prisma.product.findUnique({
     where: { id },
@@ -67,6 +72,11 @@ export default async function EditProductPage({
 
       <section>
         <h2 className="t-label mb-4 text-muted">Фотографии</h2>
+        {photoError ? (
+          <p className="alert-error mb-4">
+            Товар сохранён, но фото загрузить не удалось: {photoError}
+          </p>
+        ) : null}
         <ProductImagesAdmin
           productId={product.id}
           colorKeys={[...new Set(product.variants.map((v) => v.colorKey))]}

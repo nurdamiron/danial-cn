@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  NewProductPhotos,
+  type PendingPhoto,
+} from "@/components/admin/NewProductPhotos";
 
 type ProductInput = {
   id?: string;
@@ -80,6 +84,8 @@ export function ProductForm({ product }: { product?: ProductInput }) {
   const [form, setForm] = useState<ProductInput>(product ?? empty);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  /** Chosen before the product exists; uploaded the moment it does. */
+  const [photos, setPhotos] = useState<PendingPhoto[]>([]);
 
   function set<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -116,7 +122,18 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         return;
       }
       if (!isEdit) {
-        router.push(`/admin/products/${data.product.id}`);
+        const id = data.product.id as string;
+        // The product is saved by now, so a failed upload must not read as a
+        // failed save: it hands over to the edit screen, where the photos can
+        // be retried against a product that already exists.
+        const failure = photos.length ? await uploadPhotos(id) : null;
+        if (failure) {
+          router.push(
+            `/admin/products/${id}?photos=${encodeURIComponent(failure)}`,
+          );
+          return;
+        }
+        router.push(`/admin/products/${id}`);
       } else {
         setError("");
         setForm((f) => ({ ...f, ...data.product }));
@@ -124,6 +141,25 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       }
     } finally {
       setSaving(false);
+    }
+  }
+
+  /** Returns null when every photo landed, or why it stopped. */
+  async function uploadPhotos(productId: string): Promise<string | null> {
+    try {
+      const body = new FormData();
+      photos.forEach((p) => body.append("files", p.file));
+      const res = await fetch(`/api/admin/products/${productId}/images`, {
+        method: "POST",
+        body,
+      });
+      if (res.ok) return null;
+      const data = await res.json().catch(() => null);
+      return typeof data?.error === "string"
+        ? data.error
+        : "Товар сохранён, но фото загрузить не удалось.";
+    } catch {
+      return "Товар сохранён, но фото загрузить не удалось.";
     }
   }
 
@@ -220,6 +256,16 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         </label>
       </Section>
 
+      {!isEdit ? (
+        <Section title="Фото" cols={1}>
+          <NewProductPhotos
+            photos={photos}
+            onChange={setPhotos}
+            disabled={saving}
+          />
+        </Section>
+      ) : null}
+
       {/*
         The URL and the Kazakh copy. Both are filled in without being asked
         for — the slug from the name, the translation from the Russian where
@@ -268,7 +314,11 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           disabled={saving}
           className="btn btn-primary h-12 w-full px-8 text-sm sm:w-auto"
         >
-          {saving ? "Сохранение…" : "Сохранить"}
+          {saving
+            ? photos.length
+              ? "Сохраняем и грузим фото…"
+              : "Сохранение…"
+            : "Сохранить"}
         </button>
       </div>
     </form>
