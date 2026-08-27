@@ -360,3 +360,17 @@ export function UnlockIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
     </Svg>
   );
 }
+
+/** The handle that says a thing can be dragged. */
+export function GripIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="9" cy="6" r="1" />
+      <circle cx="15" cy="6" r="1" />
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="9" cy="18" r="1" />
+      <circle cx="15" cy="18" r="1" />
+    </Svg>
+  );
+}
