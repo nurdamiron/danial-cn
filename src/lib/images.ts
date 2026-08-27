@@ -8,8 +8,25 @@
  * there; both are just URLs by the time the catalogue sees them.
  */
 import { del, put } from "@vercel/blob";
-import sharp from "sharp";
 import { imageFileProblem } from "@/lib/image-rules";
+
+/**
+ * sharp is a native module and it can fail to load — on Vercel it did, for
+ * want of the libvips shared object its platform package never declares a
+ * dependency on. Loaded here rather than at the top of the file so that only
+ * the code that actually resizes a photograph depends on it: reading the
+ * gallery is not that code, and it was failing too.
+ */
+async function loadSharp() {
+  try {
+    return (await import("sharp")).default;
+  } catch (error) {
+    console.error("sharp failed to load", error);
+    throw new Error(
+      "Обработка фото недоступна на сервере. Сообщите разработчику: sharp не загрузился.",
+    );
+  }
+}
 
 const MAX_EDGE = 2400;
 
@@ -45,6 +62,8 @@ export async function processAndSaveImage(params: {
       "BLOB_READ_WRITE_TOKEN не задан, загрузка фото недоступна",
     );
   }
+
+  const sharp = await loadSharp();
 
   // Re-encoded once, on the way in: phone cameras produce 4000 px JPEGs and
   // the shop never displays anything near that. Orientation is baked in first,
