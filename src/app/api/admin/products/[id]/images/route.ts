@@ -52,7 +52,7 @@ export async function POST(
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     try {
-      validateImageFile({ type: file.type, size: file.size });
+      validateImageFile({ name: file.name, type: file.type, size: file.size });
     } catch (e) {
       return NextResponse.json(
         { error: e instanceof Error ? e.message : "Invalid file" },
