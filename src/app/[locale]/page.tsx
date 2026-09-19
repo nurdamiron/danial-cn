@@ -86,6 +86,12 @@ export default async function HomePage({
       image: "/editorial/cat-bag.jpg",
       focus: "object-center",
     },
+    {
+      key: "tech" as const,
+      href: "/catalog?category=tech",
+      image: "/products/aluma-iphone-case-iphone-18-pro-max/silver-01.png",
+      focus: "object-center",
+    },
   ];
 
   const steps = [

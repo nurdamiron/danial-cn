@@ -6,12 +6,25 @@ import {
   getStaticProducts,
   isStaticCatalog,
 } from "@/lib/static-catalog";
+import ruMessages from "../../messages/ru.json";
+import kkMessages from "../../messages/kk.json";
+
+const SUBCATEGORY_LABELS: Record<string, Record<string, string>> = {
+  ru: ruMessages.subcategory,
+  kk: kkMessages.subcategory,
+};
+
+function subcategoryLabel(key: string, locale: string): string {
+  const table = locale === "kk" ? SUBCATEGORY_LABELS.kk : SUBCATEGORY_LABELS.ru;
+  return table[key] ?? key;
+}
 
 export { canPublishProduct } from "@/lib/publish";
 
 export type ProductListFilters = {
   brand?: string;
   category?: string;
+  subcategory?: string;
   colorKey?: string;
   sizeKey?: string;
   minPrice?: number;
@@ -67,6 +80,11 @@ function filterSnapshot(filters: ProductListFilters) {
   let products = getStaticProducts();
   if (filters.category) {
     products = products.filter((p) => p.category === filters.category);
+  }
+  if (filters.subcategory) {
+    products = products.filter(
+      (p) => (p as { subcategory?: string }).subcategory === filters.subcategory,
+    );
   }
   if (filters.brand) {
     products = products.filter(
@@ -130,6 +148,8 @@ type FilterProduct = {
   brand: string;
   brandRu?: string;
   brandKk?: string;
+  category: string;
+  subcategory?: string;
   basePriceKzt: number;
   variants: {
     colorKey: string;
@@ -150,6 +170,10 @@ function buildFilterOptions(locale: string, products: FilterProduct[]) {
     { key: string; label: string; hex: string }
   >();
   const sizes = new Map<string, { key: string; label: string }>();
+  const subcategories = new Map<
+    string,
+    { category: string; key: string; label: string }
+  >();
   let minPrice = Infinity;
   let maxPrice = 0;
 
@@ -159,6 +183,17 @@ function buildFilterOptions(locale: string, products: FilterProduct[]) {
         ? p.brandKk
         : p.brandRu || p.brand;
     brands.set(p.brand, brandLabel);
+
+    if (p.subcategory) {
+      const mapKey = `${p.category}:${p.subcategory}`;
+      if (!subcategories.has(mapKey)) {
+        subcategories.set(mapKey, {
+          category: p.category,
+          key: p.subcategory,
+          label: subcategoryLabel(p.subcategory, locale),
+        });
+      }
+    }
 
     for (const v of p.variants) {
       const price = v.priceKzt ?? p.basePriceKzt;
@@ -193,6 +228,7 @@ function buildFilterOptions(locale: string, products: FilterProduct[]) {
     sizes: [...sizes.values()].sort(
       (a, b) => sizeRank(a.key) - sizeRank(b.key),
     ),
+    subcategories: [...subcategories.values()],
     minPrice: Number.isFinite(minPrice) ? minPrice : 0,
     maxPrice: maxPrice || 0,
   };
@@ -223,6 +259,7 @@ async function listActiveProductsFromDb(filters: ProductListFilters = {}) {
       images: { some: {} },
       ...(filters.brand ? { brand: filters.brand } : {}),
       ...(filters.category ? { category: filters.category } : {}),
+      ...(filters.subcategory ? { subcategory: filters.subcategory } : {}),
       ...(filters.minPrice != null || filters.maxPrice != null
         ? {
             basePriceKzt: {
