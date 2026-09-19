@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { AdminLogout } from "@/components/admin/AdminLogout";
 import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
-import { ArrowRightIcon } from "@/components/ui/icons";
+import { StoreIcon } from "@/components/ui/icons";
 
 type NavItem = {
   href: string;
@@ -66,7 +66,7 @@ export function AdminShell({
               href={storeHref}
               className="inline-flex items-center gap-1 text-[0.8125rem] text-muted"
             >
-              <ArrowRightIcon className="h-3.5 w-3.5 rotate-180" />
+              <StoreIcon className="h-3.5 w-3.5" />
               Сайт
             </a>
           </div>

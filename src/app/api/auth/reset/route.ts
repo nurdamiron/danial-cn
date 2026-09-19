@@ -12,9 +12,17 @@ import {
 import { hasDatabase, NO_DATABASE_ERROR } from "@/lib/db-config";
 import { hashResetToken } from "@/lib/password-reset";
 
+// The message of the first failing issue is what the reset page prints, so a
+// field without one would show the validator English on a Russian screen.
 const schema = z.object({
-  token: z.string().min(10).max(500),
-  password: z.string().min(8, "Минимум 8 символов").max(72),
+  token: z
+    .string("Ссылка недействительна или истекла. Запросите новую.")
+    .min(10, "Ссылка недействительна или истекла. Запросите новую.")
+    .max(500, "Ссылка недействительна или истекла. Запросите новую."),
+  password: z
+    .string("Введите пароль")
+    .min(8, "Минимум 8 символов")
+    .max(72, "Пароль слишком длинный"),
 });
 
 const BAD_LINK = "Ссылка недействительна или истекла. Запросите новую.";

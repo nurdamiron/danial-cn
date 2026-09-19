@@ -6,7 +6,6 @@
  * would say whatever the buyer typed into them.
  */
 import { randomInt } from "crypto";
-import { getStaticProducts } from "@/lib/static-catalog";
 
 export const ORDER_STATUSES = [
   "new",
@@ -47,6 +46,25 @@ export type SubmittedItem = {
   qty: number;
 };
 
+export type PricingCatalogProduct = {
+  id: string;
+  slug: string;
+  brand: string;
+  nameRu: string;
+  nameKk: string;
+  basePriceKzt: number;
+  images: { url: string; isCover: boolean }[];
+  variants: {
+    id: string;
+    colorLabelRu: string;
+    colorLabelKk: string;
+    sizeLabelRu: string;
+    sizeLabelKk: string;
+    priceKzt: number | null;
+    stock: number;
+  }[];
+};
+
 export type PricedItem = {
   productId: string;
   slug: string;
@@ -81,9 +99,19 @@ export function generateOrderNumber(now = new Date()): string {
   return `DC-${yy}${mm}${dd}-${tail}`;
 }
 
+/**
+ * The catalogue is passed in rather than read here.
+ *
+ * It used to be the committed snapshot, which is written at build time: a
+ * price edited in /admin afterwards showed on the storefront while the order
+ * was filed at the price from the last deploy. The customer agreed to one
+ * number and the shop recorded another. The caller now hands over the live
+ * catalogue and falls back to the snapshot only when the database is down.
+ */
 export function priceOrder(
   submitted: SubmittedItem[],
   locale: string,
+  catalog: PricingCatalogProduct[],
 ): PricingResult {
   if (!submitted.length) {
     return { ok: false, error: "Корзина пуста" };
@@ -92,7 +120,6 @@ export function priceOrder(
     return { ok: false, error: "Слишком много позиций в заказе" };
   }
 
-  const catalog = getStaticProducts();
   const items: PricedItem[] = [];
 
   for (const line of submitted) {
@@ -109,6 +136,33 @@ export function priceOrder(
     const variant = line.variantId
       ? product.variants.find((v) => v.id === line.variantId)
       : undefined;
+
+    // A cart can outlive the product it was filled from. Pricing a variant
+    // that no longer exists against the base price used to file an order with
+    // a blank colour and size at a price nobody quoted.
+    if (line.variantId && !variant) {
+      return {
+        ok: false,
+        error: `Этой комплектации больше нет в наличии: ${product.nameRu}`,
+      };
+    }
+
+    // Stock was shown on the product page and then never checked again: the
+    // quantity stepper in the cart has no upper bound of its own.
+    if (variant) {
+      if (variant.stock <= 0) {
+        return {
+          ok: false,
+          error: `Товара нет в наличии: ${product.nameRu}`,
+        };
+      }
+      if (qty > variant.stock) {
+        return {
+          ok: false,
+          error: `В наличии только ${variant.stock} шт.: ${product.nameRu}`,
+        };
+      }
+    }
 
     const cover =
       product.images.find((i) => i.isCover)?.url ?? product.images[0]?.url ?? "";

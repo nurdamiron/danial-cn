@@ -53,7 +53,26 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 640],
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
-  serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3"],
+  serverExternalPackages: [
+    "better-sqlite3",
+    "@prisma/adapter-better-sqlite3",
+    // sharp is a native module: bundling it detaches the .node binary from
+    // the libvips shared object it dlopens at runtime.
+    "sharp",
+  ],
+
+  /**
+   * Ship the whole of @img with the routes that resize photographs.
+   *
+   * sharp's platform package declares no dependency on its libvips sibling,
+   * so nothing tells the tracer to carry libvips-cpp.so into the deployment.
+   * Uploading then failed with "cannot open shared object file" — a 500 with
+   * no body, on production only, because a developer machine has the file
+   * sitting in node_modules the whole time.
+   */
+  outputFileTracingIncludes: {
+    "/api/admin/products/**": ["./node_modules/@img/**"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

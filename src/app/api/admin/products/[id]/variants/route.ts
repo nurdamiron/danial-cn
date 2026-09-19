@@ -3,17 +3,18 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
-import { defaultColorHex } from "@/lib/color-hex";
+import { deriveVariant } from "@/lib/variant-defaults";
 
 const variantSchema = z.object({
-  sku: z.string().min(1, "SKU обязателен"),
-  colorKey: z.string().min(1),
-  colorLabelRu: z.string().min(1),
-  colorLabelKk: z.string().min(1),
+  colorKey: z.string("Выберите цвет").min(1, "Выберите цвет"),
+  sizeKey: z.string("Выберите размер").min(1, "Выберите размер"),
+  // Derived from the two above when the panel does not spell them out.
+  sku: z.string().optional().nullable(),
+  colorLabelRu: z.string().optional().nullable(),
+  colorLabelKk: z.string().optional().nullable(),
   colorHex: z.string().optional().nullable(),
-  sizeKey: z.string().min(1),
-  sizeLabelRu: z.string().min(1),
-  sizeLabelKk: z.string().min(1),
+  sizeLabelRu: z.string().optional().nullable(),
+  sizeLabelKk: z.string().optional().nullable(),
   priceKzt: z.number().int().positive().nullable().optional(),
   stock: z.number().int().min(0).default(0),
 });
@@ -61,27 +62,45 @@ export async function POST(
     );
   }
 
-  const sku = parsed.data.sku.trim();
-  const exists = await prisma.productVariant.findUnique({ where: { sku } });
-  if (exists) {
-    return NextResponse.json({ error: "SKU уже существует" }, { status: 409 });
+  const derived = deriveVariant({
+    slug: product.slug,
+    ...parsed.data,
+    colorKey: parsed.data.colorKey.trim().toLowerCase(),
+  });
+
+  // The pair, not the SKU, is what the shop means by a duplicate: the same
+  // colour in the same size cannot exist twice on one product, whatever it
+  // ends up being called.
+  const samePair = await prisma.productVariant.findFirst({
+    where: {
+      productId,
+      colorKey: derived.colorKey,
+      sizeKey: derived.sizeKey,
+    },
+  });
+  if (samePair) {
+    return NextResponse.json(
+      {
+        error: `${derived.colorLabelRu} · ${derived.sizeLabelRu} уже есть у этого товара`,
+      },
+      { status: 409 },
+    );
   }
 
-  const colorKey = parsed.data.colorKey.trim().toLowerCase();
-  const colorHex =
-    parsed.data.colorHex?.trim() || defaultColorHex(colorKey);
+  const skuTaken = await prisma.productVariant.findUnique({
+    where: { sku: derived.sku },
+  });
+  if (skuTaken) {
+    return NextResponse.json(
+      { error: `Артикул ${derived.sku} уже занят` },
+      { status: 409 },
+    );
+  }
 
   const variant = await prisma.productVariant.create({
     data: {
       productId,
-      sku,
-      colorKey,
-      colorLabelRu: parsed.data.colorLabelRu.trim(),
-      colorLabelKk: parsed.data.colorLabelKk.trim(),
-      colorHex,
-      sizeKey: parsed.data.sizeKey.trim(),
-      sizeLabelRu: parsed.data.sizeLabelRu.trim(),
-      sizeLabelKk: parsed.data.sizeLabelKk.trim(),
+      ...derived,
       priceKzt: parsed.data.priceKzt ?? null,
       stock: parsed.data.stock ?? 0,
     },

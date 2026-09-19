@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { defaultColorHex } from "@/lib/color-hex";
+import { CheckIcon } from "@/components/ui/icons";
 import {
   buildSku,
   COLOR_PRESETS,
@@ -49,8 +50,37 @@ export function VariantsAdmin({
   const [variants, setVariants] = useState(initialVariants);
   const [form, setForm] = useState({ ...emptyForm });
   const [editingId, setEditingId] = useState<string | null>(null);
+  /** Sizes ticked for a new colour — one submit files them all. */
+  const [sizeKeys, setSizeKeys] = useState<string[]>([]);
+  /** Price typed per size; blank falls back to the suggestion, then to base. */
+  const [prices, setPrices] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  function toggleSize(key: string) {
+    setSizeKeys((keys) =>
+      keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key],
+    );
+  }
+
+  /**
+   * What this size already sells for on this product.
+   *
+   * Across the catalogue a variant's price tracks its size, not its colour —
+   * every 65 cm case costs the same whatever colour it is. So a new colour can
+   * arrive priced, and the person adding it only types something when this
+   * one is meant to be different.
+   */
+  function suggestedPrice(sizeKey: string): string {
+    const sibling = variants.find(
+      (v) => v.sizeKey === sizeKey && v.priceKzt != null,
+    );
+    return sibling?.priceKzt != null ? String(sibling.priceKzt) : "";
+  }
+
+  function priceFor(sizeKey: string): string {
+    return prices[sizeKey] ?? suggestedPrice(sizeKey);
+  }
 
   function setField<K extends keyof typeof form>(
     key: K,
@@ -85,6 +115,8 @@ export function VariantsAdmin({
 
   function startEdit(v: VariantRow) {
     setEditingId(v.id);
+    setSizeKeys([]);
+    setPrices({});
     setForm({
       sku: v.sku,
       colorKey: v.colorKey,
@@ -102,7 +134,9 @@ export function VariantsAdmin({
 
   function cancelEdit() {
     setEditingId(null);
-    setForm({ ...emptyForm, sku: `${productSlug}-` });
+    setForm({ ...emptyForm });
+    setSizeKeys([]);
+    setPrices({});
     setError("");
   }
 
@@ -131,8 +165,58 @@ export function VariantsAdmin({
     setError("");
     try {
       const body = payload();
-      if (!body.sku || !body.colorKey || !body.colorLabelRu || !body.sizeKey) {
-        setError("Заполните SKU, цвет и размер");
+      if (!body.colorKey) {
+        setError("Выберите цвет");
+        return;
+      }
+
+      if (!editingId) {
+        if (sizeKeys.length === 0) {
+          setError("Отметьте хотя бы один размер");
+          return;
+        }
+
+        const created: VariantRow[] = [];
+        const failures: string[] = [];
+
+        // Sequential rather than parallel: each request checks the colour and
+        // size pair against what is already there, and two of them landing at
+        // once would both find the row missing.
+        for (const sizeKey of sizeKeys) {
+          const price = priceFor(sizeKey).trim();
+          const res = await fetch(
+            `/api/admin/products/${productId}/variants`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                colorKey: body.colorKey,
+                sizeKey,
+                colorLabelRu: form.colorLabelRu.trim() || undefined,
+                colorLabelKk: form.colorLabelKk.trim() || undefined,
+                colorHex: form.colorHex.trim() || undefined,
+                priceKzt: price === "" ? null : Number(price),
+                stock: Number(form.stock) || 0,
+              }),
+            },
+          );
+          const data = await res.json();
+          if (res.ok) created.push(data.variant);
+          else failures.push(data.error ?? `${sizeKey}: ошибка`);
+        }
+
+        if (created.length) setVariants((list) => [...list, ...created]);
+        // Partial success is the common case — one size of the set already
+        // existed — so say what landed rather than only what did not.
+        if (failures.length) {
+          setError(
+            created.length
+              ? `Добавлено ${created.length}. Не удалось: ${failures.join("; ")}`
+              : failures.join("; "),
+          );
+        } else {
+          cancelEdit();
+        }
         return;
       }
 
@@ -316,12 +400,13 @@ export function VariantsAdmin({
         </div>
 
         {/*
-          Picking a colour and a size fills the eight fields below. They stay
-          visible because a one-off colourway still needs to be typed in, but
-          nobody should have to invent an SKU to add a silver cabin case.
+          Only the colour and the sizes are decisions. The SKU, the English
+          colour key, the swatch and the four labels all follow from them and
+          are filled in on the server, so they are no longer on screen. A
+          one-off colourway can still name itself, one disclosure down.
         */}
-        <label className="block">
-          Цвет из палитры
+        <label className="block sm:col-span-2">
+          Цвет
           <select
             className="field"
             value={form.colorKey}
@@ -339,141 +424,105 @@ export function VariantsAdmin({
           </select>
         </label>
 
-        <label className="block">
-          Размер
-          <select
-            className="field"
-            value={form.sizeKey}
-            onChange={(e) => applySize(e.target.value)}
-          >
-            {SIZE_PRESETS.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.ru}
-              </option>
-            ))}
-            {form.sizeKey && !sizePreset(form.sizeKey) ? (
-              <option value={form.sizeKey}>{form.sizeKey}, свой</option>
-            ) : null}
-          </select>
-        </label>
-
-        <label className="block text-[0.8125rem] sm:col-span-2">
-          SKU *
-          <input
-            required
-            className="field"
-            value={form.sku}
-            onChange={(e) => setField("sku", e.target.value)}
-            placeholder={`${productSlug}-black-55`}
-          />
-        </label>
-
-        <label className="block">
-          colorKey (en) *
-          <input
-            required
-            className="field"
-            value={form.colorKey}
-            onChange={(e) => {
-              const k = e.target.value;
-              setField("colorKey", k);
-              setField("colorHex", defaultColorHex(k));
-            }}
-            placeholder="black"
-          />
-        </label>
-        <label className="block">
-          Цвет (hex)
-          <div className="mt-1 flex gap-2">
-            <input
-              type="color"
-              className="h-10 w-12 border border-line bg-paper p-0.5"
-              value={
-                form.colorHex?.startsWith("#") ? form.colorHex : "#888888"
-              }
-              onChange={(e) => setField("colorHex", e.target.value)}
-            />
-            <input
+        {editingId ? (
+          <label className="block">
+            Размер
+            <select
               className="field"
-              value={form.colorHex}
-              onChange={(e) => setField("colorHex", e.target.value)}
-              placeholder="#111111"
-            />
-          </div>
-        </label>
-        <label className="block">
-          Цвет RU *
-          <input
-            required
-            className="field"
-            value={form.colorLabelRu}
-            onChange={(e) => {
-              setField("colorLabelRu", e.target.value);
-              if (!form.colorLabelKk) setField("colorLabelKk", e.target.value);
-            }}
-            placeholder="Чёрный"
-          />
-        </label>
-        <label className="block">
-          Цвет KK
-          <input
-            className="field"
-            value={form.colorLabelKk}
-            onChange={(e) => setField("colorLabelKk", e.target.value)}
-            placeholder="Қара"
-          />
-        </label>
+              value={form.sizeKey}
+              onChange={(e) => applySize(e.target.value)}
+            >
+              {SIZE_PRESETS.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.ru}
+                </option>
+              ))}
+              {form.sizeKey && !sizePreset(form.sizeKey) ? (
+                <option value={form.sizeKey}>{form.sizeKey}, свой</option>
+              ) : null}
+            </select>
+          </label>
+        ) : (
+          <fieldset className="sm:col-span-2">
+            <legend className="field-label">Размеры</legend>
+            {/*
+              A colour arrives in every size the shop stocks it in, so adding
+              one used to mean walking this form three times over. Ticking the
+              sizes here files them in one go, each with the price that size
+              already sells for elsewhere in the product.
+            */}
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {SIZE_PRESETS.map((s) => {
+                const on = sizeKeys.includes(s.key);
+                const taken = variants.some(
+                  (v) => v.colorKey === form.colorKey && v.sizeKey === s.key,
+                );
+                return (
+                  <label
+                    key={s.key}
+                    className={`flex items-center gap-2.5 border p-2.5 text-[0.8125rem] ${
+                      taken
+                        ? "cursor-not-allowed border-line opacity-45"
+                        : on
+                          ? "cursor-pointer border-ink bg-stone"
+                          : "cursor-pointer border-line hover:border-line-strong"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={on}
+                      disabled={taken}
+                      onChange={() => toggleSize(s.key)}
+                    />
+                    <span
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center border ${
+                        on ? "border-ink bg-ink text-paper" : "border-line-strong"
+                      }`}
+                    >
+                      {on ? <CheckIcon className="h-2.5 w-2.5" /> : null}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{s.ru}</span>
+                    {taken ? (
+                      <span className="t-data shrink-0 text-muted">есть</span>
+                    ) : (
+                      <input
+                        type="number"
+                        min={0}
+                        className="field h-8 w-24 shrink-0"
+                        placeholder="базовая"
+                        value={priceFor(s.key)}
+                        onClick={(e) => e.preventDefault()}
+                        onChange={(e) =>
+                          setPrices((m) => ({ ...m, [s.key]: e.target.value }))
+                        }
+                      />
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+            <p className="t-micro mt-2 text-muted">
+              Цена подставлена по тем же размерам этого товара. Пусто — берётся
+              базовая цена.
+            </p>
+          </fieldset>
+        )}
 
-        <label className="block">
-          sizeKey *
-          <input
-            required
-            list="size-keys"
-            className="field"
-            value={form.sizeKey}
-            onChange={(e) => {
-              const k = e.target.value;
-              setField("sizeKey", k);
-              if (["55", "65", "75"].includes(k)) {
-                setField("sizeLabelRu", `${k} см`);
-                setField("sizeLabelKk", `${k} см`);
-              }
-            }}
-            placeholder="55"
-          />
-          <datalist id="size-keys">
-            <option value="55" />
-            <option value="65" />
-            <option value="75" />
-          </datalist>
-        </label>
-        <label className="block">
-          Размер RU
-          <input
-            className="field"
-            value={form.sizeLabelRu}
-            onChange={(e) => setField("sizeLabelRu", e.target.value)}
-          />
-        </label>
-        <label className="block">
-          Размер KK
-          <input
-            className="field"
-            value={form.sizeLabelKk}
-            onChange={(e) => setField("sizeLabelKk", e.target.value)}
-          />
-        </label>
-        <label className="block">
-          Цена варианта ₸ (пусто = базовая)
-          <input
-            type="number"
-            min={0}
-            className="field"
-            value={form.priceKzt}
-            onChange={(e) => setField("priceKzt", e.target.value)}
-            placeholder="опционально"
-          />
-        </label>
+        {editingId ? (
+          <label className="block">
+            Цена варианта ₸ (пусто = базовая)
+            <input
+              type="number"
+              min={0}
+              className="field"
+              value={form.priceKzt}
+              onChange={(e) => setField("priceKzt", e.target.value)}
+              placeholder="опционально"
+            />
+          </label>
+        ) : null}
+
         <label className="block">
           Остаток
           <input
@@ -484,6 +533,79 @@ export function VariantsAdmin({
             onChange={(e) => setField("stock", Number(e.target.value) || 0)}
           />
         </label>
+
+        {/*
+          The internal vocabulary, kept for the colourway that is not in the
+          palette. Closed by default: filling it in is the exception now.
+        */}
+        <details className="sm:col-span-2">
+          <summary className="cursor-pointer text-[0.8125rem] text-muted">
+            Своя расцветка и артикул
+          </summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              Ключ цвета (en)
+              <input
+                className="field"
+                value={form.colorKey}
+                onChange={(e) => setField("colorKey", e.target.value)}
+                placeholder="rose-gold"
+              />
+            </label>
+            <label className="block">
+              Цвет (hex)
+              <div className="mt-1 flex gap-2">
+                <input
+                  type="color"
+                  className="h-10 w-12 border border-line bg-paper p-0.5"
+                  value={
+                    form.colorHex?.startsWith("#") ? form.colorHex : "#888888"
+                  }
+                  onChange={(e) => setField("colorHex", e.target.value)}
+                />
+                <input
+                  className="field"
+                  value={form.colorHex}
+                  onChange={(e) => setField("colorHex", e.target.value)}
+                  placeholder="#111111"
+                />
+              </div>
+            </label>
+            <label className="block">
+              Цвет RU
+              <input
+                className="field"
+                value={form.colorLabelRu}
+                onChange={(e) => setField("colorLabelRu", e.target.value)}
+                placeholder="Розовое золото"
+              />
+            </label>
+            <label className="block">
+              Цвет KK
+              <input
+                className="field"
+                value={form.colorLabelKk}
+                onChange={(e) => setField("colorLabelKk", e.target.value)}
+                placeholder="пусто — как по-русски"
+              />
+            </label>
+            {editingId ? (
+              <label className="block sm:col-span-2">
+                Артикул
+                <input
+                  className="field"
+                  value={form.sku}
+                  onChange={(e) => setField("sku", e.target.value)}
+                  placeholder={`${productSlug}-black-55`.toUpperCase()}
+                />
+              </label>
+            ) : (
+              <p className="t-micro text-muted sm:col-span-2">
+                Артикул соберётся сам: {productSlug.toUpperCase()}-ЦВЕТ-РАЗМЕР
+              </p>
+            )}
+          </div>
+        </details>
 
         <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row">
           <button

@@ -87,6 +87,7 @@ export function ProductConfigurator({
   }, [variants]);
 
   const [orderOpen, setOrderOpen] = useState(false);
+  const [orderError, setOrderError] = useState("");
   const [justAdded, setJustAdded] = useState(false);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [colorKey, setColorKey] = useState(colors[0]?.colorKey ?? "");
@@ -325,6 +326,7 @@ export function ProductConfigurator({
             disabled={!selected || selected.stock <= 0}
             onClick={() => {
               track("checkout_open", { slug: product.slug });
+              setOrderError("");
               setOrderOpen(true);
             }}
           >
@@ -343,6 +345,12 @@ export function ProductConfigurator({
             }}
           />
         </div>
+
+        {orderError ? (
+          <p role="alert" className="alert-error mt-4">
+            {orderError}
+          </p>
+        ) : null}
 
         {/* What happens after the order */}
         <ul className="space-y-3 rounded-lg border border-line bg-sand p-5">
@@ -374,12 +382,23 @@ export function ProductConfigurator({
           track("whatsapp_click", { slug: item.slug });
 
           const tab = openLater();
-          const recorded = await recordOrder({
+          const filed = await recordOrder({
             locale,
             source: "quick",
             meta,
             items: [item],
           });
+
+          // Refused by the shop: the buyer stays on the page with the reason
+          // rather than arriving in the chat with an order it cannot fill.
+          if (filed.status === "rejected") {
+            tab.cancel();
+            setOrderError(filed.error);
+            setOrderOpen(false);
+            return;
+          }
+
+          const recorded = filed.status === "recorded" ? filed.order : null;
 
           saveOrder({
             status: "sent_whatsapp",
