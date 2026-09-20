@@ -6,8 +6,18 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 /**
  * Two languages, so a segmented switch beats a dropdown: both options stay
  * visible and one tap changes the site.
+ *
+ * The display utility is the caller's to set. Baking `inline-flex` in here
+ * silently beat the header's `hidden`, because Tailwind's display utilities
+ * share a specificity and the stylesheet order decides, not the order the
+ * classes are written in — so the switch showed up on phones next to the copy
+ * of itself inside the menu.
  */
-export function LocaleSwitcher({ className = "" }: { className?: string }) {
+export function LocaleSwitcher({
+  className = "inline-flex",
+}: {
+  className?: string;
+}) {
   const locale = useLocale();
   const t = useTranslations("lang");
   const pathname = usePathname();
@@ -20,7 +30,7 @@ export function LocaleSwitcher({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`inline-flex items-center rounded-full border border-line bg-paper p-0.5 ${className}`}
+      className={`items-center rounded-full border border-line bg-paper p-0.5 ${className}`}
       role="group"
       aria-label={t("label")}
     >
