@@ -11,6 +11,7 @@ import { TrackView } from "@/components/analytics/TrackView";
 import { formatKzt } from "@/lib/money";
 import { formatDimensions, formatSpecLine } from "@/lib/specs";
 import { SITE } from "@/lib/site";
+import { breadcrumbJsonLd, pageAlternates } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
 import {
   getProductBySlug,
@@ -54,7 +55,7 @@ export async function generateMetadata({
   return {
     title: name,
     description,
-    alternates: { canonical: `/${locale}/catalog/${slug}` },
+    alternates: pageAlternates(locale, `/catalog/${slug}`),
     openGraph: {
       title: `${name}, ${t("brand.name")}`,
       description,
@@ -176,6 +177,24 @@ export default async function ProductPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd(locale, [
+              { name: t("catalog.title"), path: "/catalog" },
+              {
+                name: t(`category.${product.category}`),
+                path: `/catalog?category=${product.category}`,
+              },
+              {
+                name: localizedName(product, locale),
+                path: `/catalog/${slug}`,
+              },
+            ]),
+          ),
+        }}
       />
       <Container className="pt-6 pb-14 sm:pt-8 sm:pb-20">
         <nav

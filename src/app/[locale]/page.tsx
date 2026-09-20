@@ -26,6 +26,7 @@ import {
   uniqueColorDots,
 } from "@/lib/products";
 import { formatKzt } from "@/lib/money";
+import { pageAlternates, storeJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -36,7 +37,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale });
   return {
     description: t("home.heroLead"),
-    alternates: { canonical: `/${locale}` },
+    alternates: pageAlternates(locale),
   };
 }
 
@@ -65,7 +66,7 @@ export default async function HomePage({
     {
       key: "cabin" as const,
       href: "/catalog?category=cabin",
-      image: "/products/aluma-cabin-55/silver-1.jpg",
+      image: "/products/aluma-classic-cabin-55/silver-01.png",
       focus: "object-center",
     },
     {
@@ -103,6 +104,17 @@ export default async function HomePage({
 
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            storeJsonLd({
+              whatsappE164: config.whatsappE164,
+              instagramUrl: urls.instagramUrl,
+            }),
+          ),
+        }}
+      />
       <HomeHero
         title={t("home.hero")}
         lead={t("home.heroLead")}

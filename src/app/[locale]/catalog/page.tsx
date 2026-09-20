@@ -16,6 +16,7 @@ import {
 } from "@/lib/products";
 import type { CatalogItem } from "@/lib/catalog-view";
 import { formatKzt } from "@/lib/money";
+import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -27,7 +28,7 @@ export async function generateMetadata({
   return {
     title: t("catalog.title"),
     description: t("home.hero"),
-    alternates: { canonical: `/${locale}/catalog` },
+    alternates: pageAlternates(locale, "/catalog"),
   };
 }
 

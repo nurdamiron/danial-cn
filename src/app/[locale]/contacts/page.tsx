@@ -5,6 +5,7 @@ import { buttonClass } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { InstagramIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { getSiteConfig, siteUrls } from "@/lib/settings";
+import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -16,7 +17,7 @@ export async function generateMetadata({
   return {
     title: t("contacts.title"),
     description: t("contacts.body"),
-    alternates: { canonical: `/${locale}/contacts` },
+    alternates: pageAlternates(locale, "/contacts"),
   };
 }
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { faqJsonLd, pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -12,7 +13,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale });
   return {
     title: t("faq.title"),
-    alternates: { canonical: `/${locale}/faq` },
+    alternates: pageAlternates(locale, "/faq"),
   };
 }
 
@@ -35,6 +36,21 @@ export default async function FaqPage({
 
   return (
     <div>
+      {/* The answers are already written; this is the same six, in the shape
+          search engines and assistants quote from. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            faqJsonLd(
+              items.map(([q, a]) => ({
+                question: t(`faq.${q}`),
+                answer: t(`faq.${a}`),
+              })),
+            ),
+          ),
+        }}
+      />
       <PageHeader eyebrow={t("brand.name")} title={t("faq.title")} />
       <Container className="max-w-2xl py-14 sm:py-20">
         <dl className="divide-y divide-line border-y border-line">
