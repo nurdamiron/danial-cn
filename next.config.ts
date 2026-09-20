@@ -38,6 +38,11 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Required for app/global-not-found.tsx, which is how a 404 is served now
+  // that the storefront and the panel each have their own root layout.
+  experimental: {
+    globalNotFound: true,
+  },
   images: {
     // Photos uploaded from the admin panel live in Vercel Blob; the ones that
     // shipped with the repository are still served from /public.

@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
+import { bodyFontClass, htmlFontClass } from "@/lib/fonts";
+import { SITE } from "@/lib/site";
+import "../../globals.css";
 
+/** The panel is a second root layout: it owns its own <html>. */
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: "Кабинет | Danial CN",
+  robots: { index: false, follow: false },
 };
 
 /**
@@ -36,12 +42,16 @@ export default async function AdminLayout({
   const newOrders = await countNewOrders(user);
 
   return (
-    <AdminShell
-      user={user}
-      catalogEditable={hasDatabase()}
-      newOrders={newOrders}
-    >
-      {children}
-    </AdminShell>
+    <html lang="ru" className={`${htmlFontClass} h-full antialiased`}>
+      <body className={`${bodyFontClass} min-h-full`}>
+        <AdminShell
+          user={user}
+          catalogEditable={hasDatabase()}
+          newOrders={newOrders}
+        >
+          {children}
+        </AdminShell>
+      </body>
+    </html>
   );
 }
