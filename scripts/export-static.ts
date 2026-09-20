@@ -3,6 +3,19 @@ import path from "path";
 import fs from "fs";
 import { cliPrisma, cliTarget } from "./prisma-cli-client";
 
+// Mirrors isStaticCatalog(); read from the environment directly because this
+// script runs outside Next and does not resolve the "@/" alias that module
+// uses. Without this the build's prebuild step overwrote the committed
+// catalogue with whatever the database held — which is precisely the file
+// static mode is there to serve.
+if (
+  process.env.USE_STATIC_CATALOG === "1" ||
+  process.env.NEXT_PUBLIC_USE_STATIC_CATALOG === "1"
+) {
+  console.log("USE_STATIC_CATALOG is on — keeping the committed catalogue");
+  process.exit(0);
+}
+
 const prisma = cliPrisma();
 console.log("exporting from →", cliTarget());
 
