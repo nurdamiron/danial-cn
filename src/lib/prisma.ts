@@ -8,7 +8,12 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 function resolveDbPath(url: string) {
   let dbPath = url.replace(/^file:/, "");
   if (dbPath.startsWith("./") || dbPath.startsWith(".\\")) {
-    dbPath = path.join(process.cwd(), dbPath.slice(2));
+    // The tracer can't see that this branch only ever runs against a local
+    // sqlite file, so unmarked it treated process.cwd() as "trace everything
+    // reachable from the project root" — bundling all 300MB+ of product
+    // photos into every function that imports this module and failing the
+    // production deploy at the upload step.
+    dbPath = path.join(/* turbopackIgnore: true */ process.cwd(), dbPath.slice(2));
   }
   return dbPath;
 }
