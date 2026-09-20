@@ -14,6 +14,7 @@ function item(overrides: Partial<CatalogItem> = {}): CatalogItem {
     brandLabel: "Aluma",
     name: "Aluma Cabin 55",
     category: "cabin",
+    subcategory: "classic",
     basePriceKzt: 100_000,
     minPriceKzt: 100_000,
     priceLabel: "100 000 ₸",

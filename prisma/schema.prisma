@@ -24,6 +24,10 @@ model Product {
   materialRu    String           @default("")
   materialKk    String           @default("")
   category      String           @default("cabin")
+  /// Second-level grouping within a category: a model line (classic,
+  /// essential, hybrid...) for luggage, a bag type (backpack, crossbody...)
+  /// for bags. A stable key, translated in messages/*.json like category is.
+  subcategory   String           @default("")
   basePriceKzt  Int
   heightCm      Float?
   widthCm       Float?

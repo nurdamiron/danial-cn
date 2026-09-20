@@ -16,6 +16,7 @@ const patchSchema = z.object({
   materialRu: z.string().optional(),
   materialKk: z.string().optional(),
   category: z.string().optional(),
+  subcategory: z.string().optional(),
   basePriceKzt: z.number().int().positive().optional(),
   heightCm: z.number().optional().nullable(),
   widthCm: z.number().optional().nullable(),

@@ -21,6 +21,7 @@ type ProductInput = {
   materialRu: string;
   materialKk: string;
   category: string;
+  subcategory?: string;
   basePriceKzt: number;
   heightCm?: number | null;
   widthCm?: number | null;
@@ -42,6 +43,7 @@ const empty: ProductInput = {
   materialRu: "",
   materialKk: "",
   category: "cabin",
+  subcategory: "",
   basePriceKzt: 0,
   status: "draft",
   featured: false,
@@ -238,8 +240,13 @@ export function ProductForm({ product }: { product?: ProductInput }) {
             <option value="checkin">Багаж</option>
             <option value="set">Комплект</option>
             <option value="bag">Сумка</option>
+            <option value="tech">Аксессуар</option>
           </select>
         </label>
+        {field(
+          "Подкатегория (модель/тип, напр. essential, backpack)",
+          "subcategory",
+        )}
         {field("Цена ₸", "basePriceKzt", { type: "number" })}
       </Section>
 

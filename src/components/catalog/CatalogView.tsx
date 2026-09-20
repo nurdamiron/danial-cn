@@ -18,6 +18,7 @@ type FilterOptions = {
   brands: { key: string; label: string }[];
   colors: { key: string; label: string; hex: string }[];
   sizes: { key: string; label: string }[];
+  subcategories: { category: string; key: string; label: string }[];
   minPrice: number;
   maxPrice: number;
 };
@@ -41,6 +42,7 @@ export function CatalogView({
         brands={options.brands}
         colors={options.colors}
         sizes={options.sizes}
+        subcategories={options.subcategories}
         priceMin={options.minPrice}
         priceMax={options.maxPrice}
         resultCount={visible.length}

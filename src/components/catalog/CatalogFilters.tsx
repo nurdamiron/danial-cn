@@ -7,11 +7,13 @@ import { useTranslations } from "next-intl";
 import { CheckIcon, CloseIcon, SlidersIcon } from "@/components/ui/icons";
 
 export type FilterOption = { key: string; label: string; hex?: string };
+export type SubcategoryOption = { category: string; key: string; label: string };
 
 type Props = {
   brands: FilterOption[];
   colors: FilterOption[];
   sizes: FilterOption[];
+  subcategories: SubcategoryOption[];
   priceMin: number;
   priceMax: number;
   resultCount: number;
@@ -34,6 +36,7 @@ export function CatalogFilters({
   brands,
   colors,
   sizes,
+  subcategories,
   priceMin,
   priceMax,
   resultCount,
@@ -62,6 +65,7 @@ export function CatalogFilters({
   const active = useMemo(
     () => ({
       category: searchParams.get("category") ?? "",
+      subcategory: searchParams.get("subcategory") ?? "",
       brand: searchParams.get("brand") ?? "",
       color: searchParams.get("color") ?? "",
       size: searchParams.get("size") ?? "",
@@ -75,6 +79,7 @@ export function CatalogFilters({
 
   const activeCount = [
     active.category,
+    active.subcategory,
     active.brand,
     active.color,
     active.size,
@@ -98,9 +103,16 @@ export function CatalogFilters({
     { key: "", label: t("all") },
     { key: "cabin", label: t("catCabin") },
     { key: "checkin", label: t("catCheckin") },
-    { key: "set", label: t("catSet") },
     { key: "bag", label: t("catBag") },
+    { key: "set", label: t("catSet") },
+    { key: "tech", label: t("catTech") },
   ];
+
+  // A model line (Classic, Essential...) only means something once a
+  // category is picked - luggage and bags don't share a vocabulary.
+  const visibleSubcategories = active.category
+    ? subcategories.filter((s) => s.category === active.category)
+    : [];
 
   const pricePresets = [
     {
@@ -129,12 +141,38 @@ export function CatalogFilters({
             <Chip
               key={c.key || "all"}
               active={active.category === c.key}
-              onClick={() => go({ category: c.key || null })}
+              onClick={() =>
+                go({ category: c.key || null, subcategory: null })
+              }
               label={c.label}
             />
           ))}
         </div>
       </FilterGroup>
+
+      {visibleSubcategories.length > 0 ? (
+        <FilterGroup title={t("model")}>
+          <div className="flex flex-wrap gap-2">
+            <Chip
+              active={!active.subcategory}
+              onClick={() => go({ subcategory: null })}
+              label={t("all")}
+            />
+            {visibleSubcategories.map((s) => (
+              <Chip
+                key={s.key}
+                active={active.subcategory === s.key}
+                onClick={() =>
+                  go({
+                    subcategory: active.subcategory === s.key ? null : s.key,
+                  })
+                }
+                label={s.label}
+              />
+            ))}
+          </div>
+        </FilterGroup>
+      ) : null}
 
       <FilterGroup title={t("size")}>
         <div className="flex flex-wrap gap-2">
@@ -195,25 +233,27 @@ export function CatalogFilters({
         </div>
       </FilterGroup>
 
-      <FilterGroup title={t("brand")}>
-        <div className="flex flex-wrap gap-2">
-          <Chip
-            active={!active.brand}
-            onClick={() => go({ brand: null })}
-            label={t("all")}
-          />
-          {brands.map((b) => (
+      {brands.length > 1 ? (
+        <FilterGroup title={t("brand")}>
+          <div className="flex flex-wrap gap-2">
             <Chip
-              key={b.key}
-              active={active.brand === b.key}
-              onClick={() =>
-                go({ brand: active.brand === b.key ? null : b.key })
-              }
-              label={b.label}
+              active={!active.brand}
+              onClick={() => go({ brand: null })}
+              label={t("all")}
             />
-          ))}
-        </div>
-      </FilterGroup>
+            {brands.map((b) => (
+              <Chip
+                key={b.key}
+                active={active.brand === b.key}
+                onClick={() =>
+                  go({ brand: active.brand === b.key ? null : b.key })
+                }
+                label={b.label}
+              />
+            ))}
+          </div>
+        </FilterGroup>
+      ) : null}
 
       <FilterGroup title={t("price")}>
         <div className="flex flex-wrap gap-2">

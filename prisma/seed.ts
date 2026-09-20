@@ -117,6 +117,7 @@ async function main() {
         materialRu: p.materialRu,
         materialKk: p.materialKk,
         category: p.category,
+        subcategory: (p as { subcategory?: string }).subcategory ?? "",
         basePriceKzt: p.basePriceKzt,
         heightCm: p.heightCm,
         widthCm: p.widthCm,

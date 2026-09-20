@@ -19,6 +19,7 @@ export type CatalogItem = {
   brandLabel: string;
   name: string;
   category: string;
+  subcategory: string;
   basePriceKzt: number;
   /** Cheapest way to buy it, which is what the price filter compares. */
   minPriceKzt: number;
@@ -36,6 +37,7 @@ export type CatalogItem = {
 
 export type CatalogQuery = {
   category?: string;
+  subcategory?: string;
   brand?: string;
   color?: string;
   size?: string;
@@ -60,6 +62,7 @@ export function parseCatalogQuery(
 
   return {
     category: params.get("category") ?? undefined,
+    subcategory: params.get("subcategory") ?? undefined,
     brand: params.get("brand") ?? undefined,
     color: params.get("color") ?? undefined,
     size: params.get("size") ?? undefined,
@@ -79,6 +82,7 @@ export function filterCatalog(
 ): CatalogItem[] {
   const filtered = items.filter((item) => {
     if (query.category && item.category !== query.category) return false;
+    if (query.subcategory && item.subcategory !== query.subcategory) return false;
     if (query.brand && item.brand !== query.brand) return false;
 
     // A colour or size only counts when it is actually buyable, which is how

@@ -57,6 +57,7 @@ function toCatalogItem(p: SourceProduct, locale: string): CatalogItem | null {
     brandLabel: localizedBrand(p, locale),
     name,
     category: p.category,
+    subcategory: (p as { subcategory?: string }).subcategory ?? "",
     basePriceKzt: p.basePriceKzt,
     minPriceKzt: Math.min(...prices, p.basePriceKzt),
     priceLabel: formatKzt(p.basePriceKzt),

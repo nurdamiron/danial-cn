@@ -178,8 +178,9 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
           <option value="all">Все категории</option>
           <option value="cabin">Ручная кладь</option>
           <option value="checkin">Багаж</option>
-          <option value="set">Комплект</option>
           <option value="bag">Сумка</option>
+          <option value="set">Комплект</option>
+          <option value="tech">Аксессуар</option>
         </select>
       </div>
 
