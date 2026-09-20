@@ -7,6 +7,7 @@ import { WhatsAppIcon } from "@/components/ui/icons";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 import { REVIEWS } from "@/data/reviews";
 import { getSiteConfig, siteUrls } from "@/lib/settings";
+import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -17,7 +18,7 @@ export async function generateMetadata({
   const t = await getTranslations({ locale });
   return {
     title: t("reviewsPage.title"),
-    alternates: { canonical: `/${locale}/reviews` },
+    alternates: pageAlternates(locale, "/reviews"),
   };
 }
 

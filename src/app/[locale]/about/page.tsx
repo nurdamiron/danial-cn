@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChatIcon, ShieldIcon, TruckIcon } from "@/components/ui/icons";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
+import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -16,7 +17,7 @@ export async function generateMetadata({
   return {
     title: t("about.title"),
     description: t("about.lead"),
-    alternates: { canonical: `/${locale}/about` },
+    alternates: pageAlternates(locale, "/about"),
   };
 }
 

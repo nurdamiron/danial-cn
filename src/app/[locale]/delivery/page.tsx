@@ -13,6 +13,7 @@ import {
   TruckIcon,
 } from "@/components/ui/icons";
 import { getSiteConfig } from "@/lib/settings";
+import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -24,7 +25,7 @@ export async function generateMetadata({
   return {
     title: t("delivery.title"),
     description: t("delivery.subtitle"),
-    alternates: { canonical: `/${locale}/delivery` },
+    alternates: pageAlternates(locale, "/delivery"),
   };
 }
 

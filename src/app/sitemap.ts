@@ -5,6 +5,13 @@ import { listActiveProducts } from "@/lib/products";
 
 const staticPaths = ["", "/catalog", "/about", "/faq", "/contacts", "/delivery"];
 
+/** Every entry names its translation, the same pairing the pages declare. */
+function languagesFor(path: string) {
+  return Object.fromEntries(
+    routing.locales.map((locale) => [locale, `${SITE.url}/${locale}${path}`]),
+  );
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await listActiveProducts();
 
@@ -14,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${SITE.url}/${locale}${path}`,
         changeFrequency: path === "" ? "weekly" : "monthly",
         priority: path === "" ? 1 : 0.6,
+        alternates: { languages: languagesFor(path) },
       })),
   );
 
@@ -24,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: p.updatedAt ?? undefined,
         changeFrequency: "weekly",
         priority: 0.8,
+        alternates: { languages: languagesFor(`/catalog/${p.slug}`) },
       })),
   );
 
