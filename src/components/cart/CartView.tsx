@@ -19,7 +19,13 @@ import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
 import { openLater, recordOrder } from "@/lib/record-order";
 import { track } from "@/lib/track";
-import { cartSubtotal, loadCart, removeItem, updateQty } from "@/store/cart";
+import {
+  cartSubtotal,
+  clearCart,
+  loadCart,
+  removeItem,
+  updateQty,
+} from "@/store/cart";
 import { saveOrder } from "@/store/orders";
 import { loadProfile, saveProfile } from "@/store/profile";
 
@@ -35,6 +41,7 @@ export function CartView({
   const [items, setItems] = useState<CartItem[]>([]);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [sent, setSent] = useState<{ number?: string } | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const [meta, setMeta] = useState<CartMeta>({
     name: "",
@@ -66,6 +73,35 @@ export function CartView({
     checkoutReported.current = true;
     track("checkout_open");
   }, [items.length]);
+
+  /*
+    Checked before the empty basket, because sending an order empties it: the
+    buyer would otherwise be told their basket is empty with no word about the
+    order they just placed.
+  */
+  if (sent) {
+    return (
+      <div className="card px-6 py-16 text-center">
+        <p className="t-display t-h3">{t("cart.sentTitle")}</p>
+        {sent.number ? (
+          <p className="t-data mt-3 text-muted">
+            {t("cart.sentNumber")} {sent.number}
+          </p>
+        ) : null}
+        <p className="mx-auto mt-3 max-w-sm text-sm text-muted">
+          {t("cart.sentBody")}
+        </p>
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <Link href="/orders" className={buttonClass("primary", "md")}>
+            {t("cart.toOrders")}
+          </Link>
+          <Link href="/catalog" className={buttonClass("outline", "md")}>
+            {t("cta.continueShopping")}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -169,6 +205,8 @@ export function CartView({
       totalKzt: recorded?.totalKzt ?? cartSubtotal(items),
     });
     tab.go(buildWaUrl(waE164, msg));
+    setItems(clearCart());
+    setSent({ number: recorded?.number });
     setSending(false);
   }
 
