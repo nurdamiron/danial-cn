@@ -42,6 +42,13 @@ export function ProductCard({
   const extraColors = colors ? colors.length - visibleColors.length : 0;
 
   return (
+    /*
+      The photographs are stills of one piece of luggage on white, and most
+      masters are square. Cropping them to fill the 4:5 frame cut a tenth off
+      each side — on a phone a buyer saw the middle of a suitcase and not its
+      shape. They are fitted whole instead; the frame is already white, so the
+      space above and below a square shot is invisible.
+    */
     <article className="group relative flex flex-col">
       <Link href={href} className="media lift block aspect-[4/5]">
         <Image
@@ -50,7 +57,7 @@ export function ProductCard({
           fill
           quality={95}
           priority={priority}
-          className={`object-cover transition duration-700 ease-out ${
+          className={`object-contain p-3 transition duration-700 ease-out ${
             hoverUrl
               ? "group-hover:scale-[1.03] group-hover:opacity-0"
               : "group-hover:scale-[1.03]"
@@ -63,7 +70,7 @@ export function ProductCard({
             alt=""
             fill
             quality={95}
-            className="object-cover opacity-0 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100"
+            className="object-contain p-3 opacity-0 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100"
             sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
           />
         ) : null}

@@ -21,7 +21,7 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
           fill
           priority
           quality={95}
-          className="fade-in object-cover"
+          className="fade-in object-contain p-4"
           sizes="(max-width:1024px) 100vw, 50vw"
         />
         {images.length > 1 ? (
@@ -48,7 +48,7 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
                 src={img.url}
                 alt=""
                 fill
-                className="object-cover"
+                className="object-contain p-1"
                 sizes="68px"
               />
             </button>
