@@ -41,6 +41,15 @@ async function mapWithConcurrency(items, limit, fn) {
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 
+/*
+  Variants are built into .next/cache, which Vercel restores between builds,
+  and copied into public/ afterwards. Building straight into public/ meant
+  re-encoding all 3180 of them on every deploy — ten minutes on a two-core
+  build machine, for files that had not changed. Copying them is seconds.
+*/
+const CACHE_DIR = path.join(process.cwd(), ".next", "cache", "image-variants");
+const PUBLIC_OUT = path.join(PUBLIC_DIR, "_img");
+
 /**
  * Width ladders, per directory. /brands is SVG — vectors, skipped.
  *
@@ -68,11 +77,12 @@ function* walk(dir) {
   }
 }
 
-function outPathFor(source, width) {
+/** Path of a variant inside the build cache, relative part reused for public/. */
+function variantRelPath(source, width) {
   const rel = path.relative(PUBLIC_DIR, source);
   const dir = path.dirname(rel);
   const base = path.basename(rel).replace(/\.(png|jpe?g)$/i, "");
-  return path.join(PUBLIC_DIR, "_img", dir, `${base}-${width}.webp`);
+  return path.join(dir, `${base}-${width}.webp`);
 }
 
 function isFresh(out, source) {
@@ -100,20 +110,26 @@ async function main() {
     const ladder = LADDERS[path.relative(PUBLIC_DIR, source).split(path.sep)[0]];
 
     for (const width of ladder) {
-      const out = outPathFor(source, width);
-      if (isFresh(out, source)) {
-        skipped++;
-        bytesOut += fs.statSync(out).size;
-        continue;
-      }
+      const rel = variantRelPath(source, width);
+      const cached = path.join(CACHE_DIR, rel);
 
-      fs.mkdirSync(path.dirname(out), { recursive: true });
-      await sharp(source)
-        .resize({ width, withoutEnlargement: true })
-        .webp({ quality: QUALITY })
-        .toFile(out);
-      written++;
-      bytesOut += fs.statSync(out).size;
+      if (isFresh(cached, source)) {
+        skipped++;
+      } else {
+        fs.mkdirSync(path.dirname(cached), { recursive: true });
+        await sharp(source)
+          .resize({ width, withoutEnlargement: true })
+          .webp({ quality: QUALITY })
+          .toFile(cached);
+        written++;
+      }
+      bytesOut += fs.statSync(cached).size;
+
+      const published = path.join(PUBLIC_OUT, rel);
+      if (!isFresh(published, cached)) {
+        fs.mkdirSync(path.dirname(published), { recursive: true });
+        fs.copyFileSync(cached, published);
+      }
     }
   });
 
@@ -125,9 +141,9 @@ async function main() {
     sources: sources.length,
     hash: createHash("sha1").update(sources.join("|")).digest("hex").slice(0, 8),
   };
-  fs.mkdirSync(path.join(process.cwd(), "public", "_img"), { recursive: true });
+  fs.mkdirSync(PUBLIC_OUT, { recursive: true });
   fs.writeFileSync(
-    path.join(process.cwd(), "public", "_img", "manifest.json"),
+    path.join(PUBLIC_OUT, "manifest.json"),
     JSON.stringify(manifest, null, 2),
   );
 
