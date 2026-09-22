@@ -36,6 +36,8 @@ export type CatalogItem = {
 };
 
 export type CatalogQuery = {
+  /** Free text from the search box. */
+  q?: string;
   category?: string;
   subcategory?: string;
   brand?: string;
@@ -46,6 +48,25 @@ export type CatalogQuery = {
   inStock?: boolean;
   sort?: "new" | "price_asc" | "price_desc";
 };
+
+/**
+ * Folds case and the Kazakh letters that a Russian keyboard cannot produce, so
+ * "жиһаз" is found by typing "жихаз" and "Ұшақ" by "ушак". Searching a shop
+ * that sells in two alphabets has to forgive the one the buyer has to hand.
+ */
+function normalise(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[әӘ]/g, "а")
+    .replace(/[ғҒ]/g, "г")
+    .replace(/[қҚ]/g, "к")
+    .replace(/[ңҢ]/g, "н")
+    .replace(/[өӨ]/g, "о")
+    .replace(/[ұүҰҮ]/g, "у")
+    .replace(/[һҺ]/g, "х")
+    .replace(/[іІ]/g, "и")
+    .replace(/ё/g, "е");
+}
 
 /** Reads the query the filter UI writes into the address bar. */
 export function parseCatalogQuery(
@@ -61,6 +82,7 @@ export function parseCatalogQuery(
   const sort = params.get("sort");
 
   return {
+    q: params.get("q")?.trim() || undefined,
     category: params.get("category") ?? undefined,
     subcategory: params.get("subcategory") ?? undefined,
     brand: params.get("brand") ?? undefined,
@@ -80,7 +102,26 @@ export function filterCatalog(
   items: CatalogItem[],
   query: CatalogQuery,
 ): CatalogItem[] {
+  const terms = query.q ? normalise(query.q).split(/\s+/).filter(Boolean) : [];
+
   const filtered = items.filter((item) => {
+    // Every word has to land somewhere, so "original 85" narrows rather than
+    // widening the way an any-word match would.
+    if (terms.length) {
+      const haystack = normalise(
+        [
+          item.name,
+          item.brandLabel,
+          item.specs ?? "",
+          item.subcategory,
+          // Colour is half of how these are described to each other —
+          // "серебро", "тёмно синий" — so it has to be searchable.
+          ...item.colors.map((c) => c.label),
+        ].join(" "),
+      );
+      if (!terms.every((term) => haystack.includes(term))) return false;
+    }
+
     if (query.category && item.category !== query.category) return false;
     if (query.subcategory && item.subcategory !== query.subcategory) return false;
     if (query.brand && item.brand !== query.brand) return false;

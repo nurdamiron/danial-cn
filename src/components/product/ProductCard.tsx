@@ -18,6 +18,15 @@ type Props = {
   specs?: string;
   /** Size code on the tag, e.g. "55 см". */
   sizeCode?: string;
+  /**
+   * Set only when the product cannot be bought.
+   *
+   * Every one of the 99 products is currently in stock, so an "in stock" line
+   * on each card would repeat itself 99 times and tell a buyer nothing. The
+   * absence of this line is the availability; its presence is the exception.
+   * Worded by the caller, which renders inside a client component.
+   */
+  soldOutLabel?: string;
   favorite?: Omit<FavoriteItem, "addedAt">;
   priority?: boolean;
 };
@@ -34,6 +43,7 @@ export function ProductCard({
   colors,
   specs,
   sizeCode,
+  soldOutLabel,
   favorite,
   priority = false,
 }: Props) {
@@ -120,9 +130,12 @@ export function ProductCard({
           </div>
         ) : null}
 
-        <p className="t-price mt-auto pt-2 text-[1.0625rem] text-ink">
-          {priceLabel}
-        </p>
+        <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-2">
+          <p className="t-price text-[1.0625rem] text-ink">{priceLabel}</p>
+          {soldOutLabel ? (
+            <span className="t-data text-danger">{soldOutLabel}</span>
+          ) : null}
+        </div>
       </div>
     </article>
   );

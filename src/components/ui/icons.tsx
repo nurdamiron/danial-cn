@@ -143,6 +143,15 @@ export function CloseIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
   );
 }
 
+export function SearchIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.6-3.6" />
+    </Svg>
+  );
+}
+
 export function PlusIcon({ className = "h-[18px] w-[18px]" }: IconProps) {
   return (
     <Svg className={className}>
