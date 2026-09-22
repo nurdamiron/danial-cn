@@ -53,7 +53,9 @@ export function CatalogView({
 
         {visible.length === 0 ? (
           <div className="card px-6 py-20 text-center">
-            <p className="t-display text-lg">{t("empty")}</p>
+            <p className="t-display text-lg">
+              {query.q ? t("nothingFound", { q: query.q }) : t("empty")}
+            </p>
             <p className="mt-2 text-sm text-muted">{t("tryReset")}</p>
           </div>
         ) : (

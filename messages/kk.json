@@ -220,7 +220,11 @@
     "priceUpTo": "{n} ₸ дейін",
     "priceFrom": "{n} ₸ бастап",
     "priceBetween": "{a} бастап {b} ₸ дейін",
-    "priceRangeHint": "Каталогта {min} бастап {max} ₸ дейін"
+    "priceRangeHint": "Каталогта {min} бастап {max} ₸ дейін",
+    "search": "Іздеу",
+    "searchPlaceholder": "Атауы, желісі, өлшемі",
+    "searchClear": "Іздеуді тазалау",
+    "nothingFound": "«{q}» сұрауы бойынша ештеңе табылмады"
   },
   "product": {
     "specs": "Сипаттамалар",

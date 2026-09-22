@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
-import { CheckIcon, WhatsAppIcon } from "@/components/ui/icons";
+import {
+  CheckIcon,
+  MinusIcon,
+  PlusIcon,
+  WhatsAppIcon,
+} from "@/components/ui/icons";
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { QuickOrderModal } from "@/components/product/QuickOrderModal";
@@ -89,6 +94,7 @@ export function ProductConfigurator({
   const [orderOpen, setOrderOpen] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [justAdded, setJustAdded] = useState(false);
+  const [qty, setQty] = useState(1);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /*
@@ -185,9 +191,15 @@ export function ProductConfigurator({
     };
   }
 
+  // A different colour or size can have fewer left than the count already
+  // chosen, so it is trimmed rather than silently ordering more than exists.
+  if (selected && qty > Math.max(1, selected.stock)) {
+    setQty(Math.max(1, selected.stock));
+  }
+
   /** Shared by the button in the page and the one in the sticky bar. */
   function addSelectedToCart() {
-    const item = toCartItem(1);
+    const item = toCartItem(qty);
     if (!item) return;
     addItem(item);
     setJustAdded(true);
@@ -328,6 +340,36 @@ export function ProductConfigurator({
 
         {/* Actions */}
         <div ref={actionsRef} className="flex flex-wrap items-center gap-3">
+          {/*
+            Buying two of something meant adding one, opening the basket and
+            pressing + there. The count belongs where the decision is made.
+          */}
+          <div
+            className="inline-flex items-center rounded-full border border-line"
+            role="group"
+            aria-label={t("cart.qty")}
+          >
+            <button
+              type="button"
+              aria-label="−"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-ink transition hover:bg-stone disabled:opacity-30 md:h-9 md:w-9"
+              disabled={qty <= 1}
+              onClick={() => setQty((n) => Math.max(1, n - 1))}
+            >
+              <MinusIcon className="h-4 w-4" />
+            </button>
+            <span className="tabular w-8 text-center text-sm">{qty}</span>
+            <button
+              type="button"
+              aria-label="+"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-ink transition hover:bg-stone disabled:opacity-30 md:h-9 md:w-9"
+              disabled={!selected || qty >= selected.stock}
+              onClick={() => setQty((n) => n + 1)}
+            >
+              <PlusIcon className="h-4 w-4" />
+            </button>
+          </div>
+
           <Button
             type="button"
             size="lg"

@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CheckIcon, CloseIcon, SlidersIcon } from "@/components/ui/icons";
+import {
+  CheckIcon,
+  CloseIcon,
+  SearchIcon,
+  SlidersIcon,
+} from "@/components/ui/icons";
 
 export type FilterOption = { key: string; label: string; hex?: string };
 export type SubcategoryOption = { category: string; key: string; label: string };
@@ -64,6 +69,7 @@ export function CatalogFilters({
 
   const active = useMemo(
     () => ({
+      q: searchParams.get("q") ?? "",
       category: searchParams.get("category") ?? "",
       subcategory: searchParams.get("subcategory") ?? "",
       brand: searchParams.get("brand") ?? "",
@@ -78,6 +84,7 @@ export function CatalogFilters({
   );
 
   const activeCount = [
+    active.q,
     active.category,
     active.subcategory,
     active.brand,
@@ -301,6 +308,8 @@ export function CatalogFilters({
 
   return (
     <>
+      <SearchBox value={active.q} onSubmit={(v) => go({ q: v || null })} />
+
       {/* Mobile: filters + sort */}
       <div className="mb-6 flex items-center gap-2 lg:hidden">
         <button
@@ -322,6 +331,14 @@ export function CatalogFilters({
           className="h-11 flex-1"
         />
       </div>
+
+      {/*
+        The count lived only in the desktop bar, so on a phone a filter could
+        narrow 99 products down to three with nothing saying so.
+      */}
+      <p className="t-data mb-6 text-muted lg:hidden">
+        {t("found", { n: resultCount })}
+      </p>
 
       {open ? (
         <div className="fixed inset-0 z-[60] lg:hidden">
@@ -472,5 +489,66 @@ function Chip({
     >
       {label}
     </button>
+  );
+}
+
+/**
+ * Free-text search over the catalogue.
+ *
+ * Kept as a form with its own draft state rather than filtering on every
+ * keystroke: each change rewrites the address bar and pushes a history entry,
+ * so live filtering would bury the back button under one entry per letter.
+ * Submitting — Enter, or the keyboard's own search key — applies it.
+ */
+function SearchBox({
+  value,
+  onSubmit,
+}: {
+  value: string;
+  onSubmit: (value: string) => void;
+}) {
+  const t = useTranslations("catalog");
+  const [draft, setDraft] = useState(value);
+
+  // Someone may clear the search from elsewhere, or arrive on a link carrying
+  // one; the box follows the address bar rather than its own last keystroke.
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
+    setDraft(value);
+  }
+
+  return (
+    <form
+      role="search"
+      className="mb-4 flex items-center gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(draft.trim());
+      }}
+    >
+      <div className="relative flex-1">
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
+        <input
+          type="search"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("search")}
+          enterKeyHint="search"
+          className="h-11 w-full rounded-full border border-line bg-paper pr-4 pl-11 text-sm outline-none focus:border-line-strong"
+        />
+      </div>
+      {value ? (
+        <button
+          type="button"
+          onClick={() => onSubmit("")}
+          aria-label={t("searchClear")}
+          className="btn btn-ghost h-11 w-11 shrink-0 p-0 text-muted md:h-9 md:w-9"
+        >
+          <CloseIcon />
+        </button>
+      ) : null}
+    </form>
   );
 }

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { ProductCard } from "@/components/product/ProductCard";
 import { coverFor, type CatalogItem } from "@/lib/catalog-view";
 
@@ -17,6 +18,7 @@ export function CatalogGrid({
   items: CatalogItem[];
   color?: string;
 }) {
+  const t = useTranslations("product");
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-5 xl:grid-cols-3">
       {items.map((item, i) => {
@@ -32,6 +34,11 @@ export function CatalogGrid({
             hoverUrl={hover}
             colors={item.colors}
             specs={item.specs}
+            soldOutLabel={
+              item.variants.some((v) => v.stock > 0)
+                ? undefined
+                : t("outOfStock")
+            }
             priority={i < 3}
             favorite={{
               productId: item.id,

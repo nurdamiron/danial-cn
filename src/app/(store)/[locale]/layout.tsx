@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   },
   description:
     "Danial CN, премиум багаж. Доставка по Казахстану. Заказ в чате. Оплата через Каспи.",
+  // Site ownership check for the Yandex Webmaster property (host www.danial-cn.kz).
+  verification: {
+    yandex: "d205d01875c71ada",
+  },
 };
 
 export function generateStaticParams() {

@@ -220,7 +220,11 @@
     "priceUpTo": "До {n} ₸",
     "priceFrom": "От {n} ₸",
     "priceBetween": "{a} до {b} ₸",
-    "priceRangeHint": "В каталоге от {min} до {max} ₸"
+    "priceRangeHint": "В каталоге от {min} до {max} ₸",
+    "search": "Поиск",
+    "searchPlaceholder": "Название, линейка, размер",
+    "searchClear": "Очистить поиск",
+    "nothingFound": "Ничего не найдено по запросу «{q}»"
   },
   "product": {
     "specs": "Характеристики",
