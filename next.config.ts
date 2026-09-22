@@ -44,19 +44,26 @@ const nextConfig: NextConfig = {
     globalNotFound: true,
   },
   images: {
-    // Photos uploaded from the admin panel live in Vercel Blob; the ones that
-    // shipped with the repository are still served from /public.
+    /*
+      The catalogue is resized at build time into public/_img and served as
+      plain static files — see scripts/optimize-images.mjs and
+      src/lib/image-loader.ts.
+
+      It used to go through Vercel's optimiser, which began answering 402 when
+      the plan's transformation quota ran out: every product photograph on a
+      775-image shop stopped loading at once. These stills never change
+      between builds, so paying to transform them per request bought nothing
+      even while the quota lasted.
+    */
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+    // Photos uploaded from the admin panel live in Vercel Blob; the loader
+    // passes those through untouched.
     remotePatterns: [
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
     ],
-    // preserve quality — do not over-compress product photos
-    // Next.js 16 requires qualities to be explicitly allow-listed, otherwise
-    // quality={95} used across product photography silently falls back to 75.
-    qualities: [75, 95],
-    formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 640],
-    minimumCacheTTL: 60 * 60 * 24 * 30,
   },
   serverExternalPackages: [
     "better-sqlite3",

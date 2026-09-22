@@ -19,7 +19,9 @@
     "postinstall": "prisma generate",
     "catalog:import": "tsx scripts/import-catalog.ts",
     "snapshot": "tsx scripts/export-static.ts",
-    "prebuild": "(npm run db:push:turso:build || echo 'schema push skipped') && (npm run db:reset-admin || echo 'admin reset skipped') && (npm run snapshot || echo 'snapshot skipped, building from the committed catalogue')"
+    "prebuild": "npm run images && (npm run db:push:turso:build || echo 'schema push skipped') && (npm run db:reset-admin || echo 'admin reset skipped') && (npm run snapshot || echo 'snapshot skipped, building from the committed catalogue')",
+    "images": "node scripts/optimize-images.mjs",
+    "predev": "npm run images"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
