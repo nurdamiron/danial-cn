@@ -90,6 +90,16 @@ export function ProductConfigurator({
   const [orderError, setOrderError] = useState("");
   const [justAdded, setJustAdded] = useState(false);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /*
+    On a phone the price sits about 1040px down the page and the buy button
+    about 1225px — roughly a screen and a half past the fold, because the
+    gallery, the colours and the sizes all come first and each of them is
+    something the buyer needs. Rather than reorder that, the bar below repeats
+    the price and the button once they have scrolled away.
+  */
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const [actionsInView, setActionsInView] = useState(true);
   const [colorKey, setColorKey] = useState(colors[0]?.colorKey ?? "");
   const sizesForColor = useMemo(
     () => variants.filter((v) => v.colorKey === colorKey),
@@ -114,6 +124,19 @@ export function ProductConfigurator({
     },
     [],
   );
+
+  useEffect(() => {
+    const node = actionsRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setActionsInView(entry.isIntersecting),
+      // The real buttons count as visible until they are fully gone, so the
+      // bar never overlaps the control it is standing in for.
+      { threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   const selected =
     variants.find((v) => v.colorKey === colorKey && v.sizeKey === sizeKey) ??
@@ -160,6 +183,16 @@ export function ProductConfigurator({
       imageUrl: activeCover,
       productUrl: `${siteUrl}/${locale}/catalog/${product.slug}`,
     };
+  }
+
+  /** Shared by the button in the page and the one in the sticky bar. */
+  function addSelectedToCart() {
+    const item = toCartItem(1);
+    if (!item) return;
+    addItem(item);
+    setJustAdded(true);
+    if (addedTimer.current) clearTimeout(addedTimer.current);
+    addedTimer.current = setTimeout(() => setJustAdded(false), 2200);
   }
 
   function labels() {
@@ -294,19 +327,12 @@ export function ProductConfigurator({
         </div>
 
         {/* Actions */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div ref={actionsRef} className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
             size="lg"
             className="min-w-[11rem] flex-1 sm:flex-none"
-            onClick={() => {
-              const item = toCartItem(1);
-              if (!item) return;
-              addItem(item);
-              setJustAdded(true);
-              if (addedTimer.current) clearTimeout(addedTimer.current);
-              addedTimer.current = setTimeout(() => setJustAdded(false), 2200);
-            }}
+            onClick={addSelectedToCart}
             disabled={!selected || selected.stock <= 0}
           >
             {justAdded ? (
@@ -419,6 +445,50 @@ export function ProductConfigurator({
           setOrderOpen(false);
         }}
       />
+
+      {/*
+        Sits above the tab bar, never over it, and only once the real buttons
+        have scrolled off. Hidden from assistive tech while it is off-screen
+        so the price and the button are not announced twice.
+      */}
+      <div
+        aria-hidden={actionsInView}
+        className={`fixed inset-x-0 bottom-[calc(3.875rem+env(safe-area-inset-bottom))] z-40 border-t border-line bg-paper/95 backdrop-blur-xl transition-transform duration-300 md:hidden ${
+          // Its own height alone leaves it peeking: it is parked a tab bar's
+          // height above the bottom, so the exit has to cover that too.
+          actionsInView
+            ? "translate-y-[calc(100%+3.875rem+env(safe-area-inset-bottom))]"
+            : "translate-y-0"
+        }`}
+      >
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="min-w-0">
+            <p className="t-price text-lg leading-none">{formatKzt(price)}</p>
+            {selected ? (
+              <p className="t-micro mt-1 truncate text-muted">
+                {colorLabel} · {sizeLabel}
+              </p>
+            ) : null}
+          </div>
+          <Button
+            type="button"
+            size="lg"
+            className="ml-auto flex-1"
+            onClick={addSelectedToCart}
+            disabled={actionsInView || !selected || selected.stock <= 0}
+            tabIndex={actionsInView ? -1 : 0}
+          >
+            {justAdded ? (
+              <>
+                <CheckIcon className="h-[18px] w-[18px]" />
+                {t("cta.added")}
+              </>
+            ) : (
+              t("cta.addToCart")
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

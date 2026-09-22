@@ -338,7 +338,7 @@ export function CatalogFilters({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t("close")}
-                className="btn btn-ghost h-9 w-9 p-0"
+                className="btn btn-ghost h-11 w-11 md:h-9 md:w-9 p-0"
               >
                 <CloseIcon />
               </button>

@@ -77,7 +77,7 @@ export function QuickOrderModal({
             type="button"
             onClick={onClose}
             aria-label={t("catalog.close")}
-            className="btn btn-ghost -mt-1 h-9 w-9 shrink-0 p-0 text-muted"
+            className="btn btn-ghost -mt-1 h-11 w-11 md:h-9 md:w-9 shrink-0 p-0 text-muted"
           >
             <CloseIcon />
           </button>
