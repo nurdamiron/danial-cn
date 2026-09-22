@@ -24,6 +24,19 @@ export function saveCart(items: CartItem[]): void {
   window.dispatchEvent(new Event("danial-cart-updated"));
 }
 
+/**
+ * Emptied once an order has been handed to WhatsApp.
+ *
+ * Without this the basket survived the order: the buyer came back to the same
+ * items and the same "1" on the header, could not tell whether anything had
+ * been sent, and the safe-looking move was to send it again — which arrived
+ * as a second order for the same suitcase.
+ */
+export function clearCart(): CartItem[] {
+  saveCart([]);
+  return [];
+}
+
 export function addItem(item: CartItem): CartItem[] {
   // Reported here rather than at the buttons: the product page and the
   // quick-order modal both add through this function, and a funnel that
