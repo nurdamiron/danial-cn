@@ -217,7 +217,7 @@ export function CartView({
                 <button
                   type="button"
                   aria-label={t("favorites.remove")}
-                  className="btn btn-ghost h-9 w-9 shrink-0 p-0 text-muted"
+                  className="btn btn-ghost h-11 w-11 md:h-9 md:w-9 shrink-0 p-0 text-muted"
                   onClick={() => setItems(removeItem(item.variantId))}
                 >
                   <TrashIcon />
@@ -233,7 +233,7 @@ export function CartView({
                   <button
                     type="button"
                     aria-label="−"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone disabled:opacity-30"
+                    className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone disabled:opacity-30"
                     disabled={item.qty <= 1}
                     onClick={() =>
                       setItems(updateQty(item.variantId, item.qty - 1))
@@ -247,7 +247,7 @@ export function CartView({
                   <button
                     type="button"
                     aria-label="+"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone"
+                    className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone"
                     onClick={() =>
                       setItems(updateQty(item.variantId, item.qty + 1))
                     }

@@ -26,7 +26,7 @@ export function FavoriteButton({ item, className = "", size = "sm" }: Props) {
     return () => window.removeEventListener("danial-favorites-updated", sync);
   }, [item.productId]);
 
-  const box = size === "md" ? "h-12 w-12" : "h-9 w-9";
+  const box = size === "md" ? "h-12 w-12" : "h-11 w-11 md:h-9 md:w-9";
 
   return (
     <button

@@ -70,7 +70,7 @@ export async function SiteHeader() {
                 href="/favorites"
                 aria-label={t("nav.favorites")}
                 title={t("nav.favorites")}
-                className="hidden h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone md:flex"
+                className="hidden h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone md:flex"
               >
                 <HeartIcon />
               </Link>
@@ -78,7 +78,7 @@ export async function SiteHeader() {
                 href="/profile"
                 aria-label={t("nav.profile")}
                 title={t("nav.profile")}
-                className="hidden h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone sm:flex"
+                className="hidden h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone sm:flex"
               >
                 <UserIcon />
               </Link>
@@ -86,7 +86,7 @@ export async function SiteHeader() {
                 href="/cart"
                 aria-label={t("nav.cart")}
                 title={t("nav.cart")}
-                className="relative flex h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone"
+                className="relative flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone"
               >
                 <CartIcon />
                 <CartCount />
@@ -97,7 +97,7 @@ export async function SiteHeader() {
                 rel="noreferrer"
                 aria-label={t("nav.instagram")}
                 title={t("nav.instagram")}
-                className="hidden h-9 w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone md:flex"
+                className="hidden h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone md:flex"
               >
                 <InstagramIcon />
               </a>
