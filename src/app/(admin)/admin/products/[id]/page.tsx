@@ -69,7 +69,6 @@ export default async function EditProductPage({
             </p>
           </div>
         </div>
-        <ProductDeleteButton productId={product.id} name={product.nameRu} />
       </div>
 
       <ProductTabs
@@ -106,6 +105,12 @@ export default async function EditProductPage({
           </>
         }
       />
+
+      {/* Out of the header, where on a phone it was the first full-width
+          button under the thumb, above the tabs used every day. */}
+      <div className="flex justify-end border-t border-line pt-5">
+        <ProductDeleteButton productId={product.id} name={product.nameRu} />
+      </div>
     </div>
   );
 }

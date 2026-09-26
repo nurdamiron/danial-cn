@@ -75,7 +75,8 @@ function Action({
       title={label}
       aria-label={label}
       className={[
-        "inline-flex h-8 items-center gap-1.5 rounded-[var(--r-xs)] px-2",
+        // 44px on a phone, where the panel is used one-handed; compact on desktop.
+        "inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-[var(--r-xs)] px-2 sm:h-8 sm:min-w-0",
         "text-[0.8125rem] transition-colors duration-200",
         "disabled:opacity-35",
         danger
@@ -171,12 +172,12 @@ export function ProductCard({
         </span>
       </div>
 
-      <div className="flex items-center gap-0.5 border-t border-line px-2 py-1.5">
+      <div className="flex items-center gap-0.5 border-t border-line px-1 py-0.5 sm:px-2 sm:py-1.5">
         <Link
           href={`/admin/products/${p.id}`}
-          className="inline-flex h-8 items-center gap-1.5 rounded-[var(--r-xs)] px-2 text-[0.8125rem] text-ink transition-colors duration-200 hover:bg-stone"
+          className="inline-flex h-11 items-center gap-1.5 rounded-[var(--r-xs)] px-2 text-[0.8125rem] text-ink transition-colors duration-200 hover:bg-stone sm:h-8"
         >
-          <PencilIcon className="h-3.5 w-3.5" />
+          <PencilIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
           Открыть
         </Link>
 
@@ -186,9 +187,9 @@ export function ProductCard({
           label={live ? "Снять с сайта" : "Опубликовать"}
         >
           {live ? (
-            <EyeOffIcon className="h-3.5 w-3.5" />
+            <EyeOffIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
           ) : (
-            <EyeIcon className="h-3.5 w-3.5" />
+            <EyeIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
           )}
         </Action>
 
@@ -197,21 +198,21 @@ export function ProductCard({
           disabled={busy}
           label={p.featured ? "Убрать с главной" : "На главную"}
         >
-          <StarIcon className="h-3.5 w-3.5" filled={p.featured} />
+          <StarIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" filled={p.featured} />
         </Action>
 
         <Action onClick={() => onMove(-1)} disabled={busy} label="Выше в каталоге">
-          <ArrowUpIcon className="h-3.5 w-3.5" />
+          <ArrowUpIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
         </Action>
 
         <Action onClick={() => onMove(1)} disabled={busy} label="Ниже в каталоге">
-          <ArrowDownIcon className="h-3.5 w-3.5" />
+          <ArrowDownIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
         </Action>
 
         {/* Kept away from the rest: it is the one action that cannot be undone. */}
         <span className="ml-auto">
           <Action onClick={onRemove} disabled={busy} danger label="Удалить">
-            <TrashIcon className="h-3.5 w-3.5" />
+            <TrashIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
           </Action>
         </span>
       </div>

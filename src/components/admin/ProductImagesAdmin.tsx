@@ -329,7 +329,9 @@ export function ProductImagesAdmin({
                   photographs rather than of eight control panels. The arrows
                   below stay put: they are what a keyboard can reach.
                 */}
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-ink/70 to-transparent p-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                {/* A phone has no hover, so there they are always shown:
+                    hidden, a photo could be neither made the cover nor deleted. */}
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-ink/70 to-transparent p-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100">
                   {img.isCover ? (
                     <span />
                   ) : (
@@ -338,7 +340,7 @@ export function ProductImagesAdmin({
                       onClick={() => setCover(img.id)}
                       title="Сделать обложкой"
                       aria-label="Сделать обложкой"
-                      className="inline-flex h-7 items-center gap-1 rounded-[var(--r-xs)] bg-paper/90 px-2 text-[0.6875rem] text-ink transition-colors hover:bg-paper"
+                      className="inline-flex h-10 items-center gap-1 rounded-[var(--r-xs)] bg-paper/90 px-2.5 text-[0.75rem] text-ink transition-colors hover:bg-paper sm:h-7 sm:px-2 sm:text-[0.6875rem]"
                     >
                       <StarIcon className="h-3 w-3" />
                       Обложка
@@ -349,16 +351,18 @@ export function ProductImagesAdmin({
                     onClick={() => remove(img.id)}
                     title="Удалить фото"
                     aria-label="Удалить фото"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-[var(--r-xs)] bg-paper/90 text-danger transition-colors hover:bg-danger-tint"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--r-xs)] bg-paper/90 text-danger transition-colors hover:bg-danger-tint sm:h-7 sm:w-7"
                   >
                     <TrashIcon className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 border-t border-line p-1.5">
+              {/* On a phone the colour gets the full width, arrows beneath:
+                  squeezed beside them it read "Чёрн" and "gree". */}
+              <div className="flex flex-wrap items-center gap-1 border-t border-line p-1.5 sm:flex-nowrap">
                 <select
-                  className="field h-8 min-w-0 flex-1 px-2 py-0 text-[0.75rem]"
+                  className="field h-11 min-w-0 basis-full px-2 py-0 text-[0.75rem] sm:h-8 sm:flex-1 sm:basis-auto"
                   value={img.colorKey ?? ""}
                   onChange={(e) => setColorKey(img.id, e.target.value)}
                   title="Для какого цвета это фото"
@@ -377,23 +381,23 @@ export function ProductImagesAdmin({
                 </select>
                 <button
                   type="button"
-                  className="flex h-8 w-7 shrink-0 items-center justify-center rounded-[var(--r-xs)] text-muted transition-colors hover:bg-stone hover:text-ink disabled:opacity-25"
+                  className="flex h-11 flex-1 items-center justify-center rounded-[var(--r-xs)] text-muted transition-colors hover:bg-stone hover:text-ink disabled:opacity-25 sm:h-8 sm:w-7 sm:flex-none sm:shrink-0"
                   disabled={i === 0}
                   onClick={() => move(img.id, -1)}
                   aria-label="Раньше в галерее"
                   title="Раньше в галерее"
                 >
-                  <ArrowLeftIcon className="h-3.5 w-3.5" />
+                  <ArrowLeftIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
                 </button>
                 <button
                   type="button"
-                  className="flex h-8 w-7 shrink-0 items-center justify-center rounded-[var(--r-xs)] text-muted transition-colors hover:bg-stone hover:text-ink disabled:opacity-25"
+                  className="flex h-11 flex-1 items-center justify-center rounded-[var(--r-xs)] text-muted transition-colors hover:bg-stone hover:text-ink disabled:opacity-25 sm:h-8 sm:w-7 sm:flex-none sm:shrink-0"
                   disabled={i === images.length - 1}
                   onClick={() => move(img.id, 1)}
                   aria-label="Позже в галерее"
                   title="Позже в галерее"
                 >
-                  <ArrowRightIcon className="h-3.5 w-3.5" />
+                  <ArrowRightIcon className="h-[18px] w-[18px] sm:h-3.5 sm:w-3.5" />
                 </button>
               </div>
             </div>

@@ -117,7 +117,7 @@ export function AdminShell({
               {user.name}
               {isAdmin ? " · администратор" : ""}
             </span>
-            <a href={storeHref} className="text-muted hover:text-ink">
+            <a href={storeHref} className="-my-2 py-2.5 text-muted hover:text-ink">
               Сайт
             </a>
             <AdminLogout />

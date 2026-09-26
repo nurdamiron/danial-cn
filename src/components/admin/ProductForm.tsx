@@ -55,11 +55,14 @@ function Section({
   hint,
   children,
   cols = 2,
+  grid,
 }: {
   title: string;
   hint?: string;
   children: React.ReactNode;
   cols?: 1 | 2 | 3;
+  /** Overrides the column preset. */
+  grid?: string;
 }) {
   return (
     <section className="border-t border-line pt-5 first:border-0 first:pt-0">
@@ -67,7 +70,9 @@ function Section({
       {hint ? <p className="t-micro mt-1 text-muted">{hint}</p> : null}
       <div
         className={`mt-3 grid gap-4 ${
-          cols === 1
+          grid
+            ? grid
+            : cols === 1
             ? ""
             : cols === 3
               ? "sm:grid-cols-2 lg:grid-cols-3"
@@ -191,9 +196,15 @@ export function ProductForm({ product }: { product?: ProductInput }) {
   const field = (
     label: string,
     key: keyof ProductInput,
-    opts?: { type?: string; textarea?: boolean },
+    opts?: {
+      type?: string;
+      textarea?: boolean;
+      /** Whole numbers get the digit pad; sizes and weights need a comma. */
+      inputMode?: "numeric" | "decimal";
+      className?: string;
+    },
   ) => (
-    <label className="block">
+    <label className={`block ${opts?.className ?? ""}`}>
       {label}
       {opts?.textarea ? (
         <textarea
@@ -205,6 +216,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       ) : (
         <input
           type={opts?.type ?? "text"}
+          inputMode={opts?.inputMode}
           className="field"
           value={String(form[key] ?? "")}
           onChange={(e) =>
@@ -247,21 +259,23 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           "Подкатегория (модель/тип, напр. essential, backpack)",
           "subcategory",
         )}
-        {field("Цена ₸", "basePriceKzt", { type: "number" })}
+        {field("Цена ₸", "basePriceKzt", { type: "number", inputMode: "numeric" })}
       </Section>
 
+      {/* Three short numbers to a row on a phone as well: one per row, the
+          dimensions alone were a screen and a half of scrolling. */}
       <Section
         title="Характеристики"
         hint="Показываются на странице товара. Можно оставить пустыми."
-        cols={3}
+        grid="grid-cols-6 gap-x-3"
       >
-        {field("Высота см", "heightCm", { type: "number" })}
-        {field("Ширина см", "widthCm", { type: "number" })}
-        {field("Глубина см", "depthCm", { type: "number" })}
-        {field("Объём л", "volumeL", { type: "number" })}
-        {field("Вес кг", "weightKg", { type: "number" })}
-        {field("Колёса", "wheels")}
-        {field("Замок", "lockType")}
+        {field("Высота см", "heightCm", { type: "number", inputMode: "decimal", className: "col-span-2" })}
+        {field("Ширина см", "widthCm", { type: "number", inputMode: "decimal", className: "col-span-2" })}
+        {field("Глубина см", "depthCm", { type: "number", inputMode: "decimal", className: "col-span-2" })}
+        {field("Объём л", "volumeL", { type: "number", inputMode: "decimal", className: "col-span-3" })}
+        {field("Вес кг", "weightKg", { type: "number", inputMode: "decimal", className: "col-span-3" })}
+        {field("Колёса", "wheels", { className: "col-span-6 sm:col-span-3" })}
+        {field("Замок", "lockType", { className: "col-span-6 sm:col-span-3" })}
       </Section>
 
       <Section title="Публикация">
@@ -272,13 +286,14 @@ export function ProductForm({ product }: { product?: ProductInput }) {
             value={form.status}
             onChange={(e) => set("status", e.target.value)}
           >
-            <option value="draft">Черновик — не виден покупателям</option>
+            <option value="draft">Черновик, не виден покупателям</option>
             <option value="active">На сайте</option>
           </select>
         </label>
-        <label className="flex items-end gap-2 pb-2.5 text-[0.8125rem]">
+        <label className="flex min-h-11 items-center gap-2.5 text-[0.8125rem] sm:items-end sm:pb-2.5">
           <input
             type="checkbox"
+            className="h-5 w-5 accent-ink sm:h-auto sm:w-auto"
             checked={form.featured}
             onChange={(e) => set("featured", e.target.checked)}
           />
@@ -316,7 +331,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
                 required
               />
               <span className="t-micro mt-1 block text-muted">
-                Ссылка уже опубликована —менять стоит только при опечатке.
+                Ссылка уже опубликована, менять её стоит только при опечатке.
               </span>
             </label>
             {field("Название KK", "nameKk")}
@@ -325,7 +340,7 @@ export function ProductForm({ product }: { product?: ProductInput }) {
               {field("Описание KK", "descriptionKk", { textarea: true })}
             </div>
             <p className="t-micro text-muted sm:col-span-2">
-              Пусто — покажем русский. Уже переведённый текст сам не меняется,
+              Если пусто, покажем русский. Уже переведённый текст сам не меняется,
               когда правите русский.
             </p>
           </div>
@@ -338,7 +353,17 @@ export function ProductForm({ product }: { product?: ProductInput }) {
 
       {error ? <p className="alert-error">{error}</p> : null}
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
+      {/*
+        The form is two phone screens long and the button sat under all of it.
+        While there is something to save it rides along above the tab bar.
+      */}
+      <div
+        className={`flex flex-wrap items-center gap-3 border-t border-line pt-5 ${
+          dirty
+            ? "sticky bottom-[calc(3.875rem+env(safe-area-inset-bottom))] z-20 -mx-5 bg-paper px-5 pb-3 pt-3 sm:-mx-7 sm:px-7 md:bottom-0"
+            : ""
+        }`}
+      >
         <button
           type="submit"
           disabled={saving || (isEdit && !dirty)}
