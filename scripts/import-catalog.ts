@@ -32,6 +32,9 @@ async function main() {
       materialRu: p.materialRu ?? "",
       materialKk: p.materialKk ?? "",
       category: p.category,
+      // Left out before, so an import silently emptied the storefront's
+      // subcategory filters (crossbody, backpack, essential…).
+      subcategory: (p as { subcategory?: string }).subcategory ?? "",
       basePriceKzt: p.basePriceKzt,
       heightCm: p.heightCm ?? null,
       widthCm: p.widthCm ?? null,

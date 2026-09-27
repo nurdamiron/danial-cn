@@ -346,12 +346,13 @@ export function VariantsAdmin({
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <label className="flex items-center gap-1 text-[0.8125rem]">
-                  Сток
+                <label className="flex items-center gap-1.5 text-[0.8125rem]">
+                  Остаток
                   <input
                     type="number"
+                    inputMode="numeric"
                     min={0}
-                    className="field tabular w-16 px-2 py-1.5"
+                    className="field tabular h-11 w-16 px-2.5 py-0 sm:h-auto sm:px-2 sm:py-1.5"
                     value={v.stock}
                     onChange={(e) =>
                       setVariants((list) =>
@@ -367,21 +368,24 @@ export function VariantsAdmin({
                     }
                   />
                 </label>
-                <button
-                  type="button"
-                  className="link-quiet text-[0.8125rem]"
-                  onClick={() => startEdit(v)}
-                >
-                  Изменить
-                </button>
-                <button
-                  type="button"
-                  className="text-danger text-[0.8125rem] underline-offset-4 hover:underline"
-                  disabled={busy}
-                  onClick={() => remove(v.id)}
-                >
-                  Удалить
-                </button>
+                {/* Kept together so a narrow card wraps them as a pair. */}
+                <div className="ml-auto flex items-center gap-2 sm:ml-0">
+                  <button
+                    type="button"
+                    className="link-quiet h-11 px-2 text-[0.8125rem] sm:h-auto sm:px-0"
+                    onClick={() => startEdit(v)}
+                  >
+                    Изменить
+                  </button>
+                  <button
+                    type="button"
+                    className="text-danger h-11 px-2 text-[0.8125rem] underline-offset-4 hover:underline sm:h-auto sm:px-0"
+                    disabled={busy}
+                    onClick={() => remove(v.id)}
+                  >
+                    Удалить
+                  </button>
+                </div>
               </div>
             </div>
           </div>

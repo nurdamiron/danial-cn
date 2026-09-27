@@ -154,24 +154,30 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="grid gap-2 sm:grid-cols-3">
+      {/* Two selects side by side on a phone: stacked, the filters alone
+          took the whole first screen. */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         <input
-          className="field sm:col-span-1"
-          placeholder="Поиск: имя, бренд, slug…"
+          type="search"
+          className="field col-span-2 sm:col-span-1"
+          placeholder="Поиск: имя, бренд, slug"
+          aria-label="Поиск по имени, бренду или адресу"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
         <select
           className="field"
+          aria-label="Статус"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
         >
-          <option value="all">Все статусы</option>
+          <option value="all">Любой статус</option>
           <option value="active">Активные</option>
           <option value="draft">Черновики</option>
         </select>
         <select
           className="field"
+          aria-label="Категория"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >

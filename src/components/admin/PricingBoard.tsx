@@ -96,35 +96,69 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="sticky top-[57px] z-30 -mx-4 border-b border-line bg-sand/95 px-4 py-3 backdrop-blur">
+    <div className={`space-y-4 ${dirty ? "pb-20 md:pb-0" : ""}`}>
+      <div className="sticky top-[56px] z-30 -mx-4 border-b border-line bg-sand/95 px-4 py-3 backdrop-blur">
         <div className="flex flex-wrap items-center gap-3">
           <input
+            type="search"
             className="field min-w-0 flex-1 sm:max-w-xs"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Поиск по товару или линейке"
+            placeholder="Поиск по товару"
+            aria-label="Поиск по товару или линейке"
           />
+          {/* On a phone saving lives in the bar above the thumb instead. */}
           <button
             type="button"
             onClick={() => void save()}
             disabled={!dirty || saving}
-            className="h-10 bg-ink px-5 text-sm text-paper disabled:opacity-40"
+            className="hidden h-10 bg-ink px-5 text-sm text-paper disabled:opacity-40 md:block"
           >
             {saving ? "…" : dirty ? `Сохранить, ${dirty}` : "Изменений нет"}
           </button>
         </div>
         {error ? (
-          <p className="alert-error mt-2">
+          <p className="alert-error mt-2" role="alert">
             {error}
           </p>
         ) : null}
         {message ? (
-          <p className="mt-2 border border-line bg-stone px-3.5 py-2.5 text-[0.8125rem]">
+          <p
+            className="mt-2 border border-line bg-stone px-3.5 py-2.5 text-[0.8125rem]"
+            aria-live="polite"
+          >
             {message}
           </p>
         ) : null}
       </div>
+
+      {/*
+        The board runs to a hundred rows. With the only save button at the top,
+        a price changed near the bottom meant scrolling the whole catalogue back
+        up, so on a phone the button follows the edit, just above the tab bar.
+      */}
+      {dirty ? (
+        <div className="fixed inset-x-0 bottom-[calc(3.875rem+env(safe-area-inset-bottom))] z-40 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-lg items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setEdits({})}
+              disabled={saving}
+              className="h-11 px-3 text-sm text-muted disabled:opacity-40"
+            >
+              Отменить
+            </button>
+            <button
+              type="button"
+              onClick={() => void save()}
+              disabled={saving}
+              className="h-11 flex-1 bg-ink text-sm text-paper disabled:opacity-40"
+            >
+              {saving ? "Сохраняем…" : `Сохранить изменения: ${dirty}`}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {rows.map((p) => (
         <div key={p.id} className="border border-line bg-paper">
@@ -176,7 +210,7 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
                       inputMode="numeric"
                       min={0}
                       step={1000}
-                      className="field tabular w-28 px-2.5 py-1.5 text-right"
+                      className="field tabular h-11 w-32 px-3 py-0 text-right md:h-auto md:w-28 md:px-2.5 md:py-1.5"
                       value={e.priceKzt ?? ""}
                       placeholder={String(p.basePriceKzt)}
                       onChange={(ev) =>
@@ -190,9 +224,10 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
                     />
                   </label>
 
-                  <label className="flex items-center gap-2 text-[0.8125rem]">
+                  <label className="-my-1 flex min-h-11 items-center gap-2 text-[0.8125rem] md:my-0 md:min-h-0">
                     <input
                       type="checkbox"
+                      className="h-5 w-5 accent-ink md:h-auto md:w-auto"
                       checked={e.stock > 0}
                       onChange={(ev) =>
                         change(v, { stock: ev.target.checked ? 5 : 0 })

@@ -33,7 +33,40 @@ export function ProductTable({ rows }: { rows: NamedProductRow[] }) {
   }
 
   return (
-    <div className="mt-6 overflow-x-auto">
+    <>
+      {/* A phone gets a list: the five-column table was cut off after the
+          name, so the numbers it exists to show were the part out of view. */}
+      <ul className="mt-6 divide-y divide-line border-t border-line-strong sm:hidden">
+        {rows.map((row) => (
+          <li key={row.slug} className="py-3">
+            <div className="flex items-baseline justify-between gap-3">
+              {row.id ? (
+                <Link
+                  href={`/admin/products/${row.id}`}
+                  className="min-w-0 text-sm underline-offset-4 hover:underline"
+                >
+                  {row.name}
+                </Link>
+              ) : (
+                <span className="min-w-0 text-sm">{row.name}</span>
+              )}
+              <span className="tabular t-price shrink-0 text-sm whitespace-nowrap">
+                {row.revenue > 0 ? formatKzt(row.revenue) : "нет продаж"}
+              </span>
+            </div>
+            <p className="t-data mt-1 text-muted">
+              {row.views} просм. · {row.cartAdds} в корзину · {row.orders} заказ.
+            </p>
+            {needsAttention(row) ? (
+              <p className="mt-1 text-[0.8125rem] text-danger">
+                открывали {row.views} раз, не купил никто
+              </p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+    <div className="mt-6 hidden overflow-x-auto sm:block">
       <table className="w-full min-w-[36rem] border-collapse text-sm">
         <thead>
           <tr className="border-b border-line-strong text-left">
@@ -85,5 +118,6 @@ export function ProductTable({ rows }: { rows: NamedProductRow[] }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }

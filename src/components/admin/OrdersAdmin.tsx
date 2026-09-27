@@ -13,6 +13,17 @@ import { EmptyState, Notice } from "@/components/admin/ui/AdminSection";
 import { StatusTag } from "@/components/admin/ui/StatusTag";
 
 /**
+ * Digits for tel: and wa.me. Kazakh numbers typed with the trunk 8 are
+ * rewritten to the country code, which is the only form WhatsApp accepts.
+ */
+function phoneDigits(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return digits.length === 11 && digits.startsWith("8")
+    ? `7${digits.slice(1)}`
+    : digits;
+}
+
+/**
  * The screen the shop opens every morning.
  *
  * Ordered around one question — what still needs an answer — so a new order
@@ -143,6 +154,26 @@ export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
                       {formatMoment(order.createdAt)}
                       {order.user ? ` · ${order.user.email}` : " · гость"}
                     </p>
+                    {/* Answering the buyer is the next step for every new
+                        order; the number used to be text to copy by hand. */}
+                    {phoneDigits(order.customerPhone ?? "").length >= 10 ? (
+                      <div className="mt-3 flex gap-2">
+                        <a
+                          href={`tel:+${phoneDigits(order.customerPhone)}`}
+                          className="btn btn-outline h-11 px-4 text-[0.8125rem] sm:h-9"
+                        >
+                          Позвонить
+                        </a>
+                        <a
+                          href={`https://wa.me/${phoneDigits(order.customerPhone)}?text=${encodeURIComponent(`Здравствуйте, это Danial CN, пишу по заказу ${order.number}.`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline h-11 px-4 text-[0.8125rem] sm:h-9"
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
@@ -150,7 +181,7 @@ export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
                       {formatKzt(order.totalKzt)}
                     </p>
                     <select
-                      className="field w-auto px-2.5 py-1.5 text-[0.8125rem]"
+                      className="field h-11 w-auto px-3 py-0 text-[0.8125rem] sm:h-auto sm:px-2.5 sm:py-1.5"
                       value={order.status}
                       disabled={busyId === order.id}
                       aria-label={`Статус заказа ${order.number}`}
@@ -169,7 +200,7 @@ export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
                     </select>
                     <button
                       type="button"
-                      className="link-quiet text-[0.8125rem]"
+                      className="link-quiet -my-1 py-2.5 text-[0.8125rem] sm:my-0 sm:py-0"
                       aria-expanded={open}
                       onClick={() => setOpenId(open ? null : order.id)}
                     >

@@ -104,9 +104,10 @@ export function SecurityLog({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <label className="flex items-center gap-2 text-[0.8125rem]">
+        <label className="flex min-h-11 items-center gap-2 text-[0.8125rem] md:min-h-0">
           <input
             type="checkbox"
+            className="h-5 w-5 accent-ink md:h-auto md:w-auto"
             checked={onlyFailures}
             onChange={(e) => setOnlyFailures(e.target.checked)}
           />
@@ -114,7 +115,7 @@ export function SecurityLog({
         </label>
         <button
           type="button"
-          className="btn btn-outline h-9 px-4 text-[0.8125rem]"
+          className="btn btn-outline h-11 px-4 text-[0.8125rem] md:h-9"
           disabled={loading}
           onClick={() => void load(onlyFailures)}
         >
@@ -125,7 +126,29 @@ export function SecurityLog({
       {attempts.length === 0 ? (
         <EmptyState>Записей пока нет.</EmptyState>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        {/* Rows rather than a sideways-scrolling table on a phone. */}
+        <ul className="divide-y divide-line border-y border-line md:hidden">
+          {attempts.map((a) => (
+            <li key={a.id} className="py-3">
+              <div className="flex items-baseline justify-between gap-3 text-[0.8125rem]">
+                <span className={a.success ? "" : "text-danger"}>
+                  {REASON_LABEL[a.reason] ?? a.reason}
+                </span>
+                <span className="t-data shrink-0 text-muted">
+                  {formatMoment(a.createdAt)}
+                </span>
+              </div>
+              <p className="mt-1 text-[0.8125rem] break-all">
+                {a.action === "register" ? "Регистрация" : "Вход"}: {a.email}
+              </p>
+              <p className="t-data mt-0.5 text-muted">
+                {a.ip || "адрес неизвестен"}
+              </p>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[38rem] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line-strong">
@@ -161,6 +184,7 @@ export function SecurityLog({
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <p className="text-[0.8125rem] text-muted">

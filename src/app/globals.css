@@ -648,3 +648,14 @@
     transform: none;
   }
 }
+
+/*
+  iOS zooms the page into any field set below 16px and leaves it zoomed, which
+  on the panel's long forms meant pinching back out after every tap. Unlayered
+  so it also beats the text-[…] utilities individual fields carry.
+*/
+@media (pointer: coarse) {
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    font-size: 16px !important;
+  }
+}
