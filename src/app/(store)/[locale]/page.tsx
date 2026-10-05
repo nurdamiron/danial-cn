@@ -60,7 +60,18 @@ export default async function HomePage({
   const SHELF_LIMIT = 4;
   const allProducts = await listActiveProducts();
   let featured = await listFeaturedProducts(SHELF_LIMIT);
-  if (featured.length === 0) featured = allProducts.slice(0, SHELF_LIMIT);
+  // Topped up from the rest of the range rather than left short: one or three
+  // featured products put a single card beside an empty half on a phone's
+  // two-column shelf.
+  if (featured.length < SHELF_LIMIT) {
+    const shown = new Set(featured.map((p) => p.id));
+    featured = [
+      ...featured,
+      ...allProducts
+        .filter((p) => !shown.has(p.id))
+        .slice(0, SHELF_LIMIT - featured.length),
+    ];
+  }
 
   const categories = [
     {
@@ -127,21 +138,21 @@ export default async function HomePage({
       <section className="border-b border-line bg-paper">
         <Container>
           <ul className="grid grid-cols-1 divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            <li className="flex items-start gap-3 py-5 sm:py-6 sm:pr-6">
+            <li className="flex items-start gap-3 py-3.5 sm:py-6 sm:pr-6">
               <KaspiBadge height={20} className="mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium">{t("home.trustKaspi")}</p>
                 <p className="t-micro text-muted">{t("home.trustKaspiDesc")}</p>
               </div>
             </li>
-            <li className="flex items-start gap-3 py-5 sm:px-6 sm:py-6">
+            <li className="flex items-start gap-3 py-3.5 sm:px-6 sm:py-6">
               <ChatIcon className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
               <div>
                 <p className="text-sm font-medium">{t("home.trustChat")}</p>
                 <p className="t-micro text-muted">{t("home.trustChatDesc")}</p>
               </div>
             </li>
-            <li className="flex items-start gap-3 py-5 sm:py-6 sm:pl-6">
+            <li className="flex items-start gap-3 py-3.5 sm:py-6 sm:pl-6">
               <TruckIcon className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
               <div>
                 <p className="text-sm font-medium">{t("home.trustDelivery")}</p>
@@ -179,7 +190,9 @@ export default async function HomePage({
                 <Link
                   key={c.key}
                   href={c.href}
-                  className="media lift group relative flex aspect-[3/4] flex-col overflow-hidden"
+                  // An odd tile out spans the row on a phone rather than
+                  // sitting alone next to an empty half.
+                  className="media lift group relative flex aspect-[3/4] flex-col overflow-hidden max-lg:odd:last:col-span-2 max-lg:odd:last:aspect-[2/1]"
                 >
                   <Image
                     src={c.image}
@@ -193,7 +206,7 @@ export default async function HomePage({
                     className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/5 to-transparent"
                     aria-hidden="true"
                   />
-                  <div className="relative mt-auto flex items-end justify-between gap-2 p-4 sm:p-5">
+                  <div className="relative mt-auto flex items-end justify-between gap-2 p-3.5 sm:p-5">
                     <div className="min-w-0">
                       <p className="t-display text-lg text-paper sm:text-xl">
                         {t(`category.${c.key}`)}
@@ -202,7 +215,9 @@ export default async function HomePage({
                         {t(`category.${c.key}Hint`)}
                       </p>
                     </div>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper/15 text-paper backdrop-blur transition-colors duration-300 group-hover:bg-paper group-hover:text-ink">
+                    {/* Half a phone's width is too narrow to give a third of
+                        it to an arrow: the name broke as "Ручная клад/ь" */}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper/15 max-sm:hidden text-paper backdrop-blur transition-colors duration-300 group-hover:bg-paper group-hover:text-ink">
                       <ArrowRightIcon className="h-4 w-4" />
                     </span>
                   </div>
@@ -287,9 +302,9 @@ export default async function HomePage({
               {t("home.howTitle")}
             </h2>
 
-            <ol className="mt-10 grid gap-px overflow-hidden rounded-lg bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+            <ol className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-white/10 sm:mt-10 lg:grid-cols-4">
               {steps.map((s) => (
-                <li key={s.n} className="bg-graphite p-6">
+                <li key={s.n} className="bg-graphite p-4 sm:p-6">
                   <span className="t-data text-alu">
                     {String(s.n).padStart(2, "0")}
                   </span>
@@ -308,14 +323,14 @@ export default async function HomePage({
       <section className="border-t border-line bg-sand py-14 sm:py-20">
         <Container>
           <Reveal>
-            <div className="card flex flex-col items-start gap-6 p-8 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
+            <div className="card flex flex-col items-start gap-6 p-6 sm:p-12 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-xl">
                 <h2 className="t-display t-h2 text-balance">
                   {t("home.finalTitle")}
                 </h2>
                 <p className="t-lead mt-3 text-muted">{t("home.finalText")}</p>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                 <Link href="/catalog" className={buttonClass("primary", "lg")}>
                   {t("cta.viewCatalog")}
                 </Link>

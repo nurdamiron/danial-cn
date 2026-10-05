@@ -42,14 +42,16 @@ export function HomeHero({
         />
       </div>
 
-      <Container className="flex min-h-[32rem] flex-col justify-end pt-16 pb-14 sm:min-h-[36rem] sm:pt-24 sm:pb-16 lg:min-h-[41rem]">
+      <Container className="flex min-h-[30rem] flex-col justify-end pt-14 pb-12 sm:min-h-[36rem] sm:pt-24 sm:pb-16 lg:min-h-[41rem]">
         <h1 className="rise rise-2 t-display t-hero max-w-[16ch] text-balance">
           {title}
         </h1>
 
         <p className="rise rise-3 t-lead mt-6 max-w-lg text-paper/70">{lead}</p>
 
-        <div className="rise rise-4 mt-9 flex flex-wrap items-center gap-3">
+        {/* Full-width, stacked on a phone: two pills of different widths
+            wrapped onto two ragged lines */}
+        <div className="rise rise-4 mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <Link href="/catalog" className={buttonClass("secondary", "lg")}>
             {catalogLabel}
           </Link>

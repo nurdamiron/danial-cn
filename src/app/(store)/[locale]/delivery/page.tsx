@@ -198,9 +198,9 @@ export default async function DeliveryPage({
             <p className="t-label text-alu">{t("home.orderPath")}</p>
             <h2 className="t-display t-h2 mt-2">{t("home.howTitle")}</h2>
 
-            <ol className="mt-10 grid gap-px overflow-hidden rounded-lg bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+            <ol className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-white/10 sm:mt-10 lg:grid-cols-4">
               {steps.map((s) => (
-                <li key={s.n} className="bg-graphite p-6">
+                <li key={s.n} className="bg-graphite p-4 sm:p-6">
                   <span className="t-data text-alu">
                     {String(s.n).padStart(2, "0")}
                   </span>

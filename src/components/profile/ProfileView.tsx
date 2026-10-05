@@ -286,17 +286,20 @@ export function ProfileView() {
             <Field
               label={t("name")}
               value={draft.name}
+              autoComplete="name"
               onChange={(v) => setDraft((d) => ({ ...d, name: v }))}
             />
             <Field
               label={t("phone")}
               value={draft.phone}
               type="tel"
+              autoComplete="tel"
               onChange={(v) => setDraft((d) => ({ ...d, phone: v }))}
             />
             <Field
               label={t("city")}
               value={draft.city}
+              autoComplete="address-level2"
               onChange={(v) => setDraft((d) => ({ ...d, city: v }))}
             />
             <div className="space-y-4 border-t border-line pt-4">
@@ -305,12 +308,14 @@ export function ProfileView() {
                 label={tAuth("currentPassword")}
                 value={pwd.current}
                 type="password"
+                autoComplete="current-password"
                 onChange={(v) => setPwd((p) => ({ ...p, current: v }))}
               />
               <Field
                 label={tAuth("newPassword")}
                 value={pwd.next}
                 type="password"
+                autoComplete="new-password"
                 onChange={(v) => setPwd((p) => ({ ...p, next: v }))}
               />
             </div>
@@ -482,7 +487,7 @@ function LangToggle({
         type="button"
         onClick={onRu}
         aria-pressed={locale === "ru"}
-        className={`t-label rounded-full px-2.5 py-1.5 transition ${
+        className={`t-label min-h-10 rounded-full px-3.5 transition ${
           locale === "ru" ? "bg-ink text-paper" : "text-muted hover:text-ink"
         }`}
       >
@@ -492,7 +497,7 @@ function LangToggle({
         type="button"
         onClick={onKk}
         aria-pressed={locale === "kk"}
-        className={`t-label rounded-full px-2.5 py-1.5 transition ${
+        className={`t-label min-h-10 rounded-full px-3.5 transition ${
           locale === "kk" ? "bg-ink text-paper" : "text-muted hover:text-ink"
         }`}
       >
@@ -507,17 +512,22 @@ function Field({
   value,
   onChange,
   type = "text",
+  autoComplete,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
+  /** Lets a phone fill the field in, and a password manager save it */
+  autoComplete?: string;
 }) {
   return (
     <label className="block">
       <span className="field-label">{label}</span>
       <input
         type={type}
+        inputMode={type === "tel" ? "tel" : undefined}
+        autoComplete={autoComplete}
         className="field"
         value={value}
         onChange={(e) => onChange(e.target.value)}
