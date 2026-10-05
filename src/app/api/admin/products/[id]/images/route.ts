@@ -20,7 +20,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id: productId } = await ctx.params;
   const images = await prisma.productImage.findMany({
@@ -35,13 +35,13 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const { id: productId } = await ctx.params;
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   if (!blobConfigured()) {
@@ -63,7 +63,7 @@ export async function POST(
 
   const files = form.getAll("files").filter((f): f is File => f instanceof File);
   if (!files.length) {
-    return NextResponse.json({ error: "No files" }, { status: 400 });
+    return NextResponse.json({ error: "Не выбраны файлы" }, { status: 400 });
   }
 
   const existingCount = await prisma.productImage.count({
@@ -130,7 +130,7 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id: productId } = await ctx.params;
   const body = (await req.json()) as {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -23,7 +24,7 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string; variantId: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id: productId, variantId } = await ctx.params;
 
@@ -44,7 +45,7 @@ export async function PATCH(
   const parsed = patchSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }
@@ -62,6 +63,30 @@ export async function PATCH(
   }
 
   const colorKey = parsed.data.colorKey?.trim().toLowerCase();
+
+  // Creating checks the colour and size pair; editing did not, so moving a
+  // variant onto a pair the product already had left two rows for one
+  // choice, and the storefront could only ever pick the first.
+  const nextColor = colorKey ?? existing.colorKey;
+  const nextSize = parsed.data.sizeKey?.trim() ?? existing.sizeKey;
+  if (nextColor !== existing.colorKey || nextSize !== existing.sizeKey) {
+    const samePair = await prisma.productVariant.findFirst({
+      where: {
+        productId,
+        colorKey: nextColor,
+        sizeKey: nextSize,
+        NOT: { id: variantId },
+      },
+      select: { id: true },
+    });
+    if (samePair) {
+      return NextResponse.json(
+        { error: "Такой цвет и размер у этого товара уже есть" },
+        { status: 409 },
+      );
+    }
+  }
+
   let colorHex: string | undefined;
   if (parsed.data.colorHex !== undefined) {
     colorHex =
@@ -96,7 +121,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string; variantId: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id: productId, variantId } = await ctx.params;
 

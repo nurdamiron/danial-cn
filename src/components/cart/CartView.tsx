@@ -17,7 +17,7 @@ import { DeliveryPicker } from "@/components/order/DeliveryPicker";
 import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { formatKzt } from "@/lib/money";
 import { buildOrderMessage, buildWaUrl } from "@/lib/whatsapp";
-import { openLater, recordOrder } from "@/lib/record-order";
+import { openLater, recordOrder, withShopPrices } from "@/lib/record-order";
 import { track } from "@/lib/track";
 import {
   cartSubtotal,
@@ -182,12 +182,13 @@ export function CartView({
     // Still sent when the shop could not answer at all: an outage should cost
     // the record, not the sale.
     const recorded = filed.status === "recorded" ? filed.order : null;
+    const sentItems = withShopPrices(items, recorded);
 
     const msg = buildOrderMessage({
       locale,
       orderNumber: recorded?.number,
       meta: cleanMeta,
-      items,
+      items: sentItems,
       labels: {
         title:
           locale === "kk"
@@ -223,8 +224,8 @@ export function CartView({
       status: "sent_whatsapp",
       number: recorded?.number,
       meta: cleanMeta,
-      items: [...items],
-      totalKzt: recorded?.totalKzt ?? cartSubtotal(items),
+      items: sentItems,
+      totalKzt: recorded?.totalKzt ?? cartSubtotal(sentItems),
     });
     tab.go(buildWaUrl(waE164, msg));
     setItems(clearCart());
@@ -305,7 +306,8 @@ export function CartView({
                   <button
                     type="button"
                     aria-label="+"
-                    className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone"
+                    className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full text-ink transition hover:bg-stone disabled:opacity-30"
+                    disabled={Boolean(item.maxQty && item.qty >= item.maxQty)}
                     onClick={() =>
                       setItems(updateQty(item.variantId, item.qty + 1))
                     }

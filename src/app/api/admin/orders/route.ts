@@ -6,7 +6,7 @@ import { ORDER_STATUSES } from "@/lib/orders";
 
 export async function GET(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const params = new URL(req.url).searchParams;

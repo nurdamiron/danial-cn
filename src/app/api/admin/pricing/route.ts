@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { revalidateCatalog } from "@/lib/revalidate";
@@ -13,7 +14,7 @@ import { revalidateCatalog } from "@/lib/revalidate";
  */
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const products = await prisma.product.findMany({
@@ -61,7 +62,7 @@ const patchSchema = z.object({
 
 export async function PATCH(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   let json: unknown;
@@ -74,7 +75,7 @@ export async function PATCH(req: Request) {
   const parsed = patchSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }

@@ -55,6 +55,10 @@ export function CustomerAuthForm({ mode }: { mode: Mode }) {
       }
       router.push("/profile");
       router.refresh();
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setLoading(false);
     }

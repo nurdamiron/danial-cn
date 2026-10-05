@@ -136,20 +136,22 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           body: JSON.stringify({
             ...form,
             basePriceKzt: Number(form.basePriceKzt),
-            heightCm: form.heightCm ? Number(form.heightCm) : null,
-            widthCm: form.widthCm ? Number(form.widthCm) : null,
-            depthCm: form.depthCm ? Number(form.depthCm) : null,
-            volumeL: form.volumeL ? Number(form.volumeL) : null,
-            weightKg: form.weightKg ? Number(form.weightKg) : null,
+            heightCm: optionalNumber(form.heightCm),
+            widthCm: optionalNumber(form.widthCm),
+            depthCm: optionalNumber(form.depthCm),
+            volumeL: optionalNumber(form.volumeL),
+            weightKg: optionalNumber(form.weightKg),
           }),
         },
       );
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(
-          typeof data.error === "string"
-            ? data.error
-            : "Ошибка сохранения (для публикации нужны фото)",
+          res.status === 401
+            ? "Сессия истекла — войдите заново, изменения не сохранены"
+            : typeof data.error === "string"
+              ? data.error
+              : "Не удалось сохранить товар",
         );
         return;
       }
@@ -174,6 +176,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
         setSaved(true);
         router.refresh();
       }
+    } catch {
+      // A dropped connection used to end the save with no word at all: the
+      // button came back and nothing said the edit was lost.
+      setError("Нет связи с сервером — изменения не сохранены");
     } finally {
       setSaving(false);
     }
@@ -219,14 +225,10 @@ export function ProductForm({ product }: { product?: ProductInput }) {
           inputMode={opts?.inputMode}
           className="field"
           value={String(form[key] ?? "")}
-          onChange={(e) =>
-            set(
-              key,
-              (opts?.type === "number"
-                ? Number(e.target.value)
-                : e.target.value) as never,
-            )
-          }
+          // Kept as typed and converted on save. Converting on every
+          // keystroke turned an emptied field into 0, so an optional size or
+          // weight could never be cleared — it saved as 0 instead.
+          onChange={(e) => set(key, e.target.value as never)}
         />
       )}
     </label>
@@ -393,4 +395,12 @@ export function ProductForm({ product }: { product?: ProductInput }) {
       </div>
     </form>
   );
+}
+
+/** An optional measurement: blank means "not given", a comma is a decimal. */
+function optionalNumber(value: unknown): number | null {
+  const text = String(value ?? "").trim().replace(",", ".");
+  if (!text) return null;
+  const n = Number(text);
+  return Number.isFinite(n) ? n : null;
 }

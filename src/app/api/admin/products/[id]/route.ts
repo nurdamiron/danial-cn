@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { assertPublishable } from "@/lib/products";
 import { syncProductTranslations } from "@/lib/translation-sync";
+import { isUniqueViolation } from "@/lib/prisma-errors";
 
 const patchSchema = z.object({
   slug: z.string().min(1).optional(),
@@ -35,7 +37,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
   const product = await prisma.product.findUnique({
@@ -46,7 +48,7 @@ export async function GET(
     },
   });
   if (!product) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
   return NextResponse.json({ product });
 }
@@ -56,14 +58,14 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
   const json = await req.json();
   const parsed = patchSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.flatten() },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }
@@ -94,7 +96,7 @@ export async function PATCH(
     },
   });
   if (!stored) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   try {
@@ -108,8 +110,20 @@ export async function PATCH(
     });
     revalidateCatalog();
     return NextResponse.json({ product });
-  } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  } catch (e) {
+    // Every failure here used to answer "Not found", including the common
+    // one: a page address another product already has.
+    if (isUniqueViolation(e)) {
+      return NextResponse.json(
+        { error: "Такой адрес страницы уже занят другим товаром" },
+        { status: 409 },
+      );
+    }
+    console.error("product update failed", e);
+    return NextResponse.json(
+      { error: "Не удалось сохранить товар" },
+      { status: 500 },
+    );
   }
 }
 
@@ -118,7 +132,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
   try {
@@ -126,6 +140,6 @@ export async function DELETE(
     revalidateCatalog();
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 }

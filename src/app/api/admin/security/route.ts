@@ -11,7 +11,7 @@ const DAY_MS = 86_400_000;
  */
 export async function GET(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const url = new URL(req.url);

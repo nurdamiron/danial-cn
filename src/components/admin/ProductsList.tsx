@@ -66,6 +66,10 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
         list.map((x) => (x.id === p.id ? { ...x, status: next } : x)),
       );
       router.refresh();
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusyId(null);
     }
@@ -146,6 +150,10 @@ export function ProductsList({ products: initial }: { products: ProductRow[] }) 
       }
       setProducts((list) => list.filter((x) => x.id !== p.id));
       router.refresh();
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusyId(null);
     }

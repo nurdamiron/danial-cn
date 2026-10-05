@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -24,7 +25,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id: productId } = await ctx.params;
   const variants = await prisma.productVariant.findMany({
@@ -39,7 +40,7 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id: productId } = await ctx.params;
   const product = await prisma.product.findUnique({ where: { id: productId } });
@@ -57,7 +58,7 @@ export async function POST(
   const parsed = variantSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }

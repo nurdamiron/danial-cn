@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { ADMIN_ORDER_INCLUDE } from "@/lib/admin-orders";
@@ -15,7 +16,7 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const { id } = await ctx.params;
@@ -30,14 +31,14 @@ export async function PATCH(
   const parsed = updateSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }
 
   const existing = await prisma.order.findUnique({ where: { id } });
   if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   const order = await prisma.order.update({
@@ -59,12 +60,12 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
   const existing = await prisma.order.findUnique({ where: { id } });
   if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
   await prisma.order.delete({ where: { id } });
   return NextResponse.json({ ok: true });

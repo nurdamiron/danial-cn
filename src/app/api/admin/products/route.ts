@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { revalidateCatalog } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -51,7 +52,7 @@ const productSchema = z.object({
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const products = await prisma.product.findMany({
@@ -68,14 +69,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const json = await req.json();
   const parsed = productSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.flatten() },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }
@@ -96,7 +97,7 @@ export async function POST(req: Request) {
   if (data.status === "active") {
     // new product has no images yet
     return NextResponse.json(
-      { error: "At least one product image is required" },
+      { error: "Для публикации нужно хотя бы одно фото" },
       { status: 400 },
     );
   }
@@ -116,6 +117,19 @@ export async function POST(req: Request) {
           stock: 5,
         },
       ];
+
+  if (
+    data.slug?.trim() &&
+    (await prisma.product.findUnique({
+      where: { slug: slug },
+      select: { id: true },
+    }))
+  ) {
+    return NextResponse.json(
+      { error: "Такой адрес страницы уже занят другим товаром" },
+      { status: 409 },
+    );
+  }
 
   const product = await prisma.product.create({
     data: {

@@ -252,6 +252,10 @@ export function VariantsAdmin({
         setVariants((list) => [...list, data.variant]);
         cancelEdit();
       }
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusy(false);
     }
@@ -273,6 +277,10 @@ export function VariantsAdmin({
       }
       setVariants((list) => list.filter((v) => v.id !== id));
       if (editingId === id) cancelEdit();
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusy(false);
     }

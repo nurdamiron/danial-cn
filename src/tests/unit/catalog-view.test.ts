@@ -59,8 +59,8 @@ describe("catalog filtering", () => {
   });
 
   it("sorts by price in both directions and by order otherwise", () => {
-    const cheap = item({ id: "cheap", basePriceKzt: 10, sortOrder: 5 });
-    const dear = item({ id: "dear", basePriceKzt: 900, sortOrder: 1 });
+    const cheap = item({ id: "cheap", basePriceKzt: 10, minPriceKzt: 10, sortOrder: 5 });
+    const dear = item({ id: "dear", basePriceKzt: 900, minPriceKzt: 900, sortOrder: 1 });
     const items = [cheap, dear];
 
     expect(filterCatalog(items, { sort: "price_asc" }).map((i) => i.id)).toEqual(
@@ -73,6 +73,16 @@ describe("catalog filtering", () => {
       "dear",
       "cheap",
     ]);
+  });
+
+  it("sorts by the price a buyer can pay, not the base price", () => {
+    // A size priced on the prices screen moves the product, though its base
+    // price stays where it was.
+    const repriced = item({ id: "repriced", basePriceKzt: 500, minPriceKzt: 50 });
+    const plain = item({ id: "plain", basePriceKzt: 100, minPriceKzt: 100 });
+    expect(
+      filterCatalog([plain, repriced], { sort: "price_asc" }).map((i) => i.id),
+    ).toEqual(["repriced", "plain"]);
   });
 
   it("does not mutate the list it was given", () => {

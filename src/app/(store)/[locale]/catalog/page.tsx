@@ -15,7 +15,7 @@ import {
   uniqueColorDots,
 } from "@/lib/products";
 import type { CatalogItem } from "@/lib/catalog-view";
-import { formatKzt } from "@/lib/money";
+import { formatProductPrice } from "@/lib/money";
 import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -61,7 +61,7 @@ function toCatalogItem(p: SourceProduct, locale: string): CatalogItem | null {
     subcategory: (p as { subcategory?: string }).subcategory ?? "",
     basePriceKzt: p.basePriceKzt,
     minPriceKzt: Math.min(...prices, p.basePriceKzt),
-    priceLabel: formatKzt(p.basePriceKzt),
+    priceLabel: formatProductPrice(p, locale),
     specs: formatSpecLine(p, locale) ?? undefined,
     coverUrl: cover,
     hoverUrl: p.images.find((i) => i.url !== cover)?.url ?? null,

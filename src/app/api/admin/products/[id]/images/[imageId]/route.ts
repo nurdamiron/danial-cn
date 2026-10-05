@@ -9,7 +9,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string; imageId: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const { id: productId, imageId } = await ctx.params;
@@ -17,7 +17,7 @@ export async function DELETE(
     where: { id: imageId, productId },
   });
   if (!image) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   await prisma.productImage.delete({ where: { id: imageId } });

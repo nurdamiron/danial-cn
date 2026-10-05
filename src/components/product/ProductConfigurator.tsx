@@ -12,10 +12,10 @@ import {
 import { KaspiBadge } from "@/components/ui/KaspiBadge";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { QuickOrderModal } from "@/components/product/QuickOrderModal";
-import { addItem } from "@/store/cart";
+import { addItem, qtyInCart } from "@/store/cart";
 import type { CartItem, CartMeta } from "@/lib/cart-types";
 import { buildSingleItemMessage, buildWaUrl } from "@/lib/whatsapp";
-import { openLater, recordOrder } from "@/lib/record-order";
+import { openLater, recordOrder, withShopPrices } from "@/lib/record-order";
 import { track } from "@/lib/track";
 import { saveOrder } from "@/store/orders";
 import { formatKzt } from "@/lib/money";
@@ -99,6 +99,7 @@ export function ProductConfigurator({
   const [orderOpen, setOrderOpen] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [justAdded, setJustAdded] = useState(false);
+  const [stockNote, setStockNote] = useState("");
   const [qty, setQty] = useState(1);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -111,12 +112,23 @@ export function ProductConfigurator({
   */
   const actionsRef = useRef<HTMLDivElement>(null);
   const [actionsInView, setActionsInView] = useState(true);
-  const [colorKey, setColorKey] = useState(colors[0]?.colorKey ?? "");
+  // Open on something that can be bought. Opening on a sold-out first colour
+  // or size greyed out both buttons with nothing to say why.
+  const [colorKey, setColorKey] = useState(
+    () =>
+      colors.find((c) =>
+        variants.some((v) => v.colorKey === c.colorKey && v.stock > 0),
+      )?.colorKey ??
+      colors[0]?.colorKey ??
+      "",
+  );
   const sizesForColor = useMemo(
     () => variants.filter((v) => v.colorKey === colorKey),
     [variants, colorKey],
   );
-  const [sizeKey, setSizeKey] = useState(sizesForColor[0]?.sizeKey ?? "");
+  const firstAvailableSize = (list: ConfigVariant[]) =>
+    (list.find((v) => v.stock > 0) ?? list[0])?.sizeKey ?? "";
+  const [sizeKey, setSizeKey] = useState(() => firstAvailableSize(sizesForColor));
 
   // Reset size when it becomes invalid for the newly selected color.
   // Adjusting state during render (React's recommended pattern) instead of
@@ -124,8 +136,9 @@ export function ProductConfigurator({
   const [sizeKeyForColor, setSizeKeyForColor] = useState(colorKey);
   if (colorKey !== sizeKeyForColor) {
     setSizeKeyForColor(colorKey);
-    if (!sizesForColor.some((s) => s.sizeKey === sizeKey)) {
-      setSizeKey(sizesForColor[0]?.sizeKey ?? "");
+    const current = sizesForColor.find((s) => s.sizeKey === sizeKey);
+    if (!current || current.stock <= 0) {
+      setSizeKey(firstAvailableSize(sizesForColor));
     }
   }
 
@@ -193,6 +206,7 @@ export function ProductConfigurator({
       qty,
       imageUrl: activeCover,
       productUrl: `${siteUrl}/${locale}/catalog/${product.slug}`,
+      maxQty: selected.stock,
     };
   }
 
@@ -206,7 +220,19 @@ export function ProductConfigurator({
   function addSelectedToCart() {
     const item = toCartItem(qty);
     if (!item) return;
-    addItem(item);
+    // The basket holds at most what is in stock. Adding past it used to pile
+    // up a count the shop then refused at checkout, after the form was filled.
+    const already = qtyInCart(item.variantId);
+    if (selected && already >= selected.stock) {
+      setStockNote(t("product.stockAllInCart", { n: already }));
+      return;
+    }
+    const after = addItem(item).find((i) => i.variantId === item.variantId);
+    setStockNote(
+      after && after.qty < already + item.qty
+        ? t("product.stockCapped", { n: after.qty })
+        : "",
+    );
     setJustAdded(true);
     if (addedTimer.current) clearTimeout(addedTimer.current);
     addedTimer.current = setTimeout(() => setJustAdded(false), 2200);
@@ -217,7 +243,7 @@ export function ProductConfigurator({
     slug: product.slug,
     brand: product.brand,
     name,
-    priceLabel: formatKzt(product.basePriceKzt),
+    priceLabel: formatKzt(price),
     coverUrl: activeCover,
   };
 
@@ -281,7 +307,10 @@ export function ProductConfigurator({
                   title={label}
                   aria-label={label}
                   aria-pressed={active}
-                  onClick={() => setColorKey(c.colorKey)}
+                  onClick={() => {
+                    setColorKey(c.colorKey);
+                    setStockNote("");
+                  }}
                   className={`relative flex aspect-square h-11 w-11 shrink-0 items-center justify-center rounded-full transition ${
                     active
                       ? "ring-2 ring-ink ring-offset-2 ring-offset-paper"
@@ -313,7 +342,10 @@ export function ProductConfigurator({
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => setSizeKey(s.sizeKey)}
+                  onClick={() => {
+                    setSizeKey(s.sizeKey);
+                    setStockNote("");
+                  }}
                   disabled={out}
                   aria-pressed={active}
                   className={`flex items-center justify-between gap-3 rounded-md border px-4 py-3 text-left transition ${
@@ -441,6 +473,12 @@ export function ProductConfigurator({
           />
         </div>
 
+        {stockNote ? (
+          <p role="status" className="t-micro text-muted">
+            {stockNote}
+          </p>
+        ) : null}
+
         {orderError ? (
           <p role="alert" className="alert-error mt-4">
             {orderError}
@@ -498,18 +536,19 @@ export function ProductConfigurator({
           }
 
           const recorded = filed.status === "recorded" ? filed.order : null;
+          const [sentItem] = withShopPrices([item], recorded);
 
           saveOrder({
             status: "sent_whatsapp",
             number: recorded?.number,
             meta,
-            items: [item],
-            totalKzt: recorded?.totalKzt ?? item.unitPriceKzt * item.qty,
+            items: [sentItem],
+            totalKzt: recorded?.totalKzt ?? sentItem.unitPriceKzt * sentItem.qty,
           });
 
           const msg = buildSingleItemMessage({
             locale,
-            item,
+            item: sentItem,
             labels: labels(),
             meta,
             orderNumber: recorded?.number,

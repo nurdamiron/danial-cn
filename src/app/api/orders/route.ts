@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { hasDatabase } from "@/lib/db-config";
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
   const parsed = orderSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }
@@ -154,5 +155,12 @@ export async function POST(req: Request) {
     select: { id: true, number: true, totalKzt: true, createdAt: true },
   });
 
-  return NextResponse.json({ order }, { status: 201 });
+  // The unit price each line was filed at, in the order it was sent. The
+  // basket remembers the price from when the item was added; after a price
+  // change the WhatsApp message quoted that old price while the shop's
+  // record held the new one, and the two sides argued over the sum.
+  return NextResponse.json(
+    { order: { ...order, prices: priced.items.map((i) => i.unitPriceKzt) } },
+    { status: 201 },
+  );
 }

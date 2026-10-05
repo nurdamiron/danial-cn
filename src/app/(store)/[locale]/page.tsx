@@ -25,7 +25,7 @@ import {
   pickCoverUrl,
   uniqueColorDots,
 } from "@/lib/products";
-import { formatKzt } from "@/lib/money";
+import { formatProductPrice } from "@/lib/money";
 import { pageAlternates, storeJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -270,7 +270,7 @@ export default async function HomePage({
                         locale,
                       )}
                       name={name}
-                      priceLabel={formatKzt(p.basePriceKzt)}
+                      priceLabel={formatProductPrice(p, locale)}
                       coverUrl={cover}
                       hoverUrl={hover}
                       colors={uniqueColorDots(p.variants, locale)}
@@ -281,7 +281,7 @@ export default async function HomePage({
                         slug: p.slug,
                         brand: p.brand,
                         name,
-                        priceLabel: formatKzt(p.basePriceKzt),
+                        priceLabel: formatProductPrice(p, locale),
                         coverUrl: cover,
                       }}
                     />
