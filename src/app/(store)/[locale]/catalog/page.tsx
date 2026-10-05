@@ -103,7 +103,7 @@ export default async function CatalogPage({
         subtitle={t("delivery.subtitle")}
       />
 
-      <Container className="py-8 sm:py-12">
+      <Container className="pt-5 pb-8 sm:py-12">
         {/*
           The fallback is what gets prerendered: CatalogView reads the address
           bar, which excludes it from the static HTML. So the unfiltered grid
@@ -112,7 +112,7 @@ export default async function CatalogPage({
         */}
         <Suspense
           fallback={
-            <div className="grid gap-10 lg:grid-cols-[15rem_1fr] lg:gap-14">
+            <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-14">
               <div />
               <CatalogGrid items={items} />
             </div>

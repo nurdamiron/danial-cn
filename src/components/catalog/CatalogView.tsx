@@ -37,7 +37,7 @@ export function CatalogView({
   const visible = useMemo(() => filterCatalog(items, query), [items, query]);
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[15rem_1fr] lg:gap-14">
+    <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-14">
       <CatalogFilters
         brands={options.brands}
         colors={options.colors}
@@ -48,7 +48,7 @@ export function CatalogView({
         resultCount={visible.length}
       />
 
-      <div>
+      <div className="min-w-0">
         <CatalogSortBar resultCount={visible.length} />
 
         {visible.length === 0 ? (

@@ -435,9 +435,13 @@ export function ProductConfigurator({
       <QuickOrderModal
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
-        itemSummary={`${name} — ${colorLabel ?? ""} · ${sizeLabel ?? ""} · ${formatKzt(price)}`}
+        itemSummary={`${name} — ${colorLabel ?? ""} · ${sizeLabel ?? ""} · ${
+          qty > 1 ? `${qty} × ${formatKzt(price)}` : formatKzt(price)
+        }`}
         onConfirm={async (meta: CartMeta) => {
-          const item = toCartItem(1);
+          // The count picked next to the button goes with the order; it used
+          // to be dropped here, so choosing 2 and buying sent a message for 1.
+          const item = toCartItem(qty);
           if (!item) return;
 
           // Same handling as the cart: claim the tab inside the click, file

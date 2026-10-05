@@ -10,6 +10,10 @@ type Item = { href: string; label: string };
 
 export function MobileMenu({ items }: { items: readonly Item[] }) {
   const [open, setOpen] = useState(false);
+  // Where the header ends right now. On a phone its delivery strip scrolls
+  // away, so the bar the links have to clear is 96px tall at the top of the
+  // page and 64px anywhere below it.
+  const [headerBottom, setHeaderBottom] = useState(96);
   const pathname = usePathname();
   const [lastPathname, setLastPathname] = useState(pathname);
 
@@ -26,8 +30,8 @@ export function MobileMenu({ items }: { items: readonly Item[] }) {
   }, [open]);
 
   const panel = (
-    <div className="fixed inset-0 z-40 bg-sand md:hidden">
-      <div className="h-24 sm:h-[6.5rem]" aria-hidden="true" />
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-sand pb-[calc(3.875rem+env(safe-area-inset-bottom))] md:hidden">
+      <div style={{ height: headerBottom }} aria-hidden="true" />
       <div className="border-t border-line">
         <nav className="flex flex-col divide-y divide-line px-5">
           {items.map((item) => {
@@ -60,7 +64,11 @@ export function MobileMenu({ items }: { items: readonly Item[] }) {
         type="button"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          const header = e.currentTarget.closest("header");
+          if (header) setHeaderBottom(header.getBoundingClientRect().bottom);
+          setOpen((v) => !v);
+        }}
         className="flex h-11 w-11 items-center justify-center rounded-full text-ink transition hover:bg-stone"
       >
         {open ? <CloseIcon /> : <MenuIcon />}

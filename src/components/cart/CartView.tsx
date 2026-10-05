@@ -314,6 +314,8 @@ export function CartView({
                 className="field"
                 value={meta.name}
                 autoComplete="name"
+                autoCapitalize="words"
+                enterKeyHint="next"
                 onChange={(e) => setMeta({ ...meta, name: e.target.value })}
               />
             </label>
@@ -323,6 +325,8 @@ export function CartView({
                 className="field"
                 value={meta.city}
                 autoComplete="address-level2"
+                autoCapitalize="words"
+                enterKeyHint="next"
                 onChange={(e) => setMeta({ ...meta, city: e.target.value })}
               />
             </label>

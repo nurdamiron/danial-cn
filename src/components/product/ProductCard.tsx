@@ -80,7 +80,10 @@ export function ProductCard({
             alt=""
             fill
             quality={95}
-            className="object-contain p-3 opacity-0 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100"
+            // Only a mouse can ever reveal it. Kept out of layout on touch
+            // screens so the lazy loader never fetches a second photo per
+            // card that a phone has no way to show.
+            className="hidden object-contain p-3 opacity-0 transition duration-700 ease-out group-hover:scale-[1.03] group-hover:opacity-100 [@media(hover:hover)]:block"
             sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
           />
         ) : null}

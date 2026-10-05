@@ -14,7 +14,7 @@ export function PageHeader({
 }) {
   return (
     <div className="border-b border-line bg-paper">
-      <Container className="flex flex-col gap-6 pt-10 pb-9 sm:pt-14 sm:pb-12 lg:flex-row lg:items-end lg:justify-between">
+      <Container className="flex flex-col gap-6 pt-7 pb-7 sm:pt-14 sm:pb-12 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="t-label text-muted">{eyebrow}</p>
           <h1 className="t-display t-h1 mt-3">{title}</h1>
