@@ -8,7 +8,7 @@ import { ProductConfigurator } from "@/components/product/ProductConfigurator";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SizeCompare } from "@/components/product/SizeCompare";
 import { TrackView } from "@/components/analytics/TrackView";
-import { formatKzt } from "@/lib/money";
+import { formatProductPrice } from "@/lib/money";
 import { formatDimensions, formatSpecLine } from "@/lib/specs";
 import { SITE } from "@/lib/site";
 import { breadcrumbJsonLd, pageAlternates } from "@/lib/seo";
@@ -304,7 +304,7 @@ export default async function ProductPage({
                 if (!relCover) return null;
                 const relHover = p.images.find((i) => i.url !== relCover)?.url;
                 const relName = localizedName(p, locale);
-                const relPrice = formatKzt(p.basePriceKzt);
+                const relPrice = formatProductPrice(p, locale);
                 return (
                   <ProductCard
                     key={p.id}

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import { revalidateSettings } from "@/lib/revalidate";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -20,7 +21,7 @@ const settingsSchema = z.object({
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const settings = await prisma.siteSettings.upsert({
     where: { id: 1 },
@@ -32,7 +33,7 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   let json: unknown;
@@ -45,7 +46,7 @@ export async function PUT(req: Request) {
   const parsed = settingsSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }

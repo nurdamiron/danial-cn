@@ -47,7 +47,7 @@ export default async function ReviewsPage({
           ))}
         </div>
 
-        <div className="card mt-10 flex flex-col items-start gap-5 p-8 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+        <div className="card mt-10 flex flex-col items-stretch gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
           <p className="t-display t-h3 max-w-md text-balance">
             {t("reviewsPage.cta")}
           </p>

@@ -1,6 +1,16 @@
 import { revalidatePath } from "next/cache";
 import { routing } from "@/i18n/routing";
 
+/*
+  A route pattern is matched against the route's file path, and that path
+  keeps the (store) group: a cached product page is tagged
+  "/(store)/[locale]/catalog/[slug]/page". The patterns used to leave the
+  group out, matched no page at all, and so an edited product kept showing
+  its old name, price and photos until the next deploy. Settings fared the
+  same: "/ru" + "layout" names a layout no page is tagged with.
+*/
+const STORE = "/(store)/[locale]";
+
 /**
  * Repaints the pages an edit in /admin affects.
  *
@@ -18,13 +28,13 @@ export function revalidateCatalog(): void {
     revalidatePath(`/${locale}`);
     revalidatePath(`/${locale}/catalog`);
   }
-  revalidatePath("/[locale]/catalog/[slug]", "page");
+  revalidatePath(`${STORE}/catalog/[slug]`, "page");
   revalidatePath("/sitemap.xml");
 }
 
 /** Settings feed the header, the footer and every page that quotes delivery. */
 export function revalidateSettings(): void {
-  for (const locale of routing.locales) {
-    revalidatePath(`/${locale}`, "layout");
-  }
+  // Every storefront page sits under this layout, so this one call reaches
+  // all of them, in both languages.
+  revalidatePath(STORE, "layout");
 }

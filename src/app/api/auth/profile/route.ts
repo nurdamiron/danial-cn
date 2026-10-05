@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import {
   createSessionToken,
@@ -15,7 +16,7 @@ import { profileUpdateSchema } from "@/lib/auth-validation";
 export async function PATCH(req: Request) {
   const current = await getCurrentUser();
   if (!current) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   let json: unknown;
@@ -27,7 +28,7 @@ export async function PATCH(req: Request) {
 
   const parsed = profileUpdateSchema.safeParse(json);
   if (!parsed.success) {
-    const first = parsed.error.issues[0]?.message ?? "Ошибка валидации";
+    const first = firstIssueMessage(parsed.error);
     return NextResponse.json({ error: first }, { status: 400 });
   }
 
@@ -47,7 +48,7 @@ export async function PATCH(req: Request) {
       where: { id: current.id },
     });
     if (!dbUser) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
     }
     if (!data.currentPassword) {
       return NextResponse.json(

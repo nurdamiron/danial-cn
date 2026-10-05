@@ -45,7 +45,8 @@ export function LocaleSwitcher({
             onClick={() => {
               if (!active) router.replace(pathname, { locale: o.key });
             }}
-            className={`t-label rounded-full px-2.5 py-1.5 transition ${
+            // Thumb-sized in the phone menu, the compact pill in the header
+            className={`t-label min-h-11 rounded-full px-4 transition md:min-h-0 md:px-2.5 md:py-1.5 ${
               active ? "bg-ink text-paper" : "text-muted hover:text-ink"
             }`}
           >

@@ -143,10 +143,10 @@ export function filterCatalog(
   });
 
   if (query.sort === "price_asc") {
-    return [...filtered].sort((a, b) => a.basePriceKzt - b.basePriceKzt);
+    return [...filtered].sort((a, b) => a.minPriceKzt - b.minPriceKzt);
   }
   if (query.sort === "price_desc") {
-    return [...filtered].sort((a, b) => b.basePriceKzt - a.basePriceKzt);
+    return [...filtered].sort((a, b) => b.minPriceKzt - a.minPriceKzt);
   }
   return [...filtered].sort(
     (a, b) =>

@@ -21,13 +21,13 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const { id } = await ctx.params;
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   const { token, tokenHash } = createResetToken();

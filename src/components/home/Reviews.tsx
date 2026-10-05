@@ -41,7 +41,12 @@ export async function Reviews({ locale }: { locale: string }) {
   const t = await getTranslations("home");
 
   return (
-    <section className="border-t border-line bg-stone py-14 sm:py-20">
+    <section className="overflow-x-clip border-t border-line bg-stone py-14 sm:py-20">
+      {/*
+        The two rows are twice the review list wide by design, so the section
+        clips them itself. Without it the whole page grew to their width and
+        phones opened the home page zoomed out, scrolling sideways.
+      */}
       <Reveal>
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">

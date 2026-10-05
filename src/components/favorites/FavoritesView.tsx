@@ -38,9 +38,9 @@ export function FavoritesView() {
   }
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
-        <li key={item.productId} className="card flex gap-4 p-4">
+        <li key={item.productId} className="card flex min-w-0 gap-4 p-4">
           <Link
             href={`/catalog/${item.slug}`}
             className="media relative h-28 w-24 shrink-0"
@@ -65,7 +65,7 @@ export function FavoritesView() {
             <p className="t-price mt-1 text-sm">{item.priceLabel}</p>
             <button
               type="button"
-              className="link-quiet mt-auto flex items-center gap-1.5 pt-3 text-[0.8125rem]"
+              className="link-quiet mt-auto -mb-2 flex min-h-11 items-center gap-1.5 self-start pt-1 text-[0.8125rem]"
               onClick={() => removeFavorite(item.productId)}
             >
               <TrashIcon className="h-4 w-4" />

@@ -9,7 +9,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string; imageId: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const { id: productId, imageId } = await ctx.params;
@@ -17,7 +17,7 @@ export async function DELETE(
     where: { id: imageId, productId },
   });
   if (!image) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   await prisma.productImage.delete({ where: { id: imageId } });
@@ -40,6 +40,19 @@ export async function DELETE(
     where: { productId },
     orderBy: [{ isCover: "desc" }, { sortOrder: "asc" }],
   });
+
+  // Publishing needs a photo, so losing the last one takes the product back
+  // to draft. It used to stay "active" with nothing to show: the storefront
+  // could not render it, and the panel still listed it as live.
+  let unpublished = false;
+  if (images.length === 0) {
+    const { count } = await prisma.product.updateMany({
+      where: { id: productId, status: "active" },
+      data: { status: "draft" },
+    });
+    unpublished = count > 0;
+  }
+
   revalidateCatalog();
-  return NextResponse.json({ images });
+  return NextResponse.json({ images, unpublished });
 }

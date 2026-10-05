@@ -5,7 +5,7 @@ import { exportCatalogToStatic } from "@/lib/export-catalog";
 /** Export DB → static JSON for Vercel deploy */
 export async function POST() {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   try {
     const result = await exportCatalogToStatic();

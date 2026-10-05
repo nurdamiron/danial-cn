@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ChevronDownIcon } from "@/components/ui/icons";
 import { faqJsonLd, pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -52,17 +53,25 @@ export default async function FaqPage({
         }}
       />
       <PageHeader eyebrow={t("brand.name")} title={t("faq.title")} />
-      <Container className="max-w-2xl py-14 sm:py-20">
-        <dl className="divide-y divide-line border-y border-line">
-          {items.map(([q, a]) => (
-            <div key={q} className="py-7">
-              <dt className="t-display t-h3">{t(`faq.${q}`)}</dt>
-              <dd className="mt-3 leading-relaxed text-muted">
+      {/*
+        Questions that open, the first one already open. Laid out in full the
+        six answers ran to four phone screens, and the question someone came
+        with could be the last. The answers stay in the page either way.
+      */}
+      <Container className="max-w-2xl py-8 sm:py-20">
+        <div className="divide-y divide-line border-y border-line">
+          {items.map(([q, a], i) => (
+            <details key={q} className="group" open={i === 0}>
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-5 [&::-webkit-details-marker]:hidden">
+                <h2 className="t-display t-h3">{t(`faq.${q}`)}</h2>
+                <ChevronDownIcon className="h-5 w-5 shrink-0 text-muted transition-transform duration-300 group-open:rotate-180" />
+              </summary>
+              <p className="pb-6 leading-relaxed text-muted">
                 {t(`faq.${a}`)}
-              </dd>
-            </div>
+              </p>
+            </details>
           ))}
-        </dl>
+        </div>
       </Container>
     </div>
   );

@@ -15,7 +15,7 @@ import {
   uniqueColorDots,
 } from "@/lib/products";
 import type { CatalogItem } from "@/lib/catalog-view";
-import { formatKzt } from "@/lib/money";
+import { formatProductPrice } from "@/lib/money";
 import { pageAlternates } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -61,7 +61,7 @@ function toCatalogItem(p: SourceProduct, locale: string): CatalogItem | null {
     subcategory: (p as { subcategory?: string }).subcategory ?? "",
     basePriceKzt: p.basePriceKzt,
     minPriceKzt: Math.min(...prices, p.basePriceKzt),
-    priceLabel: formatKzt(p.basePriceKzt),
+    priceLabel: formatProductPrice(p, locale),
     specs: formatSpecLine(p, locale) ?? undefined,
     coverUrl: cover,
     hoverUrl: p.images.find((i) => i.url !== cover)?.url ?? null,
@@ -103,7 +103,7 @@ export default async function CatalogPage({
         subtitle={t("delivery.subtitle")}
       />
 
-      <Container className="py-8 sm:py-12">
+      <Container className="pt-5 pb-8 sm:py-12">
         {/*
           The fallback is what gets prerendered: CatalogView reads the address
           bar, which excludes it from the static HTML. So the unfiltered grid
@@ -112,7 +112,7 @@ export default async function CatalogPage({
         */}
         <Suspense
           fallback={
-            <div className="grid gap-10 lg:grid-cols-[15rem_1fr] lg:gap-14">
+            <div className="lg:grid lg:grid-cols-[15rem_1fr] lg:gap-14">
               <div />
               <CatalogGrid items={items} />
             </div>

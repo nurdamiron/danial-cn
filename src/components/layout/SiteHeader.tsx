@@ -30,7 +30,12 @@ export async function SiteHeader() {
   ] as const;
 
   return (
-    <header className="sticky top-0 z-50">
+    /*
+      On a phone the delivery strip scrolls away and only the bar under it
+      stays: with the tab bar below, the two together held back a sixth of a
+      small screen for a line that says the same thing on every page.
+    */
+    <header className="sticky -top-8 z-50 md:top-0">
       <div className="on-dark relative bg-ink text-paper">
         <Container className="flex h-8 items-center justify-center gap-1.5">
           <TruckIcon className="h-3.5 w-3.5 shrink-0 text-alu" />

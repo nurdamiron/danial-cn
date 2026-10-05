@@ -90,6 +90,10 @@ export function PricingBoard({ products }: { products: PricingProduct[] }) {
         `Сохранено ${data.updated}. На сайте обновится через несколько секунд.`,
       );
       setEdits({});
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setSaving(false);
     }

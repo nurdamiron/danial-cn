@@ -7,7 +7,7 @@
  */
 import "dotenv/config";
 import { cliPrisma, cliTarget } from "./prisma-cli-client";
-import { hashPassword } from "../src/lib/password";
+import { hashPassword, verifyPassword } from "../src/lib/password";
 import { syncAdminPassword } from "../src/lib/sync-admin";
 
 const prisma = cliPrisma();
@@ -25,7 +25,7 @@ async function main() {
       findAdmin: () =>
         prisma.user.findFirst({
           where: { role: "ADMIN" },
-          select: { id: true, email: true, role: true },
+          select: { id: true, email: true, role: true, passwordHash: true },
         }),
       findByEmail: (email) =>
         prisma.user.findUnique({
@@ -56,6 +56,7 @@ async function main() {
       },
     },
     hashPassword,
+    verifyPassword,
     email: process.env.ADMIN_EMAIL || "admin@danial.cn",
     password,
     name: process.env.ADMIN_NAME || "Admin",

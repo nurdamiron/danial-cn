@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import {
   ensureSingleAdminRule,
@@ -16,7 +17,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
   const user = await prisma.user.findUnique({
@@ -24,7 +25,7 @@ export async function GET(
     select: ADMIN_USER_SELECT,
   });
   if (!user) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
   return NextResponse.json({ user });
 }
@@ -34,7 +35,7 @@ export async function PATCH(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
 
@@ -47,13 +48,13 @@ export async function PATCH(
 
   const parsed = adminUserUpdateSchema.safeParse(json);
   if (!parsed.success) {
-    const first = parsed.error.issues[0]?.message ?? "Ошибка валидации";
+    const first = firstIssueMessage(parsed.error);
     return NextResponse.json({ error: first }, { status: 400 });
   }
 
   const existing = await prisma.user.findUnique({ where: { id } });
   if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   if (parsed.data.role) {
@@ -142,7 +143,7 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> },
 ) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
   const { id } = await ctx.params;
   const me = await getCurrentUser();
@@ -155,7 +156,7 @@ export async function DELETE(
 
   const existing = await prisma.user.findUnique({ where: { id } });
   if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Не найдено — возможно, уже удалено" }, { status: 404 });
   }
 
   if (existing.role === ROLES.ADMIN) {

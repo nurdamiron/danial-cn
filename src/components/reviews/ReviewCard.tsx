@@ -5,7 +5,7 @@ export function ReviewCard({ review, locale }: { review: Review; locale: string 
   const initial = review.name.trim().charAt(0).toUpperCase();
 
   return (
-    <article className="card flex h-full flex-col p-6">
+    <article className="card flex h-full flex-col p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="t-display flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm text-paper">

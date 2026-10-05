@@ -115,6 +115,10 @@ export function UsersAdmin({
       setMessage(note);
       router.refresh();
       return true;
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusyId(null);
     }
@@ -148,6 +152,10 @@ export function UsersAdmin({
       setCreateForm(emptyCreate);
       setMessage(`Создан: ${data.user.email}`);
       router.refresh();
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setCreating(false);
     }
@@ -215,6 +223,10 @@ export function UsersAdmin({
         return;
       }
       setResetLink({ email: data.email, url: data.url });
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusyId(null);
     }
@@ -234,6 +246,10 @@ export function UsersAdmin({
       setUsers((list) => list.filter((u) => u.id !== id));
       setMessage("Пользователь удалён");
       router.refresh();
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusyId(null);
     }

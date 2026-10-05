@@ -48,7 +48,7 @@ export default async function ContactsPage({
                 href={urls.whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="t-display inline-flex items-center gap-2.5 text-xl hover:opacity-60"
+                className="t-display inline-flex min-h-11 items-center gap-2.5 text-xl hover:opacity-60"
               >
                 <WhatsAppIcon className="h-5 w-5 shrink-0" />
                 {config.whatsappDisplay}
@@ -67,7 +67,7 @@ export default async function ContactsPage({
                 href={urls.instagramUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="t-display inline-flex items-center gap-2.5 text-xl hover:opacity-60"
+                className="t-display inline-flex min-h-11 items-center gap-2.5 text-xl hover:opacity-60"
               >
                 <InstagramIcon className="h-5 w-5 shrink-0" />@
                 {config.instagram}

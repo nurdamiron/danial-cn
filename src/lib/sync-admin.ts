@@ -10,6 +10,8 @@ export type AdminRecord = {
   id: string;
   email: string;
   role: string;
+  /** The stored hash, when the store can read it back. */
+  passwordHash?: string;
 };
 
 export type AdminStore = {
@@ -29,17 +31,35 @@ export type AdminStore = {
 export async function syncAdminPassword(input: {
   store: AdminStore;
   hashPassword: (password: string) => Promise<string>;
+  /**
+   * Checks the env password against the stored hash. When it already
+   * matches, nothing is written.
+   *
+   * This runs on every deploy, and each write also signs the admin out
+   * everywhere. So with the password unchanged, every deploy still threw the
+   * owner out of an open panel: their next save came back 401 and looked
+   * like the panel had stopped saving.
+   */
+  verifyPassword?: (password: string, hash: string) => Promise<boolean>;
   email: string;
   password: string;
   name: string;
-}): Promise<{ email: string; action: "created" | "updated" }> {
+}): Promise<{ email: string; action: "created" | "updated" | "unchanged" }> {
   const email = input.email.trim().toLowerCase();
   const password = input.password.trim();
   if (!email) throw new Error("ADMIN_EMAIL is empty");
   if (!password) throw new Error("ADMIN_PASSWORD is empty");
 
-  const passwordHash = await input.hashPassword(password);
   const existingAdmin = await input.store.findAdmin();
+  if (
+    existingAdmin?.passwordHash &&
+    input.verifyPassword &&
+    (await input.verifyPassword(password, existingAdmin.passwordHash))
+  ) {
+    return { email: existingAdmin.email, action: "unchanged" };
+  }
+
+  const passwordHash = await input.hashPassword(password);
   if (existingAdmin) {
     await input.store.updatePassword(existingAdmin.id, { passwordHash });
     return { email: existingAdmin.email, action: "updated" };

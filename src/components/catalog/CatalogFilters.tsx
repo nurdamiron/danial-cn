@@ -306,12 +306,26 @@ export function CatalogFilters({
     </div>
   );
 
-  return (
-    <>
-      <SearchBox value={active.q} onSubmit={(v) => go({ q: v || null })} />
+  const search = (
+    <SearchBox value={active.q} onSubmit={(v) => go({ q: v || null })} />
+  );
 
-      {/* Mobile: filters + sort */}
-      <div className="mb-6 flex items-center gap-2 lg:hidden">
+  return (
+    /*
+      One grid item on a desktop (the left column). On a phone "contents"
+      hands its children to the catalogue's own box instead, which spans the
+      whole product list: that is what lets the filter bar below stay pinned
+      under the header the whole way down rather than only as far as the
+      bottom of this wrapper.
+    */
+    <div className="contents lg:block lg:min-w-0">
+      <div className="mb-3 lg:hidden">{search}</div>
+
+      {/*
+        Mobile: filters + sort. Pinned under the header, so changing the sort
+        or opening the filters 60 cards down does not mean scrolling back up.
+      */}
+      <div className="sticky top-16 z-30 -mx-5 mb-4 flex items-center gap-2 border-b border-line bg-sand/92 px-5 py-2.5 backdrop-blur-xl sm:top-[4.5rem] sm:-mx-6 sm:px-6 lg:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -336,7 +350,7 @@ export function CatalogFilters({
         The count lived only in the desktop bar, so on a phone a filter could
         narrow 99 products down to three with nothing saying so.
       */}
-      <p className="t-data mb-6 text-muted lg:hidden">
+      <p className="t-data mb-5 text-muted lg:hidden">
         {t("found", { n: resultCount })}
       </p>
 
@@ -361,7 +375,7 @@ export function CatalogFilters({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-5 py-6">{panel}</div>
-            <div className="flex gap-2 border-t border-line bg-paper p-4">
+            <div className="flex gap-2 border-t border-line bg-paper p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               {activeCount > 0 ? (
                 <button
                   type="button"
@@ -386,6 +400,7 @@ export function CatalogFilters({
       {/* Desktop sidebar */}
       <aside className="hidden lg:block">
         <div className="sticky top-32">
+          <div className="mb-6">{search}</div>
           <div className="mb-5 flex items-center justify-between gap-3">
             <h2 className="t-label text-muted">{t("filters")}</h2>
             {activeCount > 0 ? (
@@ -401,7 +416,7 @@ export function CatalogFilters({
           {panel}
         </div>
       </aside>
-    </>
+    </div>
   );
 }
 
@@ -521,7 +536,7 @@ function SearchBox({
   return (
     <form
       role="search"
-      className="mb-4 flex items-center gap-2"
+      className="flex items-center gap-2"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit(draft.trim());

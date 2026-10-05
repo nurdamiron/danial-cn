@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import {
   ROLES,
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
 
   const parsed = registerSchema.safeParse(json);
   if (!parsed.success) {
-    const first = parsed.error.issues[0]?.message ?? "Ошибка валидации";
+    const first = firstIssueMessage(parsed.error);
     return NextResponse.json({ error: first }, { status: 400 });
   }
 

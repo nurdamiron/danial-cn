@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { firstIssueMessage } from "@/lib/validation-message";
 import { prisma } from "@/lib/prisma";
 import {
   hashPassword,
@@ -10,16 +11,19 @@ import {
 import { ADMIN_USER_SELECT } from "@/lib/admin-users";
 
 const createUserSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).max(72),
-  name: z.string().min(2).max(80),
-  phone: z.string().max(32).optional().default(""),
-  role: z.enum(["USER", "ADMIN"]).optional().default("USER"),
+  email: z.string().email("Некорректный email"),
+  password: z
+    .string()
+    .min(8, "Пароль: минимум 8 символов")
+    .max(72, "Пароль слишком длинный"),
+  name: z.string().trim().min(2, "Имя: минимум 2 символа").max(80, "Имя слишком длинное"),
+  phone: z.string().max(32, "Телефон слишком длинный").optional().default(""),
+  role: z.enum(["USER", "ADMIN"], "Неизвестная роль").optional().default("USER"),
 });
 
 export async function GET(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   const q = new URL(req.url).searchParams.get("q")?.trim() ?? "";
@@ -43,7 +47,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Сессия истекла — войдите заново" }, { status: 401 });
   }
 
   let json: unknown;
@@ -56,7 +60,7 @@ export async function POST(req: Request) {
   const parsed = createUserSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Ошибка валидации" },
+      { error: firstIssueMessage(parsed.error) },
       { status: 400 },
     );
   }

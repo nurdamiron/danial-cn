@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { CloseIcon, WhatsAppIcon } from "@/components/ui/icons";
@@ -25,6 +25,7 @@ export function QuickOrderModal({
   const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
   const [delivery, setDelivery] = useState<DeliveryMode>("express");
+  const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -34,6 +35,10 @@ export function QuickOrderModal({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
+    // Straight into the first field with a mouse and keyboard. On a phone
+    // that threw the keyboard over half the sheet before the buyer had read
+    // what they were ordering, so there the first tap does it.
+    if (window.matchMedia("(pointer: fine)").matches) nameRef.current?.focus();
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
@@ -67,71 +72,86 @@ export function QuickOrderModal({
         aria-label={t("catalog.close")}
         onClick={onClose}
       />
-      <div className="sheet-in relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-xl border border-line bg-paper p-6 shadow-2xl sm:rounded-xl">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="t-display t-h3">{t("cta.buyWhatsApp")}</h2>
-            <p className="t-micro mt-1.5 text-muted">{itemSummary}</p>
+      {/*
+        dvh, not vh: on a phone vh is the height with the browser's bars
+        hidden, so a 92vh sheet ran under the address bar. Only the fields
+        scroll; the button stays at the foot of the sheet, where it used to
+        sit below all three delivery cards and out of sight.
+      */}
+      <div className="sheet-in relative flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-line bg-paper shadow-2xl sm:rounded-xl">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="t-display t-h3">{t("cta.buyWhatsApp")}</h2>
+              <p className="t-micro mt-1.5 text-muted">{itemSummary}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t("catalog.close")}
+              className="btn btn-ghost -mt-1 h-11 w-11 md:h-9 md:w-9 shrink-0 p-0 text-muted"
+            >
+              <CloseIcon />
+            </button>
           </div>
-          <button
+
+          <div className="mt-6 space-y-4">
+            <label className="block">
+              <span className="field-label">{t("cart.name")} *</span>
+              <input
+                ref={nameRef}
+                className="field"
+                autoComplete="name"
+                autoCapitalize="words"
+                enterKeyHint="next"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <label className="block">
+              <span className="field-label">{t("cart.city")} *</span>
+              <input
+                className="field"
+                autoComplete="address-level2"
+                autoCapitalize="words"
+                enterKeyHint="next"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </label>
+            <label className="block">
+              <span className="field-label">{t("cart.phone")}</span>
+              <input
+                className="field"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+7 7__ ___ __ __"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </label>
+            <DeliveryPicker
+              name="quick-order-delivery"
+              value={delivery}
+              onChange={setDelivery}
+            />
+          </div>
+        </div>
+
+        {/* Kept off the home indicator on a phone */}
+        <div className="border-t border-line px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-6">
+          <Button
             type="button"
-            onClick={onClose}
-            aria-label={t("catalog.close")}
-            className="btn btn-ghost -mt-1 h-11 w-11 md:h-9 md:w-9 shrink-0 p-0 text-muted"
+            size="lg"
+            className="w-full"
+            disabled={!canSubmit}
+            onClick={submit}
           >
-            <CloseIcon />
-          </button>
+            <WhatsAppIcon />
+            {t("cta.buyWhatsApp")}
+          </Button>
         </div>
-
-        <div className="mt-6 space-y-4">
-          <label className="block">
-            <span className="field-label">{t("cart.name")} *</span>
-            <input
-              autoFocus
-              className="field"
-              autoComplete="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <label className="block">
-            <span className="field-label">{t("cart.city")} *</span>
-            <input
-              className="field"
-              autoComplete="address-level2"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
-          </label>
-          <label className="block">
-            <span className="field-label">{t("cart.phone")}</span>
-            <input
-              className="field"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="+7 7__ ___ __ __"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </label>
-          <DeliveryPicker
-            name="quick-order-delivery"
-            value={delivery}
-            onChange={setDelivery}
-          />
-        </div>
-
-        <Button
-          type="button"
-          size="lg"
-          className="mt-6 w-full"
-          disabled={!canSubmit}
-          onClick={submit}
-        >
-          <WhatsAppIcon />
-          {t("cta.buyWhatsApp")}
-        </Button>
       </div>
     </div>
   );

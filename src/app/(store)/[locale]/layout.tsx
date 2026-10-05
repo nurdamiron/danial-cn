@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -23,6 +23,20 @@ export const metadata: Metadata = {
   verification: {
     yandex: "d205d01875c71ada",
   },
+};
+
+/*
+  "cover" lets the page run under the iPhone's rounded corners and home
+  indicator, which is what makes the env(safe-area-inset-*) padding on the tab
+  bar and the bottom sheets mean anything: without it they all read 0 and the
+  browser letterboxes the page instead. The side insets are taken up in
+  globals.css so nothing slides under the notch in landscape.
+*/
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0b0b0b",
 };
 
 export function generateStaticParams() {

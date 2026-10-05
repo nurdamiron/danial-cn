@@ -80,6 +80,10 @@ export function OrdersAdmin({ orders: initial }: { orders: AdminOrder[] }) {
       setOrders((list) =>
         list.map((o) => (o.id === id ? { ...o, ...data.order } : o)),
       );
+    } catch {
+      // A dropped connection or a non-JSON 500 used to end here with no
+      // word to the user: the button came back and nothing was saved.
+      setError("Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.");
     } finally {
       setBusyId(null);
     }

@@ -88,7 +88,19 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html {
+    /* iOS inflates text after a turn to landscape unless told not to */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
+    /* Landscape on a notched phone: keep content clear of the cut-out */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    /* Every control here draws its own pressed state; the grey flash on top
+       of it read as a glitch */
+    -webkit-tap-highlight-color: transparent;
     background: var(--sand);
     color: var(--ink);
     font-family: var(--font-sans-family), "Noto Sans", system-ui, sans-serif;
@@ -271,10 +283,13 @@
       border-color 0.3s var(--ease);
   }
 
-  .lift:hover {
-    transform: translateY(-4px);
-    border-color: var(--line-strong);
-    box-shadow: 0 28px 50px -32px rgba(11, 11, 11, 0.35);
+  /* Touch screens keep :hover after a tap, which left cards lifted */
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-4px);
+      border-color: var(--line-strong);
+      box-shadow: 0 28px 50px -32px rgba(11, 11, 11, 0.35);
+    }
   }
 
   /* ------------------------------------------------------------- controls */
@@ -296,6 +311,11 @@
       transform 0.2s var(--ease);
   }
 
+  /*
+    Hover fills sit behind (hover: hover) throughout: a phone keeps :hover on
+    whatever was tapped last, so an outline button stayed solid ink after the
+    tap until something else was touched.
+  */
   .btn:active:not(:disabled) {
     transform: translateY(1px);
   }
@@ -310,8 +330,10 @@
     color: var(--paper);
   }
 
-  .btn-primary:hover:not(:disabled) {
-    background: #000;
+  @media (hover: hover) {
+    .btn-primary:hover:not(:disabled) {
+      background: #000;
+    }
   }
 
   .btn-secondary {
@@ -319,8 +341,10 @@
     color: var(--ink);
   }
 
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--sand);
+  @media (hover: hover) {
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--sand);
+    }
   }
 
   .btn-outline {
@@ -329,10 +353,12 @@
     background: transparent;
   }
 
-  .btn-outline:hover:not(:disabled) {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--paper);
+  @media (hover: hover) {
+    .btn-outline:hover:not(:disabled) {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+    }
   }
 
   .btn-outline-inverse {
@@ -341,10 +367,12 @@
     background: transparent;
   }
 
-  .btn-outline-inverse:hover:not(:disabled) {
-    background: var(--paper);
-    color: var(--ink);
-    border-color: var(--paper);
+  @media (hover: hover) {
+    .btn-outline-inverse:hover:not(:disabled) {
+      background: var(--paper);
+      color: var(--ink);
+      border-color: var(--paper);
+    }
   }
 
   .btn-ghost {
@@ -352,8 +380,10 @@
     color: var(--ink);
   }
 
-  .btn-ghost:hover:not(:disabled) {
-    background: rgba(11, 11, 11, 0.06);
+  @media (hover: hover) {
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(11, 11, 11, 0.06);
+    }
   }
 
   /* Selectable option: filter chips, colours, sizes */
@@ -374,8 +404,10 @@
       color 0.2s var(--ease);
   }
 
-  .chip:hover:not(:disabled) {
-    border-color: var(--line-strong);
+  @media (hover: hover) {
+    .chip:hover:not(:disabled) {
+      border-color: var(--line-strong);
+    }
   }
 
   .chip[data-active="true"] {
@@ -455,9 +487,11 @@
     transition: color 0.2s var(--ease);
   }
 
-  .link-quiet:hover {
-    color: var(--ink);
-    text-decoration: underline;
+  @media (hover: hover) {
+    .link-quiet:hover {
+      color: var(--ink);
+      text-decoration: underline;
+    }
   }
 
   .no-scrollbar {

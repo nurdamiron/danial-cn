@@ -48,13 +48,24 @@ export function addItem(item: CartItem): CartItem[] {
   if (idx >= 0) {
     items[idx] = {
       ...items[idx],
-      qty: items[idx].qty + item.qty,
+      // The fresh stock figure wins over the one saved with the older line.
+      maxQty: item.maxQty ?? items[idx].maxQty,
+      qty: capQty(items[idx].qty + item.qty, item.maxQty ?? items[idx].maxQty),
     };
   } else {
-    items.push(item);
+    items.push({ ...item, qty: capQty(item.qty, item.maxQty) });
   }
   saveCart(items);
   return items;
+}
+
+/** How many of this variant are already in the basket. */
+export function qtyInCart(variantId: string): number {
+  return loadCart().find((i) => i.variantId === variantId)?.qty ?? 0;
+}
+
+function capQty(qty: number, max: number | undefined): number {
+  return max && max > 0 ? Math.min(qty, max) : qty;
 }
 
 export function updateQty(variantId: string, qty: number): CartItem[] {
@@ -63,7 +74,7 @@ export function updateQty(variantId: string, qty: number): CartItem[] {
     items = items.filter((i) => i.variantId !== variantId);
   } else {
     items = items.map((i) =>
-      i.variantId === variantId ? { ...i, qty } : i,
+      i.variantId === variantId ? { ...i, qty: capQty(qty, i.maxQty) } : i,
     );
   }
   saveCart(items);

@@ -2,7 +2,30 @@
 
 import type { CartItem, CartMeta } from "@/lib/cart-types";
 
-export type RecordedOrder = { number: string; totalKzt: number };
+export type RecordedOrder = {
+  number: string;
+  totalKzt: number;
+  /** The shop's unit price for each submitted line, in the same order. */
+  prices?: number[];
+};
+
+/**
+ * The basket with the shop's prices in it, so the message, the saved order
+ * and the record all quote the same sum. Lines the shop did not price keep
+ * the price the buyer saw.
+ */
+export function withShopPrices(
+  items: CartItem[],
+  order: RecordedOrder | null,
+): CartItem[] {
+  if (!order?.prices || order.prices.length !== items.length) return items;
+  return items.map((item, i) => {
+    const price = order.prices?.[i];
+    return typeof price === "number" && price > 0
+      ? { ...item, unitPriceKzt: price }
+      : item;
+  });
+}
 
 /**
  * What came of filing the order.
