@@ -72,6 +72,54 @@ describe("syncAdminPassword", () => {
     expect(store.hashes.adm).toBe("hash:new-pass");
   });
 
+  it("leaves the admin alone when the password already matches", async () => {
+    const store = memoryStore([
+      {
+        id: "adm",
+        email: "admin@danial.cn",
+        role: "ADMIN",
+        passwordHash: "hash:same-pass",
+      },
+    ]);
+    let writes = 0;
+    const updatePassword = store.updatePassword;
+    store.updatePassword = async (id, data) => {
+      writes++;
+      await updatePassword(id, data);
+    };
+    const result = await syncAdminPassword({
+      store,
+      hashPassword: async (p) => `hash:${p}`,
+      verifyPassword: async (p, h) => h === `hash:${p}`,
+      email: "admin@danial.cn",
+      password: "same-pass",
+      name: "Admin",
+    });
+    expect(result).toEqual({ email: "admin@danial.cn", action: "unchanged" });
+    expect(writes).toBe(0);
+  });
+
+  it("still rewrites the hash when the password changed", async () => {
+    const store = memoryStore([
+      {
+        id: "adm",
+        email: "admin@danial.cn",
+        role: "ADMIN",
+        passwordHash: "hash:old-pass",
+      },
+    ]);
+    const result = await syncAdminPassword({
+      store,
+      hashPassword: async (p) => `hash:${p}`,
+      verifyPassword: async (p, h) => h === `hash:${p}`,
+      email: "admin@danial.cn",
+      password: "new-pass",
+      name: "Admin",
+    });
+    expect(result.action).toBe("updated");
+    expect(store.hashes.adm).toBe("hash:new-pass");
+  });
+
   it("promotes a matching address to admin and sets the password", async () => {
     const store = memoryStore([
       { id: "u1", email: "admin@danial.cn", role: "USER" },

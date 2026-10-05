@@ -32,6 +32,7 @@ export function ProductImagesAdmin({
   const [images, setImages] = useState<Img[]>(initialImages);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [uploadColor, setUploadColor] = useState(colorKeys[0] ?? "");
   const [dragOver, setDragOver] = useState(false);
   /** What the last upload did, so the page confirms it rather than just growing. */
@@ -76,37 +77,84 @@ export function ProductImagesAdmin({
     }
   }
 
+  /*
+    Cover, colour and delete used to drop a failed response on the floor: the
+    click did nothing and said nothing, which is the "it doesn't save" that
+    gets reported. Each now shows why — usually a session that ran out.
+  */
+  async function applyImageChange(
+    request: Promise<Response>,
+    fallbackError: string,
+  ): Promise<{ images?: Img[]; unpublished?: boolean } | null> {
+    setError("");
+    setNotice("");
+    try {
+      const res = await request;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(
+          res.status === 401
+            ? "Сессия истекла — войдите заново, изменение не сохранено"
+            : typeof data.error === "string"
+              ? data.error
+              : fallbackError,
+        );
+        return null;
+      }
+      if (Array.isArray(data.images)) setImages(data.images);
+      return data;
+    } catch {
+      setError(`${fallbackError}: нет связи с сервером`);
+      return null;
+    }
+  }
+
   async function setCover(coverId: string) {
-    const res = await fetch(`/api/admin/products/${productId}/images`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ coverId }),
-    });
-    const data = await res.json();
-    if (res.ok) setImages(data.images);
+    await applyImageChange(
+      fetch(`/api/admin/products/${productId}/images`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coverId }),
+      }),
+      "Не удалось сменить обложку",
+    );
   }
 
   async function setColorKey(imageId: string, colorKey: string) {
-    const res = await fetch(`/api/admin/products/${productId}/images`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        imageId,
-        colorKey: colorKey || null,
+    await applyImageChange(
+      fetch(`/api/admin/products/${productId}/images`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageId,
+          colorKey: colorKey || null,
+        }),
       }),
-    });
-    const data = await res.json();
-    if (res.ok) setImages(data.images);
+      "Не удалось сохранить цвет фото",
+    );
   }
 
   async function remove(imageId: string) {
-    if (!confirm("Удалить фото?")) return;
-    const res = await fetch(
-      `/api/admin/products/${productId}/images/${imageId}`,
-      { method: "DELETE" },
+    const last = images.length === 1;
+    if (
+      !confirm(
+        last
+          ? "Это последнее фото. Без фото товар снимется с публикации. Удалить?"
+          : "Удалить фото?",
+      )
+    )
+      return;
+    const data = await applyImageChange(
+      fetch(`/api/admin/products/${productId}/images/${imageId}`, {
+        method: "DELETE",
+      }),
+      "Не удалось удалить фото",
     );
-    const data = await res.json();
-    if (res.ok) setImages(data.images);
+    if (data?.unpublished) {
+      setNotice(
+        "Фото не осталось — товар снят с публикации. Загрузите фото и опубликуйте снова.",
+      );
+    }
   }
 
   async function move(imageId: string, dir: -1 | 1) {
@@ -243,6 +291,11 @@ export function ProductImagesAdmin({
         </p>
       ) : null}
       {error ? <p className="alert-error">{error}</p> : null}
+      {notice ? (
+        <p role="status" className="text-[0.8125rem] text-muted">
+          {notice}
+        </p>
+      ) : null}
 
       {images.length > 1 ? (
         <p className="t-micro text-muted">

@@ -35,12 +35,24 @@ export const COLOR_PRESETS: ColorPreset[] = [
   { key: "sky", hex: "#8FBEDD", ru: "Небесно голубой", kk: "Ашық көк" },
   { key: "taupe", hex: "#8B8079", ru: "Мокко", kk: "Мокко" },
   { key: "clear", hex: "#D7DCE0", ru: "Прозрачный", kk: "Мөлдір" },
+  // Colours the imported catalogue already uses. Missing here, a new variant
+  // in one of them was labelled with its bare key ("green") on the
+  // storefront and drew a grey dot, next to older variants of the same
+  // product reading "Зелёный".
+  { key: "green", hex: "#3C7A4E", ru: "Зелёный", kk: "Жасыл" },
+  { key: "titanium", hex: "#8E9296", ru: "Титан", kk: "Титан" },
+  { key: "burgundy", hex: "#6E1F2A", ru: "Бордовый", kk: "Бордо" },
+  { key: "beige", hex: "#D8C9AE", ru: "Бежевый", kk: "Бозғылт" },
+  { key: "white", hex: "#EDEDED", ru: "Белый", kk: "Ақ" },
+  { key: "magenta", hex: "#9B3D7A", ru: "Пурпурный", kk: "Күрең қызыл" },
 ];
 
 export const SIZE_PRESETS: SizePreset[] = [
   { key: "55", ru: "Ручная кладь 55 см", kk: "Қол жүгі 55 см" },
   { key: "65", ru: "Средний 65 см", kk: "Орташа 65 см" },
   { key: "75", ru: "Большой 75 см", kk: "Үлкен 75 см" },
+  { key: "85", ru: "Очень большой 85 см", kk: "Өте үлкен 85 см" },
+  { key: "standard", ru: "Стандартный размер", kk: "Стандартты өлшем" },
   { key: "set3", ru: "Набор из 3 предметов", kk: "3 заттан тұратын жинақ" },
   { key: "set4", ru: "Набор из 4 предметов", kk: "4 заттан тұратын жинақ" },
   { key: "40l", ru: "Объём 40 л", kk: "Көлемі 40 л" },

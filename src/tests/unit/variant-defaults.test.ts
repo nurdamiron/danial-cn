@@ -83,3 +83,16 @@ describe("deriveVariant", () => {
     expect(v.colorLabelKk).toBe("Мятный");
   });
 });
+
+describe("presets cover the catalogue", () => {
+  it("labels every colour and size the catalogue already sells", async () => {
+    const { colorPreset, sizePreset } = await import("@/lib/catalog-presets");
+    const catalog = (await import("@/data/static-products.json")).default as {
+      variants: { colorKey: string; sizeKey: string }[];
+    }[];
+    const colors = new Set(catalog.flatMap((p) => p.variants.map((v) => v.colorKey)));
+    const sizes = new Set(catalog.flatMap((p) => p.variants.map((v) => v.sizeKey)));
+    expect([...colors].filter((k) => !colorPreset(k))).toEqual([]);
+    expect([...sizes].filter((k) => !sizePreset(k))).toEqual([]);
+  });
+});
