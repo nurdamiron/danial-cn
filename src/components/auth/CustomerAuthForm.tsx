@@ -146,28 +146,28 @@ export function CustomerAuthForm({ mode }: { mode: Mode }) {
       </form>
 
       {mode === "login" ? (
-        <p className="mt-6 text-center text-[0.8125rem]">
+        <p className="mt-4 text-center text-[0.8125rem]">
           <Link
             href="/forgot"
-            className="text-muted underline-offset-4 hover:text-ink hover:underline"
+            className="inline-block py-2 text-muted underline-offset-4 hover:text-ink hover:underline"
           >
             {t("forgotLink")}
           </Link>
         </p>
       ) : null}
 
-      <p className="mt-3 text-center text-[0.8125rem] text-muted">
+      <p className="mt-1 text-center text-[0.8125rem] text-muted">
         {mode === "login" ? (
           <>
             {t("noAccount")}{" "}
-            <Link href="/register" className="text-ink underline-offset-4 hover:underline">
+            <Link href="/register" className="inline-block py-2 text-ink underline-offset-4 hover:underline">
               {t("toRegister")}
             </Link>
           </>
         ) : (
           <>
             {t("hasAccount")}{" "}
-            <Link href="/login" className="text-ink underline-offset-4 hover:underline">
+            <Link href="/login" className="inline-block py-2 text-ink underline-offset-4 hover:underline">
               {t("toLogin")}
             </Link>
           </>

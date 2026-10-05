@@ -34,7 +34,7 @@ export function ProductGallery({ images, alt }: { images: Img[]; alt: string }) 
   }
 
   return (
-    <div className="lg:sticky lg:top-32">
+    <div>
       <div className="media aspect-[4/5]">
         <div
           ref={stripRef}
